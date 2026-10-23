@@ -76,6 +76,8 @@ header.top{display:flex;align-items:center;gap:calc(var(--u)*1.2);padding:calc(v
 header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#fff;text-shadow:3px 3px 0 #b00000}
 .turnban{flex:1;text-align:center;font-family:"Press Start 2P";font-size:calc(var(--u)*2.2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .turnban .who{padding:4px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
+.turnban .nextup{display:inline-block;margin-left:14px;font-size:calc(var(--u)*1.1);color:var(--dim);vertical-align:middle}
+.turnban .nextup i{font-style:normal;filter:brightness(1.4)}
 .turnban .bonus{display:inline-block;margin-left:10px;font-size:calc(var(--u)*1.2);background:var(--gold);color:#000;padding:6px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
 .topbtn{background:#0008;border:2px solid var(--line);border-radius:10px;padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1.5);font-weight:700}
 .topbtn.on{background:#7a5a00;border-color:var(--gold)}
@@ -163,6 +165,17 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .itemview h3{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);line-height:1.4;margin:0;color:#fff;text-shadow:3px 3px 0 #b000ff}
 .itemview p{font-size:calc(var(--u)*2.2);margin:0;line-height:1.3}
 .itemview .note{font-size:calc(var(--u)*1.6);color:var(--gold)}
+.itemview .note.good{color:var(--good)}
+.itemview .note.bad{color:#ff7a7a}
+.btn.discard{display:inline-flex;align-items:center;gap:8px;font-size:calc(var(--u)*1.4)}
+.btn.discard img{height:calc(var(--u)*3);width:calc(var(--u)*3);object-fit:contain;image-rendering:pixelated}
+.mcard{height:86%;aspect-ratio:.86;max-width:44%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:calc(var(--u)*.8);
+  padding:calc(var(--u)*1.4) calc(var(--u)*1.2);border-radius:12px;border:calc(var(--u)*.6) solid #4a2c18;outline:3px solid #000;
+  background:radial-gradient(circle at 50% 38%,#5a2694 0%,#2a1050 45%,#120724 80%);box-shadow:0 0 50px #a14bff88,inset 0 0 0 3px #8a6a3a;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.mcard .mt{font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);color:#ffb3ec;background:#2a1240;border:2px solid #8a5ab0;border-radius:6px;padding:8px 12px;text-align:center;line-height:1.4}
+.mcard img{flex:1;min-height:38%;width:70%;object-fit:contain;filter:drop-shadow(0 0 18px #c77dff)}
+.mcard .md{font-size:calc(var(--u)*1.35);color:#e9d5ff;text-align:center;line-height:1.3;background:#0008;border-radius:8px;padding:8px 10px}
+.shooterno{font-family:"Press Start 2P";font-size:calc(var(--u)*1.5);color:var(--cyan);background:#0009;border:2px solid var(--cyan);border-radius:8px;padding:8px 12px}
 .balls{display:flex;gap:calc(var(--u)*1)}
 .balls img{width:calc(var(--u)*9);image-rendering:pixelated;animation:bounce 1.2s infinite}
 .balls img:nth-child(2){animation-delay:.1s}.balls img:nth-child(3){animation-delay:.2s}.balls img:nth-child(4){animation-delay:.3s}.balls img:nth-child(5){animation-delay:.4s}
@@ -256,6 +269,18 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
       <div class="qcount" id="setCount"></div>
       <h2 style="margin-top:22px">MYSTERY ITEMS</h2>
       <table class="items" id="itemTable"></table>
+      <h2 style="margin-top:22px">FAIRNESS</h2>
+      <div class="row"><label>Items a team can hold</label>
+        <div class="stepper"><button data-step="handLimit:-1">−</button><span id="v_handLimit"></span><button data-step="handLimit:1">+</button></div></div>
+      <div class="row"><label>Players per team (shooter rotation)</label>
+        <div class="stepper"><button data-step="players:-1">−</button><span id="v_players"></span><button data-step="players:1">+</button></div>
+        <div class="hint">Students number off 1, 2, 3… and the game calls who shoots next. Set to 0 to turn off.</div></div>
+      <div class="row"><label>Underdog bonus</label>
+        <div class="seg" data-seg="underdog"><button data-v="0">Off</button><button data-v="1">On</button></div>
+        <div class="hint">Last place gets +1 heart when they open an item box.</div></div>
+      <div class="row"><label>Leader tax</label>
+        <div class="seg" data-seg="leaderTax"><button data-v="0">Off</button><button data-v="1">On</button></div>
+        <div class="hint">A team at max hearts can't collect items — they pick again.</div></div>
       <div class="row" style="margin-top:14px"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
     </div>
   </div>
@@ -290,27 +315,42 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 const A = {
   heart:"__A_heart__", qbox:"__A_qbox__", ball:"__A_ball__",
   ic_shield:"__A_ic_shield__", ic_ring:"__A_ic_ring__", ic_reed:"__A_ic_reed__", ic_sword:"__A_ic_sword__",
-  card_shield:"__A_card_shield__", card_ring:"__A_card_ring__", card_reed:"__A_card_reed__", card_sword:"__A_card_sword__", card_scale:"__A_card_scale__"
+  card_shield:"__A_card_shield__", card_reed:"__A_card_reed__", card_sword:"__A_card_sword__", card_scale:"__A_card_scale__"
 };
 
+const SVG = s => "data:image/svg+xml;utf8,"+encodeURIComponent(s);
+A.ic_metronome = SVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M23 5h18l13 52H10z" fill="#8a4b1f" stroke="#1a0a02" stroke-width="3" stroke-linejoin="round"/><path d="M27 11h10l9 37H18z" fill="#e2b06a"/><g stroke="#8a4b1f" stroke-width="1.5"><line x1="25" y1="20" x2="39" y2="20"/><line x1="23" y1="28" x2="41" y2="28"/><line x1="21" y1="36" x2="43" y2="36"/></g><rect x="9" y="49" width="46" height="9" rx="2" fill="#5a2c0e" stroke="#1a0a02" stroke-width="3"/><line x1="32" y1="46" x2="45" y2="12" stroke="#1a0a02" stroke-width="5" stroke-linecap="round"/><line x1="32" y1="46" x2="45" y2="12" stroke="#ffd400" stroke-width="2.6" stroke-linecap="round"/><rect x="37" y="21" width="9" height="7" rx="1" fill="#ffd400" stroke="#1a0a02" stroke-width="2" transform="rotate(21 41.5 24.5)"/><circle cx="32" cy="46" r="3.5" fill="#1a0a02"/></svg>`);
+A.ic_repeat = SVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g stroke="#ffffff55" stroke-width="2"><line x1="4" y1="14" x2="60" y2="14"/><line x1="4" y1="23" x2="60" y2="23"/><line x1="4" y1="32" x2="60" y2="32"/><line x1="4" y1="41" x2="60" y2="41"/><line x1="4" y1="50" x2="60" y2="50"/></g><circle cx="22" cy="27.5" r="4.5" fill="#ffd400" stroke="#1a0a02" stroke-width="2"/><circle cx="22" cy="36.5" r="4.5" fill="#ffd400" stroke="#1a0a02" stroke-width="2"/><rect x="31" y="12" width="5" height="40" fill="#fff" stroke="#1a0a02" stroke-width="2"/><rect x="41" y="12" width="12" height="40" fill="#fff" stroke="#1a0a02" stroke-width="2"/></svg>`);
+A.ic_fermata = SVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M8 46 A24 24 0 0 1 56 46" fill="none" stroke="#1a0a02" stroke-width="12" stroke-linecap="round"/><path d="M8 46 A24 24 0 0 1 56 46" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="40" r="7" fill="#ffd400" stroke="#1a0a02" stroke-width="3"/></svg>`);
+A.ic_modulation = SVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 30 A20 20 0 0 1 48 18" stroke="#1a0a02" stroke-width="10"/><path d="M12 30 A20 20 0 0 1 48 18" stroke="#3ad7ff" stroke-width="5"/><path d="M52 34 A20 20 0 0 1 16 46" stroke="#1a0a02" stroke-width="10"/><path d="M52 34 A20 20 0 0 1 16 46" stroke="#ff6bd6" stroke-width="5"/></g><path d="M41 8 L54 17 L42 26 Z" fill="#3ad7ff" stroke="#1a0a02" stroke-width="2.5" stroke-linejoin="round"/><path d="M23 56 L10 47 L22 38 Z" fill="#ff6bd6" stroke="#1a0a02" stroke-width="2.5" stroke-linejoin="round"/></svg>`);
+const FREE_SHOTS = 3;
 const ITEMS = {
   shield:{name:"Magical Shield of Protection", short:"Shield", icon:A.ic_shield, card:A.card_shield, held:true,
     desc:"Use it on your turn: nobody can attack your team until your next turn."},
-  ring:{name:"Magical Lifesteal Ring", short:"Lifesteal", icon:A.ic_ring, card:A.card_ring, held:true,
-    desc:"Use it on your turn: for two of your turns, every heart you take from another team heals you +1."},
+  ring:{name:"Magical Lifesteal Ring", short:"Lifesteal", icon:A.ic_ring, card:null, held:true,
+    desc:"Use it on your turn: for the rest of this turn, every heart you take from another team heals you +1."},
   sword:{name:"Cursed Sword", short:"Sword", icon:A.ic_sword, card:A.card_sword, held:true,
     desc:"Use it on your turn: for two of your turns, your attacks take 2 hearts — but attacks on YOU also take 2."},
   reed:{name:"Reed of Resurrection", short:"Reed", icon:A.ic_reed, card:A.card_reed, held:true,
     desc:"If your team gets knocked out, the Reed brings you back with 2 hearts automatically. (Or play it during sudden death.)"},
-  shots:{name:"Five Free Shots", short:"Free Shots", icon:A.ball, card:null, held:false,
-    desc:"Take 5 shots no matter what. Every basket = +1 heart OR take a heart from another team."},
+  shots:{name:"Three Free Shots", short:"Free Shots", icon:A.ball, card:null, held:false,
+    desc:"Take 3 shots no matter what. Every basket = +1 heart OR take a heart from another team."},
   scale:{name:"The Traumatic Scale", short:"Traumatic Scale", icon:A.ic_sword, card:A.card_scale, held:false,
-    desc:"Aka the chromatic scale (hasn't been practiced enough). Your team loses one heart."}
+    desc:"Aka the chromatic scale (hasn't been practiced enough). Your team loses one heart."},
+  metronome:{name:"Metronome", short:"Metronome", icon:A.ic_metronome, card:null, held:true,
+    desc:"Use it on your turn: your team gets +10 seconds on its question (works even while the clock is running)."},
+  repeat:{name:"Repeat Sign", short:"Repeat", icon:A.ic_repeat, card:null, held:true,
+    desc:"Use it on your turn: when this turn ends, your team goes again right away."},
+  fermata:{name:"Fermata", short:"Fermata", icon:A.ic_fermata, card:null, held:true,
+    desc:"Use it on your turn and pick a team. They're held: they can't steal on the next wrong answer."},
+  modulation:{name:"Modulation", short:"Modulation", icon:A.ic_modulation, card:null, held:true, max:1,
+    desc:"Use it on your turn: the turn order reverses. Only one Modulation per game."}
 };
 ITEMS.scale.icon = A.card_scale;
 ITEMS.shield.found="A MAGICAL SHIELD OF PROTECTION"; ITEMS.ring.found="A MAGICAL LIFESTEAL RING"; ITEMS.sword.found="A CURSED SWORD";
-ITEMS.reed.found="A REED OF RESURRECTION"; ITEMS.shots.found="FIVE FREE SHOTS"; ITEMS.scale.found="THE TRAUMATIC SCALE (LOSE ONE HEART)";
-const ITEM_ORDER = ["shield","ring","sword","reed","shots","scale"];
+ITEMS.reed.found="A REED OF RESURRECTION"; ITEMS.shots.found="THREE FREE SHOTS"; ITEMS.scale.found="THE TRAUMATIC SCALE (LOSE ONE HEART)";
+ITEMS.metronome.found="A METRONOME"; ITEMS.repeat.found="A REPEAT SIGN"; ITEMS.fermata.found="A FERMATA"; ITEMS.modulation.found="A MODULATION";
+const ITEM_ORDER = ["shield","ring","sword","reed","metronome","repeat","fermata","modulation","shots","scale"];
 
 const TEAM_COLORS = ["#e02424","#2463e0","#16a34a","#d4a000","#9333ea","#ea6a0c","#0fb5b5","#e0389a"];
 const DEFAULT_NAMES = ["Red","Blue","Green","Gold","Purple","Orange","Teal","Pink"];
@@ -350,15 +390,20 @@ const store = {
 ============================================================ */
 const DEFAULT_CFG = {
   teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5, stealAnswerTime:5,
-  wrongCost:1, stealCost:1, cfgVer:2,
-  items:{ shield:{count:2,after:"again"}, ring:{count:2,after:"again"}, sword:{count:1,after:"again"},
-          reed:{count:1,after:"again"}, shots:{count:2,after:"end"}, scale:{count:2,after:"again"} },
+  wrongCost:1, stealCost:1, cfgVer:3,
+  handLimit:2, players:6, underdog:1, leaderTax:1,
+  items:{ shield:{count:1,after:"again"}, ring:{count:1,after:"again"}, sword:{count:1,after:"again"},
+          reed:{count:1,after:"again"}, metronome:{count:1,after:"again"}, repeat:{count:1,after:"again"},
+          fermata:{count:1,after:"again"}, modulation:{count:1,after:"again"},
+          shots:{count:1,after:"end"}, scale:{count:1,after:"again"} },
   set:DEFAULT_SET_NAME
 };
 let CFG = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), store.get("gb_cfg", {}));
 if(CFG.stealAnswerTime==null) CFG.stealAnswerTime = 5;
 if((store.get("gb_cfg", {}).cfgVer||1)<2){ CFG.wrongCost = 1; CFG.stealCost = 1; CFG.cfgVer = 2; }
 CFG.items = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG.items)), CFG.items||{});
+if((store.get("gb_cfg", {}).cfgVer||1)<3){ CFG.items = JSON.parse(JSON.stringify(DEFAULT_CFG.items)); CFG.cfgVer = 3; }
+if(CFG.items.modulation.count>1) CFG.items.modulation.count = 1;
 let SETS = store.get("gb_sets", null);
 if(!SETS || typeof SETS !== "object" || !Object.keys(SETS).length){ SETS = {}; SETS[DEFAULT_SET_NAME] = DEFAULT_SET; }
 if(!SETS[CFG.set]) CFG.set = Object.keys(SETS)[0];
@@ -437,13 +482,15 @@ function newGame(){
   const teams = [];
   for(let i=0;i<CFG.teams;i++){
     teams.push({ name:(CFG.names[i]||DEFAULT_NAMES[i]).trim()||DEFAULT_NAMES[i], color:TEAM_COLORS[i],
-      hearts:CFG.startHearts, status:"alive", inv:[], shield:false, ring:0, sword:0 });
+      hearts:CFG.startHearts, status:"alive", inv:[], shield:false, ring:0, sword:0,
+      metronome:false, fermata:false, nextShooter:1 });
   }
   const order = teams.map((_,i)=>i);
   S = {
     cfg: JSON.parse(JSON.stringify(CFG)),
     teams, boxes, order, ptr:0, bonus:[], turnTeam:order[0], isBonus:false, turnNo:1,
-    phase:"pick", cur:{}, turnAttacks:{}, prevAttacks:{}, lastAnswer:null, over:false
+    phase:"pick", cur:{}, turnAttacks:{}, prevAttacks:{}, lastAnswer:null, over:false,
+    itemUsedTurn:0, repeatTeam:null, modulationUsed:false
   };
   UNDO = [];
   startOfTurn();
@@ -452,6 +499,30 @@ function newGame(){
 }
 
 /* ---------- helpers on state ---------- */
+const C = (k, d) => (S && S.cfg && S.cfg[k]!=null) ? S.cfg[k] : d;
+function nextUp(){
+  if(!S) return null;
+  if(S.repeatTeam===S.turnTeam) return S.turnTeam;
+  const b = (S.bonus||[]).filter(i=>T(i).status!=="out");
+  if(b.length) return b[0];
+  let p = S.ptr;
+  for(let k=0;k<S.order.length;k++){ p = (p+1) % S.order.length; if(T(S.order[p]).status!=="out") return S.order[p]; }
+  return null;
+}
+function lastPlace(i){
+  const act = activeTeams(); if(act.length<2) return false;
+  const hs = act.map(j=>T(j).hearts); const mn = Math.min(...hs), mx = Math.max(...hs);
+  return T(i).status!=="out" && T(i).hearts===mn && mn<mx;
+}
+function takeShooter(i){
+  const n = C("players", 0); if(!n) return null;
+  const t = T(i); const k = t.nextShooter||1; t.nextShooter = (k % n) + 1; return k;
+}
+function startShoot(i, mode){
+  S.phase = "shoot";
+  S.cur = {mode, shooter:i, made:0, results:[], heartsOnly: mode==="free" ? T(i).status!=="alive" : false,
+           shotsLeft: mode==="free" ? FREE_SHOTS : 0, shooterNo: takeShooter(i)};
+}
 const T = i => S.teams[i];
 const activeTeams = () => S.teams.map((t,i)=>i).filter(i=>T(i).status!=="out");
 function teamTag(i){ const t=T(i); return `<span class="who" style="background:${t.color}">${esc(t.name)}</span>`; }
@@ -538,6 +609,11 @@ function endTurn(){
   const alive = activeTeams();
   if(alive.length<=1){ S.over = true; finishGame(); return; }
 
+  // Repeat Sign: this team goes again before anyone else
+  if(S.repeatTeam!=null){
+    const rt = S.repeatTeam; S.repeatTeam = null;
+    if(rt===S.turnTeam && T(rt).status!=="out"){ S.bonus.unshift(rt); toast(`REPEAT SIGN!<br>${esc(T(rt).name)} goes again!`, "green"); }
+  }
   // next team
   S.bonus = S.bonus.filter(i=>T(i).status!=="out");
   if(S.bonus.length){
@@ -560,24 +636,38 @@ const pickBox = act(i=>{
   b.opened = true; S.cur = {box:i};
   if(b.kind==="q"){
     S.phase = "question"; S.cur.answerShown = false;
-    startTimer(S.cfg.qTime);
+    const t = T(S.turnTeam);
+    S.cur.qBonus = 0;
+    if(t.metronome){ t.metronome = false; S.cur.qBonus = 10; toast(`METRONOME! ${esc(t.name)} gets +10 seconds`, "green"); }
+    startTimer(S.cfg.qTime + S.cur.qBonus);
   }else{
     S.phase = "item"; S.cur.item = b.item; SFX.item();
-    const t = T(S.turnTeam);
-    if(ITEMS[b.item].held){ t.inv.push(b.item); }
-    else if(b.item==="scale"){
-      if(t.hearts>0) loseHearts(S.turnTeam, 1);
+    const ti = S.turnTeam, t = T(ti), k = b.item;
+    // underdog bonus: last place gets +1 heart for any item box
+    if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1); S.cur.underdog = true; }
+    // leader tax: a team at max hearts can't collect good items
+    if(C("leaderTax",0) && k!=="scale" && t.hearts >= S.cfg.maxHearts){ S.cur.taxed = true; return; }
+    if(ITEMS[k].held){
+      if(t.inv.length >= C("handLimit", 2)) S.cur.overflow = true;
+      else t.inv.push(k);
+    }
+    else if(k==="scale"){
+      if(t.hearts>0) loseHearts(ti, 1);
       else toast(`${esc(t.name)} has no hearts to lose — the scale spares you.`);
     }
   }
 });
 
+const discardItem = act(which=>{
+  const t = T(S.turnTeam), k = S.cur.item;
+  if(which==="new"){ toast(`${esc(t.name)} leaves the ${esc(ITEMS[k].short)} behind.`); }
+  else { const old = t.inv.splice(+which,1)[0]; t.inv.push(k); toast(`${esc(t.name)} drops the ${esc(ITEMS[old].short)} and keeps the ${esc(ITEMS[k].short)}.`); }
+  S.cur.overflow = false; S.cur.resolved = true;
+});
 const itemContinue = act(()=>{
   const k = S.cur.item;
-  if(k==="shots"){
-    S.phase = "shoot"; S.cur = {mode:"free", shooter:S.turnTeam, shotsLeft:5, made:0, results:[], heartsOnly:T(S.turnTeam).status!=="alive"};
-    return;
-  }
+  if(S.cur.taxed){ S.phase="pick"; S.cur={}; toast(`${esc(T(S.turnTeam).name)} picks another box!`, "green"); return; }
+  if(k==="shots"){ startShoot(S.turnTeam, "free"); return; }
   if(S.cfg.items[k]?.after==="again"){ S.phase="pick"; S.cur={}; toast(`${esc(T(S.turnTeam).name)} picks another box!`, "green"); }
   else endTurn();
 });
@@ -599,7 +689,7 @@ function resolveCorrect(i, stolen=false){
     return;
   }
   if(tg.length){ S.phase = "attack"; S.cur.attacker = i; }
-  else { toast("No team can be attacked right now — straight to the hoop!"); S.phase="shoot"; S.cur = {mode:"streak", shooter:i, made:0, results:[], heartsOnly:false}; }
+  else { toast("No team can be attacked right now — straight to the hoop!"); startShoot(i, "streak"); }
 }
 const answerCorrect = act(()=>{ resolveCorrect(S.turnTeam); });
 const answerWrong = act(()=>{
@@ -612,7 +702,12 @@ const answerWrong = act(()=>{
 function beginSteal(){
   const list = [];
   const n = S.order.length; const start = S.order.indexOf(S.turnTeam);
-  for(let k=1;k<n;k++){ const idx = S.order[(start+k)%n]; if(T(idx).status!=="out" && idx!==S.turnTeam) list.push(idx); }
+  const held = [];
+  for(let k=1;k<n;k++){ const idx = S.order[(start+k)%n];
+    if(T(idx).status==="out" || idx===S.turnTeam) continue;
+    if(T(idx).fermata){ T(idx).fermata = false; held.push(idx); continue; }
+    list.push(idx); }
+  if(held.length) toast(`FERMATA! ${held.map(i=>esc(T(i).name)).join(" & ")} ${held.length>1?"are":"is"} held — no steal this time.`, "cyan");
   S.cur.stealList = list; S.cur.si = 0;
   if(!list.length){ S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="Nobody left to steal."; return; }
   S.phase = "steal"; S.cur.stealing = false; startTimer(S.cfg.stealTime);
@@ -626,7 +721,7 @@ function nextStealer(){
 // how long the timer runs in the current phase
 function phaseTime(){
   if(!S) return 0;
-  if(S.phase==="question") return S.cfg.qTime;
+  if(S.phase==="question") return S.cfg.qTime + (S.cur.qBonus||0);
   if(S.phase==="steal") return S.cur.stealing ? (S.cfg.stealAnswerTime||5) : S.cfg.stealTime;
   return 0;
 }
@@ -658,7 +753,7 @@ const doAttackTarget = act(target=>{
   const a = S.cur.attacker;
   attack(a, target, !S.cur.noShots);
   if(S.cur.noShots){ toast(`${esc(T(a).name)} took a heart — no shots on a steal.`); endTurn(); return; }
-  S.phase = "shoot"; S.cur = {mode:"streak", shooter:a, made:0, results:[], heartsOnly:false};
+  startShoot(a, "streak");
 });
 const shotMade = act(()=>{ SFX.swish(); S.cur.pending = true; });
 const shotMiss = act(()=>{
@@ -673,20 +768,59 @@ function afterMadeChoice(){
 const madeHeal = act(()=>{ heal(S.cur.shooter, 1); afterMadeChoice(); });
 const madeAttack = act(target=>{ attack(S.cur.shooter, target); afterMadeChoice(); });
 
+function itemBlockReason(ti, k){
+  const t = T(ti);
+  if(k==="reed" && t.status!=="sd") return "The Reed works automatically if you get knocked out — or play it while in sudden death.";
+  if(k==="modulation" && S.modulationUsed) return "Modulation has already been used this game.";
+  if(k==="metronome" && (t.metronome || (S.phase==="question" && S.cur.qBonus))) return "Metronome is already active.";
+  if(k==="metronome" && !["pick","item","question"].includes(S.phase)) return "Play the Metronome before or during your question.";
+  if(k==="repeat" && S.repeatTeam===ti) return "Repeat Sign is already active.";
+  if(k==="fermata" && !S.teams.some((x,i)=>i!==ti && x.status!=="out")) return "No team to hold.";
+  return null;
+}
 const useItem = act((ti, k)=>{
   const t = T(ti); const idx = t.inv.indexOf(k); if(idx<0) return;
-  if(k==="reed"){
-    if(t.status!=="sd"){ UNDO.pop(); toast("The Reed works automatically if you get knocked out — or play it while in sudden death."); return; }
-    t.inv.splice(idx,1); t.hearts = 2; t.status="alive"; pendingFx.push([ti,"+2","plus"]); SFX.item();
-    toast(`${esc(t.name)} plays the REED OF RESURRECTION!<br>Back with 2 hearts`, "green"); return;
-  }
-  t.inv.splice(idx,1); SFX.item();
+  if(S.itemUsedTurn===S.turnNo){ UNDO.pop(); toast("One item per turn!"); return; }
+  const why = itemBlockReason(ti, k); if(why){ UNDO.pop(); toast(why); return; }
+  t.inv.splice(idx,1); SFX.item(); S.itemUsedTurn = S.turnNo;
+  if(k==="reed"){ t.hearts = 2; t.status="alive"; pendingFx.push([ti,"+2","plus"]);
+    toast(`${esc(t.name)} plays the REED OF RESURRECTION!<br>Back with 2 hearts`, "green"); }
   if(k==="shield"){ t.shield = true; toast(`${esc(t.name)} raises the SHIELD!<br>No attacks on them until their next turn`, "cyan"); }
-  if(k==="ring"){ t.ring = 2; toast(`${esc(t.name)} wears the LIFESTEAL RING!<br>Hearts they take heal them (2 turns)`, "green"); }
+  if(k==="ring"){ t.ring = 1; toast(`${esc(t.name)} wears the LIFESTEAL RING!<br>Hearts they take this turn heal them`, "green"); }
   if(k==="sword"){ t.sword = 2; toast(`${esc(t.name)} draws the CURSED SWORD!<br>Deal 2× — take 2× (2 turns)`, "red"); }
+  if(k==="metronome"){
+    if(S.phase==="question"){
+      S.cur.qBonus = 10;
+      if(timerState.running){ timerState.end += 10000; timerState.total += 10; } else startTimer(10);
+      toast(`METRONOME! +10 seconds`, "green");
+    } else { t.metronome = true; toast(`${esc(t.name)} sets the METRONOME!<br>+10 seconds on their question`, "green"); }
+  }
+  if(k==="repeat"){ S.repeatTeam = ti; toast(`${esc(t.name)} plays a REPEAT SIGN!<br>They go again after this turn`, "green"); }
+  if(k==="modulation"){
+    const cur = S.order[S.ptr]; S.order.reverse(); S.ptr = S.order.indexOf(cur); S.modulationUsed = true;
+    const nx = nextUp();
+    toast(`MODULATION!<br>Turn order reversed${nx!=null?` — ${esc(T(nx).name)} is up next`:""}`, "cyan");
+  }
+});
+// Fermata needs a target: show a picker, then apply
+function startFermata(ti){
+  if(S.itemUsedTurn===S.turnNo){ toast("One item per turn!"); return; }
+  const why = itemBlockReason(ti, "fermata"); if(why){ toast(why); return; }
+  const opts = S.teams.map((x,i)=>i).filter(i=>i!==ti && T(i).status!=="out");
+  modal(`<div class="card"><h2>FERMATA — HOLD WHICH TEAM?</h2>
+    <p style="margin-top:0">That team can't steal on the next wrong answer.</p>
+    <div class="row">${opts.map(i=>`<button class="btn big" data-m="f${i}" style="background:${T(i).color};border-color:#fff">${esc(T(i).name)}</button>`).join("")}</div>
+    <div class="row"><button class="btn ghost" data-m="close">Cancel</button></div></div>`, v=>{ if(v[0]==="f") applyFermata(ti, +v.slice(1)); });
+}
+const applyFermata = act((ti, target)=>{
+  const t = T(ti); const idx = t.inv.indexOf("fermata"); if(idx<0) return;
+  t.inv.splice(idx,1); SFX.item(); S.itemUsedTurn = S.turnNo;
+  T(target).fermata = true;
+  toast(`FERMATA!<br>${esc(T(target).name)} is held — no steal on the next wrong answer`, "cyan");
 });
 function canUseItems(ti){
-  return S && !S.over && ti===S.turnTeam && ["pick","question","attack","shoot","item"].includes(S.phase) && !(S.phase==="shoot" && S.cur.pending);
+  return S && !S.over && ti===S.turnTeam && S.itemUsedTurn!==S.turnNo
+    && ["pick","question","attack","shoot","item"].includes(S.phase) && !(S.phase==="shoot" && S.cur.pending) && !S.cur.overflow;
 }
 
 const adjust = act((i, d)=>{
@@ -757,7 +891,8 @@ function render(){
   if(!S) return;
   if(S.over){ finishGame(); return; }
   const ti = S.turnTeam, t = T(ti);
-  $("#turnBan").innerHTML = `${teamTag(ti)}'S TURN${S.isBonus?'<span class="bonus">BONUS TURN</span>':''}`;
+  const nx = nextUp();
+  $("#turnBan").innerHTML = `${teamTag(ti)}'S TURN${S.isBonus?'<span class="bonus">BONUS TURN</span>':''}${nx!=null?`<span class="nextup">NEXT ▸ <i style="color:${T(nx).color}">${esc(T(nx).name)}</i></span>`:''}`;
   $("#game").classList.toggle("adjusting", adjusting);
   $("#adjBtn").classList.toggle("on", adjusting);
   $("#soundBtn").textContent = soundOn ? "🔊" : "🔇";
@@ -786,7 +921,7 @@ function renderStage(){
       }).join("") + `</div>` +
       (left===0 ? `<div style="margin-top:16px"><button class="btn big gold" data-act="reshuffle">All boxes opened — Reshuffle</button></div>` : "") +
       `</div>`;
-    const inv = T(ti).inv.length ? ` They can use an item from their card first.` : "";
+    const inv = T(ti).inv.length && S.itemUsedTurn!==S.turnNo ? ` They can play <b>one</b> item from their card this turn.` : "";
     instr = `${tname(ti)}: <b>pick a mystery box.</b>${inv}`;
   }
   else if(p==="question" || p==="steal" || p==="reveal"){
@@ -799,7 +934,7 @@ function renderStage(){
         <button class="btn big bad" data-act="wrong">✗ Wrong</button></div>
         <div class="qrow"><button class="minibtn" id="timerRestart" data-act="timer"></button>
         <button class="minibtn" data-act="peek">${S.cur.answerShown?"Answer shown":"👁 Show answer"}</button></div>`;
-      instr = `${tname(ti)} has <b>${S.cfg.qTime} seconds</b> to answer as a team.${T(ti).status==="sd"?' <b style="color:var(--red)">SUDDEN DEATH — wrong answer = OUT.</b>':''}`;
+      instr = `${tname(ti)} has <b>${S.cfg.qTime + (S.cur.qBonus||0)} seconds</b> to answer as a team.${T(ti).status==="sd"?' <b style="color:var(--red)">SUDDEN DEATH — wrong answer = OUT.</b>':''}`;
     }else if(p==="steal"){
       const si = S.cur.stealList[S.cur.si], stt = T(si);
       side = timerHTML();
@@ -825,15 +960,30 @@ function renderStage(){
   else if(p==="item"){
     const k = S.cur.item, it = ITEMS[k], t = T(ti);
     const after = S.cfg.items[k]?.after;
-    let note = "";
-    if(it.held) note = `Added to ${esc(t.name)}'s items — tap it on their card during any of their turns.`;
+    const notes = [];
+    if(S.cur.underdog) notes.push(`<div class="note good">UNDERDOG BONUS: last place gets +1 heart!</div>`);
     let btn = k==="shots" ? "🏀 Start shooting" : (after==="again" ? "Pick another box →" : "End turn →");
+    let actions;
+    if(S.cur.taxed){
+      notes.push(`<div class="note bad">LEADER TAX! ${esc(t.name)} is at max hearts and can't collect items. Pick another box.</div>`);
+      btn = "Pick another box →";
+    }
+    if(S.cur.overflow){
+      notes.push(`<div class="note">${esc(t.name)} can only hold ${C("handLimit",2)} items. Throw one away:</div>`);
+      actions = `<div class="qrow" style="justify-content:flex-start">` +
+        t.inv.map((x,j)=>`<button class="btn discard" data-discard="${j}"><img src="${ITEMS[x].icon}" alt="">Drop ${esc(ITEMS[x].short)}</button>`).join("") +
+        `<button class="btn discard" data-discard="new"><img src="${it.icon}" alt="">Leave new ${esc(it.short)}</button></div>`;
+    } else {
+      if(it.held && !S.cur.taxed) notes.push(`<div class="note">${S.cur.resolved?"":`Added to ${esc(t.name)}'s items — `}play it from their card on one of their turns (one item per turn).</div>`);
+      actions = `<div><button class="btn big gold" data-act="itemcont">${btn}</button></div>`;
+    }
     const visual = it.card ? `<img class="cardimg" src="${it.card}" alt="${esc(it.name)}">`
-      : `<div class="balls">${Array(5).fill(`<img src="${A.ball}" alt="">`).join("")}</div>`;
+      : k==="shots" ? `<div class="balls">${Array(FREE_SHOTS).fill(`<img src="${A.ball}" alt="">`).join("")}</div>`
+      : `<div class="mcard"><div class="mt">${esc(it.name.toUpperCase())}</div><img src="${it.icon}" alt=""><div class="md">${esc(it.desc)}</div></div>`;
     html = `<div class="view synth"><div class="itemview">${visual}
       <div class="info"><h3>YOU FOUND ${esc(it.found)}!</h3>
-      <p>${esc(it.desc)}</p>${note?`<div class="note">${note}</div>`:""}
-      <div><button class="btn big gold" data-act="itemcont">${btn}</button></div></div></div></div>`;
+      <p>${esc(it.desc)}</p>${notes.join("")}
+      ${actions}</div></div></div>`;
     instr = `${tname(ti)} opened a mystery item.`;
   }
   else if(p==="attack"){
@@ -849,11 +999,12 @@ function renderStage(){
     const c = S.cur, sh = T(c.shooter);
     let top = "";
     if(c.mode==="free"){
-      const dots = Array.from({length:5},(_,k)=>{ const r=c.results[k]; return `<img src="${A.ball}" class="${r==="made"?"made":r==="miss"?"used":""}" alt="">`; }).join("");
-      top = `<h3>FREE SHOTS — SHOT ${Math.min(5,5-c.shotsLeft+1)} OF 5</h3><div class="shotdots">${dots}</div>`;
+      const dots = Array.from({length:FREE_SHOTS},(_,k)=>{ const r=c.results[k]; return `<img src="${A.ball}" class="${r==="made"?"made":r==="miss"?"used":""}" alt="">`; }).join("");
+      top = `<h3>FREE SHOTS — SHOT ${Math.min(FREE_SHOTS,FREE_SHOTS-c.shotsLeft+1)} OF ${FREE_SHOTS}</h3><div class="shotdots">${dots}</div>`;
     }else{
       top = `<h3>${esc(sh.name)} SHOOTS UNTIL THEY MISS!</h3><img class="bigball" src="${A.ball}" alt="">`;
     }
+    if(c.shooterNo) top += `<div class="shooterno">SHOOTER: PLAYER ${c.shooterNo}</div>`;
     let body;
     if(c.pending){
       const canAttack = !c.heartsOnly && sh.status==="alive" && validTargets(c.shooter).length>0;
@@ -863,7 +1014,8 @@ function renderStage(){
       instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.`;
     }else{
       body = `<div class="qrow"><button class="btn big good" data-act="made">🏀 MADE IT</button><button class="btn big bad" data-act="miss">✗ MISSED</button></div>`;
-      instr = c.mode==="free" ? `${tname(c.shooter)} gets <b>5 shots no matter what.</b>` : `${tname(c.shooter)}: one player shoots <b>until they miss.</b> Missing costs nothing.`;
+      const who = c.shooterNo ? `Player ${c.shooterNo}` : "one player";
+      instr = c.mode==="free" ? `${tname(c.shooter)}: ${who} gets <b>${FREE_SHOTS} shots no matter what.</b>` : `${tname(c.shooter)}: ${who} shoots <b>until they miss.</b> Missing costs nothing.`;
     }
     html = `<div class="view redsmoke"><div class="shootgrid"><div class="shoot">${top}
       <div class="made-count">BASKETS MADE: ${c.made}</div></div><div class="shootctl">${body}</div></div></div>`;
@@ -887,10 +1039,14 @@ function renderTeams(){
     if(t.status==="sd") fx.push(`<span class="fxb sd">SUDDEN DEATH</span>`);
     if(t.status==="out") fx.push(`<span class="fxb out">OUT</span>`);
     if(t.shield) fx.push(`<span class="fxb shield"><img src="${A.ic_shield}" alt="">SHIELDED</span>`);
-    if(t.ring>0) fx.push(`<span class="fxb ring"><img src="${A.ic_ring}" alt="">LIFESTEAL ×${t.ring}</span>`);
+    if(t.ring>0) fx.push(`<span class="fxb ring"><img src="${A.ic_ring}" alt="">LIFESTEAL</span>`);
+    if(t.metronome) fx.push(`<span class="fxb shield"><img src="${A.ic_metronome}" alt="">+10s</span>`);
+    if(S.repeatTeam===i) fx.push(`<span class="fxb ring"><img src="${A.ic_repeat}" alt="">REPEAT</span>`);
+    if(t.fermata) fx.push(`<span class="fxb sword"><img src="${A.ic_fermata}" alt="">HELD</span>`);
     if(t.sword>0) fx.push(`<span class="fxb sword"><img src="${A.ic_sword}" alt="">2× DMG ×${t.sword}</span>`);
     const can = canUseItems(i);
-    const inv = t.inv.length ? t.inv.map(k=>`<button class="${can?"ready":""}" data-use="${i}:${k}" title="${esc(ITEMS[k].name)}"><img src="${ITEMS[k].icon}" alt="${esc(ITEMS[k].short)}"></button>`).join("")
+    const ready = k => can && !itemBlockReason(i, k);
+    const inv = t.inv.length ? t.inv.map(k=>`<button class="${ready(k)?"ready":""}" data-use="${i}:${k}" title="${esc(ITEMS[k].name)}"><img src="${ITEMS[k].icon}" alt="${esc(ITEMS[k].short)}"></button>`).join("")
       : ``;
     let cls = "team";
     if(i===S.turnTeam) cls += " current";
@@ -943,6 +1099,7 @@ function showScreen(n){
 ============================================================ */
 $("#stage").addEventListener("click", e=>{
   const b = e.target.closest("[data-box]"); if(b){ pickBox(+b.dataset.box); return; }
+  const dc = e.target.closest("[data-discard]"); if(dc){ discardItem(dc.dataset.discard); return; }
   const a = e.target.closest("[data-act]"); if(!a) return;
   ({ correct:answerCorrect, wrong:answerWrong, stealok:stealCorrect, stealbad:stealWrong, stealpass:stealPass, stealgo:stealGo,
      revealdone:revealDone, itemcont:itemContinue, made:shotMade, miss:shotMiss, madeheal:madeHeal,
@@ -950,7 +1107,11 @@ $("#stage").addEventListener("click", e=>{
 });
 $("#teambar").addEventListener("click", e=>{
   const u = e.target.closest("[data-use]");
-  if(u){ const [i,k] = u.dataset.use.split(":"); if(canUseItems(+i)) useItem(+i,k); else toast(`Items can only be used during ${esc(T(+i).name)}'s own turn.`); return; }
+  if(u){ const [i,k] = u.dataset.use.split(":");
+    if(+i!==S.turnTeam){ toast(`Items can only be used during ${esc(T(+i).name)}'s own turn.`); return; }
+    if(S.itemUsedTurn===S.turnNo){ toast("One item per turn!"); return; }
+    if(!canUseItems(+i)){ toast("Not right now — finish this step first."); return; }
+    if(k==="fermata") startFermata(+i); else useItem(+i,k); return; }
   const ad = e.target.closest("[data-adj]");
   if(ad){ const [i,d] = ad.dataset.adj.split(":").map(Number); adjust(i,d); return; }
   const tg = e.target.closest("[data-target]");
@@ -1011,12 +1172,17 @@ function showRules(){
     <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time in turn order. Each team has ${c.stealTime}s to choose steal or pass (running out of time = pass). A team that steals gets a fresh ${c.stealAnswerTime||5}s to answer. Steal attacks don't count toward the gang-up rule. A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes a heart from another team but gets <b>no shots</b>, and turn order doesn't change.</li>
     <li><b>Gang-up rule:</b> if a team is attacked by one team and then by a different team on the very next turn, they get a <b>bonus turn</b> right away (and keep their normal turn).</li>
     <li><b>Sudden death (0 hearts):</b> you can't attack. A correct answer earns 1 heart back (no shots). A wrong answer, or a wrong steal, means you're <b>OUT</b>.</li>
-    <li><b>Shield:</b> use it on your turn. No one can attack you until your next turn.</li>
-    <li><b>Lifesteal Ring:</b> for two of your turns, every heart you take heals you +1.</li>
+    <li><b>Items you keep</b> go on your team card. You can hold <b>${c.handLimit??2}</b> at a time (find another and you choose one to throw away) and play only <b>one item per turn</b>.</li>
+    <li><b>Shield:</b> no one can attack you until your next turn.</li>
+    <li><b>Lifesteal Ring:</b> for the rest of this turn, every heart you take heals you +1.</li>
     <li><b>Cursed Sword:</b> for two of your turns, your attacks take 2 hearts, but attacks on you also take 2.</li>
     <li><b>Reed of Resurrection:</b> if you're knocked out, you come back with 2 hearts automatically. You can also play it during sudden death.</li>
-    <li>Shield, Ring, Sword and Reed are kept and used later, ${it("shield")}.</li>
-    <li><b>Five Free Shots:</b> 5 shots no matter what, ${it("shots")}. <b>Traumatic Scale:</b> lose a heart, ${it("scale")}.</li>
+    <li><b>Metronome:</b> +10 seconds on your question. <b>Repeat Sign:</b> your team goes again right after this turn.</li>
+    <li><b>Fermata:</b> pick a team — they can't steal on the next wrong answer. <b>Modulation:</b> reverses the turn order (only one per game).</li>
+    <li><b>Three Free Shots:</b> ${FREE_SHOTS} shots no matter what, ${it("shots")}. <b>Traumatic Scale:</b> lose a heart, ${it("scale")}. Items you keep: ${it("shield")}.</li>
+    ${c.underdog?`<li><b>Underdog bonus:</b> the team in last place gets +1 heart whenever they open an item box.</li>`:""}
+    ${c.leaderTax?`<li><b>Leader tax:</b> a team at ${c.maxHearts} hearts can't collect items (the Traumatic Scale still hits). They just pick again.</li>`:""}
+    ${c.players?`<li><b>Shooters rotate:</b> number off 1–${c.players} in each team. The game calls the next shooter so everyone gets a turn.</li>`:""}
     <li>Most hearts when class ends wins. The last team standing also wins.</li></ul>
     <button class="btn" data-m="close">Close</button></div>`);
 }
@@ -1069,9 +1235,9 @@ function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`;
 /* ============================================================
    SETUP SCREEN
 ============================================================ */
-const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60] };
+const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15] };
 function renderSetup(){
-  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
   $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
     `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
   document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
@@ -1104,7 +1270,7 @@ $("#setup").addEventListener("click", e=>{
   const sg = e.target.closest("[data-seg] button");
   if(sg){ CFG[sg.parentElement.dataset.seg] = +sg.dataset.v; saveCfg(); renderSetup(); return; }
   const is = e.target.closest("[data-istep]");
-  if(is){ const [k,d] = is.dataset.istep.split(":"); CFG.items[k].count = Math.max(0, Math.min(10, CFG.items[k].count + (+d))); saveCfg(); renderSetup(); return; }
+  if(is){ const [k,d] = is.dataset.istep.split(":"); CFG.items[k].count = Math.max(0, Math.min(ITEMS[k].max||10, CFG.items[k].count + (+d))); saveCfg(); renderSetup(); return; }
   const ia = e.target.closest("[data-iafter] button");
   if(ia){ CFG.items[ia.parentElement.dataset.iafter].after = ia.dataset.v; saveCfg(); renderSetup(); return; }
 });
