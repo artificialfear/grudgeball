@@ -89,7 +89,7 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .team .hrow{display:flex;align-items:center;gap:calc(var(--u)*.6)}
 .team .tname{flex:1;min-width:0;font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);padding:calc(var(--u)*.55) calc(var(--u)*.6);border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .team .hcount{font-family:"Press Start 2P";font-size:calc(var(--u)*2.6);min-width:calc(var(--u)*4.2);text-align:center;color:#fff;text-shadow:3px 3px 0 #900}
-.team .hearts{display:grid;gap:1px;align-content:center}
+.team .hearts{display:grid;gap:2px;align-content:center;justify-content:start}
 .team .hearts img{width:100%;aspect-ratio:1;image-rendering:pixelated}
 .team .hearts img.ghost{opacity:.12;filter:grayscale(1)}
 .team .hearts img.lost{animation:lose .7s ease-out}
@@ -115,7 +115,7 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .team .dmg.minus{color:var(--red)}.team .dmg.plus{color:var(--good)}.team .dmg.block{color:var(--cyan);font-size:calc(var(--u)*2)}
 
 /* stage views */
-.view{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.5)}
+.view{position:absolute;inset:0;overflow-y:auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.5)}
 .synth{background:
   linear-gradient(180deg,#1a0a2e 0%,#2a0d3a 45%,#120626 46%,#0b0520 100%)}
 .synth::before{content:"";position:absolute;left:-50%;right:-50%;bottom:0;height:54%;background:
@@ -166,14 +166,20 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 
 /* shooting */
 .shoot{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.6)}
-.shoot h3{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);margin:0;text-align:center;line-height:1.5}
+.shoot h3{font-family:"Press Start 2P";font-size:calc(var(--u)*1.9);margin:0;text-align:center;line-height:1.5}
+.shootgrid{display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*5);width:100%;flex-wrap:wrap}
+.shootgrid .shoot{max-width:46%}
+.shootctl{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2)}
+.shootctl .qrow{flex-direction:column}
+.shootctl .btn.big{min-width:calc(var(--u)*28)}
 .shotdots{display:flex;gap:calc(var(--u)*.8)}
 .shotdots img{width:calc(var(--u)*5);image-rendering:pixelated}
 .shotdots img.used{opacity:.18;filter:grayscale(1)}
 .shotdots img.made{filter:drop-shadow(0 0 10px #2fd16b)}
 .made-count{font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);color:var(--gold)}
 .bigball{width:calc(var(--u)*8);image-rendering:pixelated;animation:bounce 1.2s infinite}
-.choice{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2);background:#000b;border:3px solid var(--gold);border-radius:16px;padding:calc(var(--u)*1.6) calc(var(--u)*2.4)}
+.choice{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1);background:#000b;border:3px solid var(--gold);border-radius:16px;padding:calc(var(--u)*1.4) calc(var(--u)*2)}
+.choice .or{text-align:center;line-height:1.6}
 .choice .or{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:var(--dim)}
 
 /* end */
@@ -214,7 +220,7 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 <!-- ================= SETUP ================= -->
 <section id="setup">
   <h1>GRUDGE BALL</h1>
-  <div class="tag">Pick boxes · answer fast · take their hearts · shoot your shot</div>
+  <div class="tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
   <div id="resumeBox"></div>
   <div class="setup-grid">
     <div class="card">
@@ -822,14 +828,14 @@ function renderStage(){
       const canAttack = !c.heartsOnly && sh.status==="alive" && validTargets(c.shooter).length>0;
       body = `<div class="choice"><h3 style="font-family:'Press Start 2P';font-size:calc(var(--u)*1.8);margin:0">BASKET! CHOOSE:</h3>
         <button class="btn big good" data-act="madeheal">❤ +1 heart for ${esc(sh.name)}</button>
-        ${canAttack?`<div class="or">— OR TAP A TEAM BELOW TO ATTACK —</div>`:""}</div>`;
+        ${canAttack?`<div class="or">— OR —<br>TAP A TEAM BELOW<br>TO ATTACK</div>`:""}</div>`;
       instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.`;
     }else{
       body = `<div class="qrow"><button class="btn big good" data-act="made">🏀 MADE IT</button><button class="btn big bad" data-act="miss">✗ MISSED</button></div>`;
       instr = c.mode==="free" ? `${tname(c.shooter)} gets <b>5 shots no matter what.</b>` : `${tname(c.shooter)}: one player shoots <b>until they miss.</b> Missing costs nothing.`;
     }
-    html = `<div class="view redsmoke"><div class="shoot">${top}
-      <div class="made-count">BASKETS MADE: ${c.made}</div>${body}</div></div>`;
+    html = `<div class="view redsmoke"><div class="shootgrid"><div class="shoot">${top}
+      <div class="made-count">BASKETS MADE: ${c.made}</div></div><div class="shootctl">${body}</div></div></div>`;
   }
   st.innerHTML = html;
   $("#instr").innerHTML = instr;
@@ -861,7 +867,7 @@ function renderTeams(){
     if(targeting){ cls += targets.includes(i) ? " target" : (i===(S.cur.attacker??S.cur.shooter) ? "" : " notarget"); }
     return `<div class="${cls}" data-i="${i}" ${targets.includes(i)?`data-target="${i}"`:""}>
       <div class="hrow"><div class="tname" style="background:${t.color}">${esc(t.name)}</div><div class="hcount">${t.hearts}</div></div>
-      <div class="hearts" style="grid-template-columns:repeat(${Math.min(12,Math.max(max,1))},1fr)">${hearts}</div>
+      <div class="hearts" style="grid-template-columns:repeat(${Math.min(12,Math.max(max,1))},minmax(0,calc(var(--u)*2.6)))">${hearts}</div>
       <div class="brow"><div class="fx">${fx.join("")}</div><div class="inv">${inv}</div></div>
       <div class="adj"><button data-adj="${i}:-1">−</button><button data-adj="${i}:1">+</button></div>
     </div>`;
