@@ -143,8 +143,16 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .teambar.compact .fxb img{height:calc(var(--u)*2.3)}
 .teambar.compact .fxb.sd,.teambar.compact .fxb.out{font-size:calc(var(--u)*1)}
 .teambar.compact .team .inv button{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9)}
-.team.current{border-color:var(--gold);box-shadow:0 0 0 3px #000,0 0 28px #ffd400aa;transform:translateY(-6px)}
+.team.current{border-color:var(--gold);border-width:5px;transform:translateY(-6px);animation:turnglow 1.4s ease-in-out infinite}
+.team.current::before{content:"▶ TURN";position:absolute;left:50%;top:-15px;transform:translateX(-50%);background:var(--gold);color:#000;font-family:"Press Start 2P";font-size:calc(var(--u)*1);padding:6px 8px;border-radius:6px;white-space:nowrap;z-index:2;box-shadow:0 0 14px #ffd400}
+@keyframes turnglow{0%,100%{box-shadow:0 0 0 3px #000,0 0 14px 2px #ffd40099,inset 0 0 10px #ffd40033}50%{box-shadow:0 0 0 3px #000,0 0 40px 12px #ffd400,inset 0 0 22px #ffd40066;border-color:#fff3a0}}
 .team.target{cursor:pointer;border-color:var(--red);animation:targetpulse .9s infinite}
+.team.target.gang{border-color:#ff9d00;animation:gangpulse .9s infinite}
+.team.target.gang::after{content:"⚠ GANG-UP: BONUS TURN";background:#ff9d00;color:#000}
+@keyframes gangpulse{50%{box-shadow:0 0 30px #ff9d00;transform:translateY(-4px)}}
+.fxb.hit{background:#8a4b00;outline:2px solid #ff9d00;font-size:calc(var(--u)*1.35)}
+.fxb .em{font-size:inherit}
+.teambar.compact .fxb.hit .em{font-size:calc(var(--u)*1.5)}
 .team.target::after{content:"TAP TO ATTACK";position:absolute;left:50%;top:-14px;transform:translateX(-50%);background:var(--red);color:#fff;font-family:"Press Start 2P";font-size:calc(var(--u)*1);padding:6px 8px;border-radius:6px;white-space:nowrap}
 .team.notarget{opacity:.45}
 .team.out{opacity:.35;filter:grayscale(1)}
@@ -323,6 +331,9 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
       <div class="row"><select id="setSelect" class="setup-select" style="flex:1"></select>
         <button class="btn" id="editSetBtn">Edit questions</button></div>
       <div class="qcount" id="setCount"></div>
+      <div class="row"><label>Mystery boxes on the board</label>
+        <div class="stepper"><button data-step="boxCount:-10">−</button><span id="v_boxCount"></span><button data-step="boxCount:10">+</button></div>
+        <div class="hint">10 per row. Big question sets get a random batch each game; small ones repeat a few questions to fill the board.</div></div>
       <h2 style="margin-top:22px">FAIRNESS</h2>
       <div class="row"><label>Items a team can hold</label>
         <div class="stepper"><button data-step="handLimit:-1">−</button><span id="v_handLimit"></span><button data-step="handLimit:1">+</button></div></div>
@@ -449,7 +460,7 @@ const store = {
 const DEFAULT_CFG = {
   teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5, stealAnswerTime:5,
   wrongCost:1, stealCost:1, cfgVer:3,
-  handLimit:2, players:6, underdog:1, leaderTax:1,
+  handLimit:2, players:6, underdog:1, leaderTax:1, boxCount:30,
   items:{ shield:{count:1,after:"again"}, ring:{count:1,after:"again"}, sword:{count:1,after:"again"},
           reed:{count:1,after:"again"}, metronome:{count:1,after:"again"}, repeat:{count:1,after:"again"},
           fermata:{count:1,after:"again"}, modulation:{count:1,after:"again"},
@@ -458,6 +469,7 @@ const DEFAULT_CFG = {
 };
 let CFG = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), store.get("gb_cfg", {}));
 if(CFG.stealAnswerTime==null) CFG.stealAnswerTime = 5;
+if(CFG.boxCount==null) CFG.boxCount = 30;
 if((store.get("gb_cfg", {}).cfgVer||1)<2){ CFG.wrongCost = 1; CFG.stealCost = 1; CFG.cfgVer = 2; }
 CFG.items = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG.items)), CFG.items||{});
 if((store.get("gb_cfg", {}).cfgVer||1)<3){ CFG.items = JSON.parse(JSON.stringify(DEFAULT_CFG.items)); CFG.cfgVer = 3; }
@@ -576,11 +588,28 @@ let adjusting = false;
 function snapshot(){ UNDO.push(JSON.stringify(S)); if(UNDO.length>80) UNDO.shift(); }
 function persist(){ if(S) store.set("gb_game", {S, UNDO:UNDO.slice(-30)}); }
 
+// How the board is filled: boxCount boxes total = all items + questions (sampled or repeated to fit)
+function boardPlan(nq){
+  const nItems = ITEM_ORDER.reduce((s,k)=>s+(CFG.items[k]?.count||0),0);
+  const total = Math.max(CFG.boxCount||30, nItems);
+  const qSlots = nq ? total - nItems : 0;
+  return { total: nItems + qSlots, nItems, qSlots, used: Math.min(nq, qSlots), repeats: Math.max(0, qSlots - nq), unused: Math.max(0, nq - qSlots) };
+}
 function newGame(){
   const qs = parseSet(SETS[CFG.set]);
-  const boxes = qs.map(o=>({kind:"q", q:o.q, a:o.a, opened:false}));
-  ITEM_ORDER.forEach(k=>{ for(let i=0;i<(CFG.items[k]?.count||0);i++) boxes.push({kind:"item", item:k, opened:false}); });
-  shuffle(boxes);
+  const plan = boardPlan(qs.length);
+  const items = [];
+  ITEM_ORDER.forEach(k=>{ for(let i=0;i<(CFG.items[k]?.count||0);i++) items.push({kind:"item", item:k, opened:false}); });
+  // questions: a random batch if the set is big, or every question plus repeats if it's small
+  const picked = [];
+  if(qs.length){
+    let pool = shuffle(qs.slice());
+    while(picked.length < plan.qSlots){
+      if(!pool.length) pool = shuffle(qs.slice());
+      picked.push(pool.pop());
+    }
+  }
+  const boxes = shuffle(picked.map(o=>({kind:"q", q:o.q, a:o.a, opened:false})).concat(items));
   const teams = [];
   for(let i=0;i<CFG.teams;i++){
     teams.push({ name:(CFG.names[i]||DEFAULT_NAMES[i]).trim()||DEFAULT_NAMES[i], color:TEAM_COLORS[i],
@@ -1011,8 +1040,8 @@ function renderStage(){
   if(p==="pick"){
     const n = S.boxes.length, left = S.boxes.filter(b=>!b.opened).length;
     const r = st.getBoundingClientRect(); const W = Math.max(300,r.width-40), H = Math.max(200,r.height-90);
-    let best = {size:0, cols:1};
-    for(let c=1;c<=n;c++){ const rows = Math.ceil(n/c); const size = Math.min((W-(c-1)*12)/c, (H-(rows-1)*12)/rows); if(size>best.size) best={size,cols:c}; }
+    const cols = Math.min(10, n), rows = Math.ceil(n/cols);
+    const best = {cols, size: Math.min((W-(cols-1)*12)/cols, (H-(rows-1)*12)/rows)};
     const size = Math.floor(Math.min(best.size, 170));
     html = `<div class="gridwrap redsmoke"><div class="gridtitle">CHOOSE YOUR DESTINY</div>
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
@@ -1095,7 +1124,7 @@ function renderStage(){
       <h3>${esc(T(a).name)} ${S.cur.noShots?"STOLE IT!":"GOT IT RIGHT!"}</h3>
       ${S.lastAnswer?`<div class="answer"><small>ANSWER</small>${esc(S.lastAnswer)}</div>`:""}
       <h3 style="color:var(--red)">▼ TAP A TEAM BELOW TO TAKE ${dmg>1?dmg+" HEARTS":"A HEART"} ▼</h3></div></div>`;
-    instr = `${tname(a)}: <b>choose a team to attack.</b>${S.cur.noShots?" No shots on a steal.":""} Shielded and sudden-death teams can't be targeted.`;
+    instr = `${tname(a)}: <b>choose a team to attack.</b>${S.cur.noShots?" No shots on a steal.":""} Shielded and sudden-death teams can't be targeted.` + gangNote(validTargets(a));
   }
   else if(p==="shoot"){
     const c = S.cur, sh = T(c.shooter);
@@ -1113,7 +1142,7 @@ function renderStage(){
       body = `<div class="choice"><h3 style="font-family:'Press Start 2P';font-size:calc(var(--u)*1.8);margin:0">BASKET! CHOOSE:</h3>
         <button class="btn big good" data-act="madeheal">❤ +1 heart for ${esc(sh.name)}</button>
         ${canAttack?`<div class="or">— OR —<br>TAP A TEAM BELOW<br>TO ATTACK</div>`:""}</div>`;
-      instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.`;
+      instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.` + (canAttack ? gangNote(validTargets(c.shooter)) : "");
     }else{
       body = `<div class="qrow"><button class="btn big good" data-act="made">🏀 MADE IT</button><button class="btn big bad" data-act="miss">✗ MISSED</button></div>`;
       const who = c.shooterNo ? `Player ${c.shooterNo}` : "one player";
@@ -1123,7 +1152,7 @@ function renderStage(){
       <div class="made-count">BASKETS MADE: ${c.made}</div></div><div class="shootctl">${body}</div></div></div>`;
   }
   st.innerHTML = html; st.scrollTop = 0; st.scrollLeft = 0;
-  requestAnimationFrame(fitStage);
+  fitStage();
   $("#instr").innerHTML = instr;
   if(p==="question"||p==="steal") drawTimer();
 }
@@ -1150,6 +1179,17 @@ function fitStage(){
   v.dataset.fit = sc.toFixed(3);
 }
 
+// Would attacking this team right now trigger the gang-up rule? (hit last turn by a different team; steals don't count)
+function wouldGangUp(target){
+  if(!S || S.cur.noShots) return false;
+  const atk = S.phase==="attack" ? S.cur.attacker : S.cur.shooter;
+  const prev = (S.prevAttacks && S.prevAttacks[target]) || [];
+  return prev.some(p=>p!==atk) && !S.bonus.includes(target);
+}
+function gangNote(targets){
+  const g = targets.filter(wouldGangUp);
+  return g.length ? ` <b style="color:#ff9d00">⚠ ${g.map(i=>esc(T(i).name)).join(" & ")} ${g.length>1?"were":"was"} hit last turn — attacking ${g.length>1?"them":"them"} gives ${g.length>1?"them":"them"} a bonus turn.</b>` : "";
+}
 function renderTeams(){
   const bar = $("#teambar");
   const p = S.phase;
@@ -1162,6 +1202,8 @@ function renderTeams(){
     const max = S.cfg.maxHearts;
     const hearts = Array.from({length:Math.max(max,1)},(_,k)=>`<img src="${A.heart}" class="${k<t.hearts?"":"ghost"}" alt="">`).join("");
     const fx = [];
+    const hitBy = (S.prevAttacks && S.prevAttacks[i]) || [];
+    if(hitBy.length && t.status!=="out") fx.push(`<span class="fxb hit" title="Attacked last turn by ${esc(hitBy.map(a=>T(a).name).join(", "))}"><span class="em">⚔</span>HIT LAST TURN by ${esc(hitBy.map(a=>T(a).name).join(" & "))}</span>`);
     if(t.status==="sd") fx.push(`<span class="fxb sd">SUDDEN DEATH</span>`);
     if(t.status==="out") fx.push(`<span class="fxb out">OUT</span>`);
     if(t.shield) fx.push(`<span class="fxb shield"><img src="${A.ic_shield}" alt="">SHIELDED</span>`);
@@ -1177,7 +1219,8 @@ function renderTeams(){
     let cls = "team";
     if(i===S.turnTeam) cls += " current";
     if(t.status==="out") cls += " out";
-    if(targeting){ cls += targets.includes(i) ? " target" : (i===(S.cur.attacker??S.cur.shooter) ? "" : " notarget"); }
+    if(targeting){ cls += targets.includes(i) ? " target" : (i===(S.cur.attacker??S.cur.shooter) ? "" : " notarget");
+      if(targets.includes(i) && wouldGangUp(i)) cls += " gang"; }
     return `<div class="${cls}" data-i="${i}" ${targets.includes(i)?`data-target="${i}"`:""}>
       <div class="hrow"><div class="tname" style="background:${t.color}">${esc(t.name)}</div><div class="hcount">${t.hearts}</div></div>
       <div class="hearts" style="grid-template-columns:repeat(${Math.min(12,Math.max(max,1))},minmax(0,calc(var(--u)*2.6)))">${hearts}</div>
@@ -1316,7 +1359,8 @@ function showRules(){
     <button class="btn" data-m="close">Close</button></div>`);
 }
 function showKey(){
-  const qs = S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}));
+  const seen = new Set();
+  const qs = (S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}))).filter(o=>!seen.has(o.q) && seen.add(o.q));
   modal(`<div class="card"><h2>ANSWER KEY</h2><ol>${qs.map(o=>`<li><b>${esc(o.q)}</b><br><span style="color:var(--good)">${esc(o.a||"(no answer entered)")}</span></li>`).join("")}</ol>
     <button class="btn" data-m="close">Close</button></div>`);
 }
@@ -1364,9 +1408,9 @@ function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`;
 /* ============================================================
    SETUP SCREEN
 ============================================================ */
-const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15] };
+const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15], boxCount:[10,60] };
 function renderSetup(){
-  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players","boxCount"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
   $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
     `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
   document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
@@ -1381,7 +1425,10 @@ function renderSetup(){
   const items = ITEM_ORDER.reduce((s,k)=>s+CFG.items[k].count,0);
   const kinds = ITEM_ORDER.filter(k=>CFG.items[k].count>0).length;
   $("#itemsSummary").textContent = `${items} item box${items===1?"":"es"} · ${kinds} of ${ITEM_ORDER.length} item types on — tap to ${$("#itemsCard").open?"hide":"change"}`;
-  $("#boxSummary").textContent = `${qn+items} mystery boxes: ${qn} questions + ${items} items`;
+  const bp = boardPlan(qn);
+  $("#boxSummary").textContent = !qn ? "Add some questions to start." :
+    `${bp.total} mystery boxes: ${bp.used} questions${bp.repeats?` + ${bp.repeats} repeated`:""}${bp.unused?` (random ${bp.used} of your ${qn})`:""} + ${bp.nItems} items` +
+    (bp.repeats ? ` — add ${bp.repeats} more question${bp.repeats>1?"s":""} to avoid repeats` : "");
   $("#startBtn").disabled = qn===0;
   const saved = store.get("gb_game", null);
   $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
