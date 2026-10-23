@@ -6,7 +6,7 @@
 <title>Grudge Ball</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#12040a; --bg2:#2a0710; --panel:#1b0b14; --panel2:#26101c; --line:#5a1a2a;
@@ -217,7 +217,9 @@ header.top .hbtns.left{justify-content:flex-start}
 /* question */
 .qcard{position:relative;margin-top:calc(var(--u)*3);background:#fff;color:#1a1020;border:calc(var(--u)*1.1) solid var(--gold);box-shadow:0 calc(var(--u)*.9) 0 var(--gold2),0 20px 40px #000a;border-radius:6px;width:min(78%,1300px);min-height:26%;display:flex;align-items:center;justify-content:center;padding:calc(var(--u)*3.4) calc(var(--u)*3) calc(var(--u)*1.6);text-align:center}
 .qcard .coin{position:absolute;top:calc(var(--u)*-4);left:50%;transform:translateX(-50%);width:calc(var(--u)*7.5);height:calc(var(--u)*7.5);border-radius:50%;background:var(--gold);border:5px dashed #fff8;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*3.6);color:#6b3a00}
-.qtext{font-family:"Pixelify Sans";font-weight:700;font-size:calc(var(--u)*4.2);line-height:1.18;text-transform:uppercase}
+/* question & answer text: a high-legibility font (distinct I/l/1, O/0), normal case */
+.qtext,.answer,.keylist{font-family:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif}
+.qtext{font-weight:700;font-size:calc(var(--u)*4.2);line-height:1.22;letter-spacing:.01em}
 .qtext.long{font-size:calc(var(--u)*3)}
 .qtext.xlong{font-size:calc(var(--u)*2.4)}
 .answer{background:#123d1f;border:3px solid var(--good);color:#fff;border-radius:10px;padding:calc(var(--u)*1) calc(var(--u)*2);font-size:calc(var(--u)*2.6);font-weight:700;max-width:80%;text-align:center}
