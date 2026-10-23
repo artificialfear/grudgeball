@@ -145,6 +145,7 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .qtext.long{font-size:calc(var(--u)*3)}
 .qtext.xlong{font-size:calc(var(--u)*2.4)}
 .answer{background:#123d1f;border:3px solid var(--good);color:#fff;border-radius:10px;padding:calc(var(--u)*1) calc(var(--u)*2);font-size:calc(var(--u)*2.6);font-weight:700;max-width:80%;text-align:center}
+.answer.long{font-size:calc(var(--u)*1.9);max-width:60%}
 .answer small{display:block;font-size:calc(var(--u)*1.3);color:#9fe3b4;font-family:"Press Start 2P";margin-bottom:6px}
 .qrow{display:flex;gap:calc(var(--u)*2);align-items:center;justify-content:center;flex-wrap:wrap}
 .timer{position:relative;width:calc(var(--u)*11);height:calc(var(--u)*11);flex:none}
@@ -237,8 +238,11 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
         <div class="stepper"><button data-step="maxHearts:-1">−</button><span id="v_maxHearts"></span><button data-step="maxHearts:1">+</button></div></div>
       <div class="row"><label>Seconds to answer</label>
         <div class="stepper"><button data-step="qTime:-5">−</button><span id="v_qTime"></span><button data-step="qTime:5">+</button></div></div>
-      <div class="row"><label>Seconds per steal</label>
-        <div class="stepper"><button data-step="stealTime:-1">−</button><span id="v_stealTime"></span><button data-step="stealTime:1">+</button></div></div>
+      <div class="row"><label>Seconds to decide: steal or pass</label>
+        <div class="stepper"><button data-step="stealTime:-1">−</button><span id="v_stealTime"></span><button data-step="stealTime:1">+</button></div>
+        <div class="hint">If time runs out, that team automatically passes.</div></div>
+      <div class="row"><label>Seconds to answer a steal</label>
+        <div class="stepper"><button data-step="stealAnswerTime:-1">−</button><span id="v_stealAnswerTime"></span><button data-step="stealAnswerTime:1">+</button></div></div>
       <div class="row"><label>Wrong answer on your own turn costs</label>
         <div class="seg" data-seg="wrongCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div>
         <div class="hint">Sudden-death teams are out on a wrong answer either way.</div></div>
@@ -345,13 +349,14 @@ const store = {
    CONFIG
 ============================================================ */
 const DEFAULT_CFG = {
-  teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5,
+  teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5, stealAnswerTime:5,
   wrongCost:1, stealCost:1, cfgVer:2,
   items:{ shield:{count:2,after:"again"}, ring:{count:2,after:"again"}, sword:{count:1,after:"again"},
           reed:{count:1,after:"again"}, shots:{count:2,after:"end"}, scale:{count:2,after:"again"} },
   set:DEFAULT_SET_NAME
 };
 let CFG = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), store.get("gb_cfg", {}));
+if(CFG.stealAnswerTime==null) CFG.stealAnswerTime = 5;
 if((store.get("gb_cfg", {}).cfgVer||1)<2){ CFG.wrongCost = 1; CFG.stealCost = 1; CFG.cfgVer = 2; }
 CFG.items = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG.items)), CFG.items||{});
 let SETS = store.get("gb_sets", null);
@@ -610,14 +615,30 @@ function beginSteal(){
   for(let k=1;k<n;k++){ const idx = S.order[(start+k)%n]; if(T(idx).status!=="out" && idx!==S.turnTeam) list.push(idx); }
   S.cur.stealList = list; S.cur.si = 0;
   if(!list.length){ S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="Nobody left to steal."; return; }
-  S.phase = "steal"; startTimer(S.cfg.stealTime);
+  S.phase = "steal"; S.cur.stealing = false; startTimer(S.cfg.stealTime);
 }
 function nextStealer(){
   S.cur.si++;
   if(S.cur.si >= S.cur.stealList.length){
     stopTimer(); S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="No one stole it.";
-  } else startTimer(S.cfg.stealTime);
+  } else { S.cur.stealing = false; startTimer(S.cfg.stealTime); }
 }
+// how long the timer runs in the current phase
+function phaseTime(){
+  if(!S) return 0;
+  if(S.phase==="question") return S.cfg.qTime;
+  if(S.phase==="steal") return S.cur.stealing ? (S.cfg.stealAnswerTime||5) : S.cfg.stealTime;
+  return 0;
+}
+const stealGo = act(()=>{
+  S.cur.stealing = true; SFX.swish();
+  startTimer(S.cfg.stealAnswerTime||5);
+});
+const stealTimeout = act(()=>{
+  const i = S.cur.stealList[S.cur.si];
+  toast(`Time's up! ${esc(T(i).name)} passes.`);
+  nextStealer();
+});
 const stealCorrect = act(()=>{
   const i = S.cur.stealList[S.cur.si];
   toast(`STOLEN by ${esc(T(i).name)}!`, "green");
@@ -687,7 +708,7 @@ function curBox(){ return S.boxes[S.cur.box] || {}; }
 function undo(){
   if(!UNDO.length){ toast("Nothing to undo"); return; }
   stopTimer(); S = JSON.parse(UNDO.pop()); pendingFx = [];
-  if(S.phase==="question" || S.phase==="steal") timerState = {left: S.phase==="question"?S.cfg.qTime:S.cfg.stealTime, total: S.phase==="question"?S.cfg.qTime:S.cfg.stealTime, running:false};
+  if(S.phase==="question" || S.phase==="steal"){ const tt = phaseTime(); timerState = {left:tt, total:tt, running:false}; }
   render(); persist(); toast("Undone");
 }
 
@@ -706,7 +727,10 @@ function timerLoop(){
   const left = Math.max(0,(timerState.end - performance.now())/1000);
   timerState.left = left;
   const s = Math.ceil(left);
-  if(s!==lastTick){ lastTick = s; if(s>0 && s<=5) SFX.tick(); if(s===0){ SFX.buzzer(); stopTimer(); } }
+  if(s!==lastTick){ lastTick = s; if(s>0 && s<=5) SFX.tick(); if(s===0){ SFX.buzzer(); stopTimer();
+    // deciding to steal and the clock ran out = automatic pass
+    if(S && !S.over && S.phase==="steal" && !S.cur.stealing) setTimeout(()=>{ if(S && S.phase==="steal" && !S.cur.stealing && !timerState.running) stealTimeout(); }, 700);
+  } }
   drawTimer();
 }
 function timerHTML(){
@@ -779,15 +803,20 @@ function renderStage(){
     }else if(p==="steal"){
       const si = S.cur.stealList[S.cur.si], stt = T(si);
       side = timerHTML();
-      controls = `<div class="qrow"><div class="steal-who" style="background:${stt.color}">${esc(stt.name)} — STEAL?</div><button class="btn big good" data-act="stealok">✓ Stole it</button>
-        <button class="btn big bad" data-act="stealbad">✗ Wrong</button>
-        <button class="btn big" data-act="stealpass">Pass →</button><button class="minibtn" id="timerRestart" data-act="timer"></button></div>`;
-      instr = `${tname(si)} can <b>steal or pass</b> (${S.cfg.stealTime}s). ${S.cfg.stealCost?`A wrong steal costs <b>${S.cfg.stealCost} heart</b>.`:''}${stt.status==="sd"?' They are in sudden death: wrong = OUT.':''}`;
+      if(!S.cur.stealing){
+        controls = `<div class="qrow"><div class="steal-who" style="background:${stt.color}">${esc(stt.name)} — STEAL?</div><button class="btn big gold" data-act="stealgo">🖐 Steal!</button>
+          <button class="btn big" data-act="stealpass">Pass →</button></div>`;
+        instr = `${tname(si)}: <b>steal or pass?</b> ${S.cfg.stealTime} seconds to decide — no answer means pass. ${S.cfg.stealCost?`A wrong steal costs <b>${S.cfg.stealCost} heart</b>.`:''}${stt.status==="sd"?' They are in sudden death: wrong = OUT.':''}`;
+      }else{
+        controls = `<div class="qrow"><div class="steal-who" style="background:${stt.color}">${esc(stt.name)} IS STEALING!</div><button class="btn big good" data-act="stealok">✓ Correct</button>
+          <button class="btn big bad" data-act="stealbad">✗ Wrong</button><button class="minibtn" id="timerRestart" data-act="timer"></button></div>`;
+        instr = `${tname(si)} has <b>${S.cfg.stealAnswerTime||5} seconds to answer.</b>${stt.status==="sd"?' Sudden death: wrong = OUT.':''}`;
+      }
     }else{
       controls = `<button class="btn big gold" data-act="revealdone">Next turn →</button>`;
       instr = S.cur.revealMsg || "";
     }
-    const ans = (p==="reveal" || S.cur.answerShown) && b.a ? `<div class="answer"><small>ANSWER</small>${esc(b.a)}</div>` : "";
+    const ans = (p==="reveal" || S.cur.answerShown) && b.a ? `<div class="answer ${b.a.length>45?"long":""}"><small>ANSWER</small>${esc(b.a)}</div>` : "";
     html = `<div class="view synth">
       <div class="qrow" style="width:100%;gap:calc(var(--u)*3)">
         <div class="qcard"><div class="coin">?</div><div class="qtext ${cls}">${esc(b.q)}</div></div>${side}
@@ -915,7 +944,7 @@ function showScreen(n){
 $("#stage").addEventListener("click", e=>{
   const b = e.target.closest("[data-box]"); if(b){ pickBox(+b.dataset.box); return; }
   const a = e.target.closest("[data-act]"); if(!a) return;
-  ({ correct:answerCorrect, wrong:answerWrong, stealok:stealCorrect, stealbad:stealWrong, stealpass:stealPass,
+  ({ correct:answerCorrect, wrong:answerWrong, stealok:stealCorrect, stealbad:stealWrong, stealpass:stealPass, stealgo:stealGo,
      revealdone:revealDone, itemcont:itemContinue, made:shotMade, miss:shotMiss, madeheal:madeHeal,
      reshuffle, peek:showAnswer, timer:restartTimer })[a.dataset.act]?.();
 });
@@ -979,7 +1008,7 @@ function showRules(){
     <li>Every team starts with <b>${c.startHearts} hearts</b> (max ${c.maxHearts}).</li>
     <li>On your turn, pick a mystery box. Questions: your team has <b>${c.qTime} seconds</b>.</li>
     <li><b>Correct:</b> take a heart from any team, then one player shoots until they miss. Each basket = +1 heart for you <i>or</i> take another heart.</li>
-    <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time (${c.stealTime}s each). Steal or pass (steal attacks don't count toward the gang-up rule). A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes a heart from another team but gets <b>no shots</b>, and turn order doesn't change.</li>
+    <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time in turn order. Each team has ${c.stealTime}s to choose steal or pass (running out of time = pass). A team that steals gets a fresh ${c.stealAnswerTime||5}s to answer. Steal attacks don't count toward the gang-up rule. A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes a heart from another team but gets <b>no shots</b>, and turn order doesn't change.</li>
     <li><b>Gang-up rule:</b> if a team is attacked by one team and then by a different team on the very next turn, they get a <b>bonus turn</b> right away (and keep their normal turn).</li>
     <li><b>Sudden death (0 hearts):</b> you can't attack. A correct answer earns 1 heart back (no shots). A wrong answer, or a wrong steal, means you're <b>OUT</b>.</li>
     <li><b>Shield:</b> use it on your turn. No one can attack you until your next turn.</li>
@@ -1040,9 +1069,9 @@ function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`;
 /* ============================================================
    SETUP SCREEN
 ============================================================ */
-const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30] };
+const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60] };
 function renderSetup(){
-  ["teams","startHearts","maxHearts","qTime","stealTime"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
   $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
     `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
   document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
@@ -1062,7 +1091,7 @@ function renderSetup(){
   $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
     <span><button class="btn gold" id="resumeBtn">Resume game</button> <button class="btn ghost" id="discardBtn">Discard</button></span></div>` : "";
   if($("#resumeBtn")){
-    $("#resumeBtn").onclick = ()=>{ S = saved.S; UNDO = saved.UNDO||[]; if(S.phase==="question"||S.phase==="steal"){ const tt = S.phase==="question"?S.cfg.qTime:S.cfg.stealTime; timerState={left:tt,total:tt,running:false}; } showScreen("game"); render(); };
+    $("#resumeBtn").onclick = ()=>{ S = saved.S; UNDO = saved.UNDO||[]; if(S.phase==="question"||S.phase==="steal"){ const tt = phaseTime(); timerState={left:tt,total:tt,running:false}; } showScreen("game"); render(); };
     $("#discardBtn").onclick = ()=>{ store.del("gb_game"); renderSetup(); };
   }
 }
