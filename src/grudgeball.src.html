@@ -228,6 +228,27 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .timer .t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*3.4);color:#fff;text-shadow:3px 3px 0 #000}
 .timer.low .t{color:var(--red);animation:pulse .5s infinite}
 .timer.done .t{color:var(--red);font-size:calc(var(--u)*1.6)}
+.timer.wait .t{font-size:calc(var(--u)*3.6)}
+/* music questions */
+.qcard .mtag{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:#8a5a00;letter-spacing:1px}
+.staffbox{--sh:calc(var(--u)*14);background:#fff;height:var(--sh);width:calc(var(--sh)*var(--staffw,300)/100);flex:none}
+.staffbox svg{display:block;height:100%;width:100%}
+.staffbox.mini{--sh:calc(var(--u)*6);margin-top:6px;border-radius:6px}
+.qcard.media{flex-shrink:0;width:auto;max-width:none;min-width:min(78%,1300px);flex-direction:row;gap:calc(var(--u)*3);padding:calc(var(--u)*3) calc(var(--u)*3) calc(var(--u)*2)}
+.qcard.media .qside{flex:1 1 0;min-width:calc(var(--u)*22);max-width:calc(var(--u)*46);display:flex;flex-direction:column;gap:calc(var(--u)*1);text-align:left}
+.qcard.media .qtext{font-size:calc(var(--u)*3.2)}
+.qcard.media .qtext.long,.qcard.media .qtext.xlong{font-size:calc(var(--u)*2.6)}
+.qcard.media .staffbox{--sh:calc(var(--u)*17)}
+.qrow.nowrap{flex-wrap:nowrap}
+.qcard.media.stack{flex-direction:column;gap:calc(var(--u)*1.4);padding-top:calc(var(--u)*4.4)}
+.qcard.media.stack .qside{max-width:none;text-align:center;flex:none}
+.qcard.media.stack .staffbox{--sh:calc(var(--u)*15)}
+.staffmissing{color:#b00;font-weight:700;padding:10px}
+.playbtn{font-family:"Press Start 2P";font-size:calc(var(--u)*2.2);background:#2463e0;border-color:#fff;color:#fff;padding:calc(var(--u)*1.4) calc(var(--u)*3)}
+.playbtn.playing{background:#0fb5b5;animation:pulse .8s infinite}
+.finalpill{display:inline-block;margin-right:14px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:#fff;color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1.2s infinite}
+#finalBtn.on{background:#fff;color:#000;border-color:#fff}
+.keylist li .minibtn{margin-top:4px}
 .minibtn{background:#0008;border:2px solid #fff4;border-radius:8px;padding:6px 10px;font-size:calc(var(--u)*1.3);font-weight:700}
 .steal-who{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);padding:calc(var(--u)*1) calc(var(--u)*1.6);border-radius:10px;color:#fff;text-shadow:3px 3px 0 #000;animation:pulse 1s infinite}
 
@@ -363,6 +384,14 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
       <div class="row"><label>Mystery boxes on the board</label>
         <div class="stepper"><button data-step="boxCount:-10">−</button><span id="v_boxCount"></span><button data-step="boxCount:10">+</button></div>
         <div class="hint">10 per row. Big question sets get a random batch each game; small ones repeat a few questions to fill the board.</div></div>
+      <h2 style="margin-top:22px">MUSIC QUESTIONS</h2>
+      <div class="row"><label>🎧 Listening questions per game</label>
+        <div class="stepper"><button data-step="listenCount:-1">−</button><span id="v_listenCount"></span><button data-step="listenCount:1">+</button></div></div>
+      <div class="row"><label>🎼 Staff (notation) questions per game</label>
+        <div class="stepper"><button data-step="staffCount:-1">−</button><span id="v_staffCount"></span><button data-step="staffCount:1">+</button></div></div>
+      <div class="row"><label>Music question level</label>
+        <div class="seg" data-seg="musicLevel"><button data-v="0">Auto</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button></div>
+        <div class="hint"><span id="levelHint"></span> New questions are made every game. <button class="minibtn" id="sampleBtn" type="button">🔊 Test speakers</button></div></div>
       <h2 style="margin-top:22px">FAIRNESS</h2>
       <div class="row"><label>Items a team can hold</label>
         <div class="stepper"><button data-step="handLimit:-1">−</button><span id="v_handLimit"></span><button data-step="handLimit:1">+</button></div></div>
@@ -392,6 +421,7 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
     <div class="hside"></div>
     <div class="logo">GRUDGE BALL</div>
     <div class="hside hbtns">
+      <button class="topbtn" id="finalBtn" title="Final round: everyone gets the same number of turns, then the game ends">🏁 Final round</button>
       <button class="topbtn" id="undoBtn" title="Undo last action">↶ Undo</button>
       <button class="topbtn" id="adjBtn" title="Manually adjust hearts">± Hearts</button>
       <button class="topbtn" id="soundBtn">🔊</button>
@@ -407,6 +437,8 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 <div id="modalRoot"></div>
 <div id="toasts"></div>
 
+<!--INLINE:lib/vexflow-bravura.js-->
+<!--INLINE:src/music.js-->
 <script>
 "use strict";
 /* ============================================================
@@ -492,6 +524,7 @@ const DEFAULT_CFG = {
   teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5, stealAnswerTime:5,
   wrongCost:1, stealCost:1, cfgVer:3,
   handLimit:2, players:6, underdog:1, leaderTax:1, boxCount:30,
+  listenCount:3, staffCount:3, musicLevel:0,
   items:{ shield:{count:1,after:"again"}, ring:{count:1,after:"again"}, sword:{count:1,after:"again"},
           reed:{count:1,after:"again"}, metronome:{count:1,after:"again"}, repeat:{count:1,after:"again"},
           fermata:{count:1,after:"again"}, modulation:{count:1,after:"again"},
@@ -642,12 +675,24 @@ function persist(){ if(S) store.set("gb_game", {S, UNDO:UNDO.slice(-30)}); }
 function boardPlan(nq){
   const nItems = ITEM_ORDER.reduce((s,k)=>s+(CFG.items[k]?.count||0),0);
   const total = Math.max(CFG.boxCount||30, nItems);
-  const qSlots = nq ? total - nItems : 0;
-  return { total: nItems + qSlots, nItems, qSlots, used: Math.min(nq, qSlots), repeats: Math.max(0, qSlots - nq), unused: Math.max(0, nq - qSlots) };
+  const room = total - nItems;
+  const musicOK = typeof MUSIC!=="undefined";
+  const nListen = musicOK ? Math.min(CFG.listenCount||0, room) : 0;
+  const nStaff = musicOK ? Math.min(CFG.staffCount||0, room - nListen) : 0;
+  const qSlots = nq ? room - nListen - nStaff : 0;
+  return { total: nItems + nListen + nStaff + qSlots, nItems, nListen, nStaff, qSlots,
+    used: Math.min(nq, qSlots), repeats: Math.max(0, qSlots - nq), unused: Math.max(0, nq - qSlots) };
+}
+// Music question level: chosen in setup, or read from the set name ("Level 3 ..."), otherwise 2
+function musicLevel(){
+  if(CFG.musicLevel>=1 && CFG.musicLevel<=4) return CFG.musicLevel;
+  const m = /level\s*([1-4])/i.exec(CFG.set||""); return m ? +m[1] : 2;
 }
 function newGame(){
   const qs = parseSet(SETS[CFG.set]);
   const plan = boardPlan(qs.length);
+  const lvl = musicLevel();
+  const gen = typeof MUSIC==="undefined" ? [] : MUSIC.make("listen", lvl, plan.nListen).concat(MUSIC.make("staff", lvl, plan.nStaff));
   const items = [];
   ITEM_ORDER.forEach(k=>{ for(let i=0;i<(CFG.items[k]?.count||0);i++) items.push({kind:"item", item:k, opened:false}); });
   // questions: a random batch if the set is big, or every question plus repeats if it's small
@@ -659,19 +704,20 @@ function newGame(){
       picked.push(pool.pop());
     }
   }
-  const boxes = shuffle(picked.map(o=>({kind:"q", q:o.q, a:o.a, opened:false})).concat(items));
+  const boxes = shuffle(picked.map(o=>({kind:"q", q:o.q, a:o.a, opened:false}))
+    .concat(gen.map(o=>({kind:"q", q:o.q, a:o.a, media:o.media, opened:false}))).concat(items));
   const teams = [];
   for(let i=0;i<CFG.teams;i++){
     teams.push({ name:(CFG.names[i]||DEFAULT_NAMES[i]).trim()||DEFAULT_NAMES[i], color:TEAM_COLORS[i],
       hearts:CFG.startHearts, status:"alive", inv:[], shield:false, ring:0, sword:0,
-      metronome:false, fermata:false, nextShooter:1 });
+      metronome:false, fermata:false, nextShooter:1, turns:0 });
   }
   const order = teams.map((_,i)=>i);
   S = {
     cfg: JSON.parse(JSON.stringify(CFG)),
     teams, boxes, order, ptr:0, bonus:[], turnTeam:order[0], isBonus:false, turnNo:1,
     phase:"pick", cur:{}, turnAttacks:{}, prevAttacks:{}, lastAnswer:null, over:false,
-    itemUsedTurn:0, repeatTeam:null, modulationUsed:false
+    itemUsedTurn:0, repeatTeam:null, modulationUsed:false, final:null, musicLevel:lvl
   };
   UNDO = [];
   startOfTurn();
@@ -686,9 +732,24 @@ function nextUp(){
   if(S.repeatTeam===S.turnTeam) return S.turnTeam;
   const b = (S.bonus||[]).filter(i=>T(i).status!=="out");
   if(b.length) return b[0];
+  const p = nextRegular();
+  return p==null ? null : S.order[p];
+}
+// next regular (non-bonus) turn in the order; in the final round, skip teams that have had all their turns
+function nextRegular(){
   let p = S.ptr;
-  for(let k=0;k<S.order.length;k++){ p = (p+1) % S.order.length; if(T(S.order[p]).status!=="out") return S.order[p]; }
+  for(let k=0;k<S.order.length;k++){
+    p = (p+1) % S.order.length; const t = T(S.order[p]);
+    if(t.status==="out") continue;
+    if(S.final && (t.turns||0) >= S.final.target) continue;
+    return p;
+  }
   return null;
+}
+// regular turns still to come in the final round (after the current one)
+function finalTurnsLeft(){
+  if(!S || !S.final) return 0;
+  return activeTeams().reduce((s,i)=>s+Math.max(0, S.final.target-(T(i).turns||0)), 0);
 }
 function lastPlace(i){
   const act = activeTeams(); if(act.length<2) return false;
@@ -769,6 +830,7 @@ function attack(attacker, target, countsForGangUp=true){
 function startOfTurn(){
   const t = T(S.turnTeam);
   t.shield = false;  // shield lasts until this team's next turn
+  if(!S.isBonus) t.turns = (t.turns||0) + 1;  // bonus turns don't count toward the final round
   S.phase = "pick"; S.cur = {}; S.lastAnswer = null;
 }
 function endTurn(){
@@ -800,8 +862,8 @@ function endTurn(){
   if(S.bonus.length){
     S.turnTeam = S.bonus.shift(); S.isBonus = true;
   }else{
-    let p = S.ptr;
-    for(let k=0;k<S.order.length;k++){ p = (p+1) % S.order.length; if(T(S.order[p]).status!=="out") break; }
+    const p = nextRegular();
+    if(p==null){ S.over = true; S.finalEnded = true; toast("🏁 FINAL ROUND COMPLETE!", "cyan"); finishGame(); return; }
     S.ptr = p; S.turnTeam = S.order[p]; S.isBonus = false;
   }
   S.turnNo++;
@@ -820,7 +882,9 @@ const pickBox = act(i=>{
     const t = T(S.turnTeam);
     S.cur.qBonus = 0;
     if(t.metronome){ t.metronome = false; S.cur.qBonus = 10; toast(`METRONOME! ${esc(t.name)} gets +10 seconds`, "green"); }
-    startTimer(S.cfg.qTime + S.cur.qBonus);
+    // listening questions: the clock waits until the sound has played
+    if(isListen(b)){ stopTimer(); const tt = S.cfg.qTime + S.cur.qBonus; timerState = {left:tt, total:tt, running:false}; }
+    else startTimer(S.cfg.qTime + S.cur.qBonus);
   }else{
     S.phase = "item"; S.cur.item = b.item; itemSound(b.item);
     const ti = S.turnTeam, t = T(ti), k = b.item;
@@ -972,7 +1036,9 @@ const useItem = act((ti, k)=>{
   if(k==="metronome"){
     if(S.phase==="question"){
       S.cur.qBonus = 10;
-      if(timerState.running){ timerState.end += 10000; timerState.total += 10; } else startTimer(10);
+      if(timerState.running){ timerState.end += 10000; timerState.total += 10; }
+      else if(isListen(curBox()) && !S.cur.heard){ timerState.left += 10; timerState.total += 10; }  // added when the clock starts
+      else startTimer(10);
       toast(`METRONOME! +10 seconds`, "green");
     } else { t.metronome = true; toast(`${esc(t.name)} sets the METRONOME!<br>+10 seconds on their question`, "green"); }
   }
@@ -1019,10 +1085,30 @@ const reshuffle = act(()=>{ S.boxes.forEach(b=>b.opened=false); shuffle(S.boxes)
 const skipTurn = act(()=>{ stopTimer(); endTurn(); });
 
 function curBox(){ return S.boxes[S.cur.box] || {}; }
+const isListen = b => !!(b && b.media && b.media.type==="listen");
+
+/* ---------- listening questions: play, then start (or restart) the clock ---------- */
+let listening = false;
+function playListen(){
+  const b = curBox(); if(!isListen(b) || listening || typeof MUSIC==="undefined") return;
+  try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.resume) actx.resume(); }catch(e){}
+  stopTimer(); listening = true; musicStop();
+  renderStage();
+  MUSIC.play(b.media, ()=>{
+    listening = false;
+    if(!S || curBox()!==b) return;          // undone or moved on
+    if(S.phase==="question" || S.phase==="steal"){
+      if(S.phase==="question") S.cur.heard = true;
+      startTimer(phaseTime()); persist();
+    }
+    renderStage();
+  });
+}
+function stopListening(){ if(listening && typeof MUSIC!=="undefined"){ MUSIC.stop(); } listening = false; }
 
 function undo(){
   if(!UNDO.length){ toast("Nothing to undo"); return; }
-  stopTimer(); S = JSON.parse(UNDO.pop()); pendingFx = [];
+  stopTimer(); stopListening(); S = JSON.parse(UNDO.pop()); pendingFx = [];
   if(S.phase==="question" || S.phase==="steal"){ const tt = phaseTime(); timerState = {left:tt, total:tt, running:false}; }
   render(); persist(); toast("Undone");
 }
@@ -1060,8 +1146,10 @@ function drawTimer(){
   $("#tArc").setAttribute("stroke", frac>.34 ? "#ffd400" : "#ff2a2a");
   const s = Math.ceil(timerState.left);
   el.classList.toggle("low", s<=5 && s>0 && timerState.running);
-  el.classList.toggle("done", s===0);
-  $("#tNum").textContent = s===0 ? "TIME!" : (!timerState.running && timerState.left===timerState.total ? s : s);
+  el.classList.toggle("done", s===0 && !listening);
+  const waiting = listening || (S && S.phase==="question" && isListen(curBox()) && !S.cur.heard && !timerState.running);
+  el.classList.toggle("wait", waiting);
+  $("#tNum").textContent = waiting ? "🎧" : s===0 ? "TIME!" : s;
   const rb = $("#timerRestart"); if(rb) rb.textContent = timerState.running ? "↻ Restart timer" : "▶ Start timer";
 }
 
@@ -1073,7 +1161,11 @@ function render(){
   if(S.over){ finishGame(); return; }
   const ti = S.turnTeam, t = T(ti);
   const nx = nextUp();
-  $("#nextUp").innerHTML = nx!=null ? `NEXT ▸ <i style="color:${T(nx).color}">${esc(T(nx).name)}</i>` : "";
+  let fin = "";
+  if(S.final){ const left = finalTurnsLeft();
+    fin = `<span class="finalpill">🏁 ${nx==null ? "LAST TURN" : `FINAL ROUND · ${left} TURN${left===1?"":"S"} LEFT`}</span>`; }
+  $("#nextUp").innerHTML = fin + (nx!=null ? `NEXT ▸ <i style="color:${T(nx).color}">${esc(T(nx).name)}</i>` : "");
+  $("#finalBtn").classList.toggle("on", !!S.final);
   $("#game").classList.toggle("adjusting", adjusting);
   $("#adjBtn").classList.toggle("on", adjusting);
   $("#soundBtn").textContent = soundOn ? "🔊" : "🔇";
@@ -1086,6 +1178,7 @@ function renderStage(){
   const st = $("#stage"), ti = S.turnTeam;
   let html = "", instr = "";
   const p = S.phase;
+  if(listening && !["question","steal","reveal"].includes(p)) stopListening();
 
   if(p==="pick"){
     const n = S.boxes.length, left = S.boxes.filter(b=>!b.opened).length;
@@ -1097,7 +1190,8 @@ function renderStage(){
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
       S.boxes.map((b,i)=>{
         if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
-        const ic = b.kind==="item" ? `<img src="${ITEMS[b.item].icon}" alt="">` : `<span class="qm">?</span>`;
+        const ic = b.kind==="item" ? `<img src="${ITEMS[b.item].icon}" alt="">`
+          : b.media ? `<span class="qm" style="opacity:.45">${b.media.type==="listen"?"🎧":"🎼"}</span>` : `<span class="qm">?</span>`;
         return `<div class="box opened" style="width:${size}px">${ic}</div>`;
       }).join("") + `</div>` +
       (left===0 ? `<div style="margin-top:16px"><button class="btn big gold" data-act="reshuffle">All boxes opened — Reshuffle</button></div>` : "") +
@@ -1114,7 +1208,10 @@ function renderStage(){
         <button class="btn big bad" data-act="wrong">✗ Wrong</button></div>
         <div class="qrow"><button class="minibtn" id="timerRestart" data-act="timer"></button>
         <button class="minibtn" data-act="peek">${S.cur.answerShown?"Answer shown":"👁 Show answer"}</button></div>`;
-      instr = `${tname(ti)} has <b>${S.cfg.qTime + (S.cur.qBonus||0)} seconds</b> to answer as a team.${T(ti).status==="sd"?' <b style="color:var(--red)">SUDDEN DEATH — wrong answer = OUT.</b>':''}`;
+      instr = (isListen(b) && !S.cur.heard
+        ? `${tname(ti)}: tap <b>▶ PLAY</b> and listen. The <b>${S.cfg.qTime + (S.cur.qBonus||0)}-second</b> clock starts when the sound ends.`
+        : `${tname(ti)} has <b>${S.cfg.qTime + (S.cur.qBonus||0)} seconds</b> to answer as a team.`)
+        + `${T(ti).status==="sd"?' <b style="color:var(--red)">SUDDEN DEATH — wrong answer = OUT.</b>':''}`;
     }else if(p==="steal"){
       const si = S.cur.stealList[S.cur.si], stt = T(si);
       side = timerHTML();
@@ -1132,9 +1229,15 @@ function renderStage(){
       instr = S.cur.revealMsg || "";
     }
     const ans = (p==="reveal" || S.cur.answerShown) && b.a ? `<div class="answer ${b.a.length>45?"long":""}"><small>ANSWER</small>${esc(b.a)}</div>` : "";
+    const md = b.media;
+    let mediaHTML = "";
+    if(md && md.type==="staff") mediaHTML = `<div class="mtag">🎼 READ THE STAFF</div>`;
+    if(md && md.type==="listen") mediaHTML = `<div class="mtag">🎧 LISTENING</div>`;
+    const mediaBody = !md ? "" : md.type==="staff" ? `<div class="staffbox" id="staffbox"></div>`
+      : `<button class="btn big playbtn ${listening?"playing":""}" data-act="play">${listening ? "♪ PLAYING…" : (S.cur.heard || p!=="question") ? "▶ PLAY AGAIN" : "▶ PLAY"}</button>`;
     html = `<div class="view synth">
-      <div class="qrow" style="width:100%;gap:calc(var(--u)*3)">
-        <div class="qcard"><div class="coin">?</div><div class="qtext ${cls}">${esc(b.q)}</div></div>${side}
+      <div class="qrow ${md?"nowrap":""}" style="width:100%;gap:calc(var(--u)*3)">
+        <div class="qcard ${md?"media":""} ${md && md.type==="staff" && (md.notes||[]).length>4 ? "stack" : ""}"><div class="coin">?</div>${md ? `<div class="qside">${mediaHTML}<div class="qtext ${cls}">${esc(b.q)}</div></div>${mediaBody}` : `<div class="qtext ${cls}">${esc(b.q)}</div>`}</div>${side}
       </div>${p==="reveal"?`<div class="qrow">${ans}${controls}</div>`:ans+controls}</div>`;
   }
   else if(p==="item"){
@@ -1204,6 +1307,7 @@ function renderStage(){
       <div class="made-count">BASKETS MADE: ${c.made}</div></div><div class="shootctl">${body}</div></div></div>`;
   }
   st.innerHTML = html; st.scrollTop = 0; st.scrollLeft = 0;
+  const sb = $("#staffbox"); if(sb && typeof MUSIC!=="undefined") MUSIC.renderStaff(sb, curBox().media);
   fitStage();
   $("#instr").innerHTML = (S.isBonus && p!=="pick" ? '<span class="bonuspill">BONUS TURN</span>' : '') + instr;
   $("#instr").parentElement.classList.toggle("centered", p==="pick");
@@ -1314,7 +1418,7 @@ function finishGame(){
     <div class="qrow"><button class="btn big" id="endBack">↶ Back to game</button><button class="btn big good" id="endAgain">Play again</button><button class="btn big" id="endSetup">Setup</button></div>`;
   showScreen("end");
   SFX.item();
-  $("#endBack").onclick = ()=>{ S.over=false; if(activeTeams().length<=1 && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
+  $("#endBack").onclick = ()=>{ S.over=false; if((activeTeams().length<=1 || S.finalEnded) && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
   $("#endAgain").onclick = ()=>{ playSnd("start"); newGame(); };
   $("#endSetup").onclick = ()=>{ store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); };
 }
@@ -1335,7 +1439,7 @@ $("#stage").addEventListener("click", e=>{
   const a = e.target.closest("[data-act]"); if(!a) return;
   ({ correct:answerCorrect, wrong:answerWrong, stealok:stealCorrect, stealbad:stealWrong, stealpass:stealPass, stealgo:stealGo,
      revealdone:revealDone, itemcont:itemContinue, made:shotMade, miss:shotMiss, madeheal:madeHeal,
-     reshuffle, peek:showAnswer, timer:restartTimer })[a.dataset.act]?.();
+     reshuffle, peek:showAnswer, timer:restartTimer, play:playListen })[a.dataset.act]?.();
 });
 $("#teambar").addEventListener("click", e=>{
   const u = e.target.closest("[data-use]");
@@ -1353,6 +1457,36 @@ $("#teambar").addEventListener("click", e=>{
     else if(S.phase==="shoot" && S.cur.pending) madeAttack(i);
   }
 });
+// FINAL ROUND: everyone still in ends with the same number of regular turns, then the winner screen shows
+const setFinal = act(extra=>{
+  if(extra<0){ S.final = null; toast("Final round cancelled — play on!"); return; }
+  const mx = Math.max(...activeTeams().map(i=>T(i).turns||0));
+  S.final = {target: mx + extra};
+  const left = finalTurnsLeft();
+  toast(`🏁 FINAL ROUND!<br>${left ? `${left} more turn${left===1?"":"s"}, then the game ends` : `This is the last turn`}`, "cyan");
+});
+$("#finalBtn").onclick = ()=>{
+  if(!S || S.over) return;
+  const act_ = activeTeams(), mx = Math.max(...act_.map(i=>T(i).turns||0));
+  if(S.final){
+    const left = finalTurnsLeft();
+    modal(`<div class="card"><h2>🏁 FINAL ROUND IS ON</h2>
+      <p style="margin-top:0">${left ? `<b>${left}</b> more regular turn${left===1?"":"s"} after this one` : "This is the last regular turn"}. Bonus turns (gang-up, Repeat Sign) still play. Then the winner screen shows.</p>
+      <div class="row"><button class="btn bad" data-m="cancel">Cancel final round</button><button class="btn ghost" data-m="close">Keep going</button></div></div>`,
+      m=>{ if(m==="cancel") setFinal(-1); });
+    return;
+  }
+  const behind = act_.filter(i=>(T(i).turns||0) < mx);
+  const thisRound = behind.length
+    ? `${behind.map(i=>esc(T(i).name)).join(", ")} still ${behind.length===1?"needs a turn":"need a turn"} this round, then the game ends.`
+    : `Everyone has had the same number of turns — the game ends after ${esc(T(S.turnTeam).name)}'s turn.`;
+  modal(`<div class="card"><h2>🏁 FINAL ROUND</h2>
+    <p style="margin-top:0">Every team still in finishes with the <b>same number of turns</b>. Bonus turns earned along the way still play. Then the winner screen shows automatically.</p>
+    <div class="row"><button class="btn big gold" data-m="f0">Finish this round</button></div><div class="hint" style="margin:-4px 0 12px">${thisRound}</div>
+    <div class="row"><button class="btn big" data-m="f1">One more full round</button></div><div class="hint" style="margin:-4px 0 12px">${behind.length ? "Finish this round, then every team gets one more turn." : "Every team gets one more turn."}</div>
+    <div class="row"><button class="btn ghost" data-m="close">Cancel</button></div></div>`,
+    m=>{ if(m==="f0") setFinal(0); if(m==="f1") setFinal(1); });
+};
 $("#undoBtn").onclick = undo;
 $("#adjBtn").onclick = ()=>{ adjusting=!adjusting; render(); };
 $("#soundBtn").onclick = ()=>{ soundOn=!soundOn; store.set("gb_sound",soundOn); render(); };
@@ -1417,14 +1551,25 @@ function showRules(){
     ${c.underdog?`<li><b>Underdog bonus:</b> the team in last place gets +1 heart whenever they open an item box.</li>`:""}
     ${c.leaderTax?`<li><b>Leader tax:</b> a team at ${c.maxHearts} hearts can't collect items (the Traumatic Scale still hits). They just pick again.</li>`:""}
     ${c.players?`<li><b>Shooters rotate:</b> number off 1–${c.players} in each team. The game calls the next shooter so everyone gets a turn.</li>`:""}
-    <li>Most hearts when class ends wins. The last team standing also wins.</li></ul>
+    ${(c.listenCount||c.staffCount)?`<li><b>Music questions:</b> ${c.listenCount?`${c.listenCount} 🎧 listening`:""}${c.listenCount&&c.staffCount?" and ":""}${c.staffCount?`${c.staffCount} 🎼 staff`:""} question boxes are made fresh every game${S&&S.musicLevel?` (Level ${S.musicLevel})`:""}. Listening: tap ▶ Play — the clock starts when the sound ends, and replaying restarts it. Stealing teams can hear it again too.</li>`:""}
+    <li><b>🏁 Final round:</b> when class is almost over, tap Final round. Every team still in finishes with the same number of turns (bonus turns still play), then the winner shows.</li>
+    <li>Most hearts at the end wins. The last team standing also wins.</li></ul>
     <button class="btn" data-m="close">Close</button></div>`);
 }
 function showKey(){
   const seen = new Set();
-  const qs = (S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}))).filter(o=>!seen.has(o.q) && seen.add(o.q));
-  modal(`<div class="card"><h2>ANSWER KEY</h2><ol>${qs.map(o=>`<li><b>${esc(o.q)}</b><br><span style="color:var(--good)">${esc(o.a||"(no answer entered)")}</span></li>`).join("")}</ol>
+  const sig = o => o.q + "|" + o.a + "|" + (o.media ? JSON.stringify(o.media) : "");
+  const qs = (S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}))).filter(o=>!seen.has(sig(o)) && seen.add(sig(o)));
+  const tag = o => !o.media ? "" : o.media.type==="listen" ? `🎧 ` : `🎼 `;
+  const extra = (o,k) => !o.media ? "" : o.media.type==="staff" ? `<div class="staffbox mini" data-key="${k}"></div>`
+    : `<br><button class="minibtn" data-m="keep" data-play="${k}">▶ Play</button>`;
+  const m = modal(`<div class="card"><h2>ANSWER KEY</h2>${S && S.musicLevel && qs.some(o=>o.media)?`<p style="margin-top:0">🎧 listening and 🎼 staff questions this game are Level ${S.musicLevel}.</p>`:""}
+    <ol class="keylist">${qs.map((o,k)=>`<li><b>${tag(o)}${esc(o.q)}</b>${extra(o,k)}<br><span style="color:var(--good)">${esc(o.a||"(no answer entered)")}</span></li>`).join("")}</ol>
     <button class="btn" data-m="close">Close</button></div>`);
+  if(typeof MUSIC!=="undefined"){
+    m.querySelectorAll(".staffbox.mini").forEach(el=>MUSIC.renderStaff(el, qs[+el.dataset.key].media));
+    m.addEventListener("click", e=>{ const pb = e.target.closest("[data-play]"); if(pb){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(err){} MUSIC.play(qs[+pb.dataset.play].media); } });
+  }
 }
 function editSets(){
   let name = CFG.set;
@@ -1471,9 +1616,11 @@ function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`;
 /* ============================================================
    SETUP SCREEN
 ============================================================ */
-const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15], boxCount:[10,60] };
+const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15], boxCount:[10,60], listenCount:[0,10], staffCount:[0,10] };
 function renderSetup(){
-  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players","boxCount"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players","boxCount","listenCount","staffCount"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  const lv = musicLevel();
+  $("#levelHint").textContent = CFG.musicLevel ? `Level ${lv}.` : `Auto: Level ${lv}${/level\s*[1-4]/i.test(CFG.set||"") ? " (from the set name)" : " (set name has no level)"}.`;
   $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
     `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
   document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
@@ -1489,10 +1636,11 @@ function renderSetup(){
   const kinds = ITEM_ORDER.filter(k=>CFG.items[k].count>0).length;
   $("#itemsSummary").textContent = `${items} item box${items===1?"":"es"} · ${kinds} of ${ITEM_ORDER.length} item types on — tap to ${$("#itemsCard").open?"hide":"change"}`;
   const bp = boardPlan(qn);
-  $("#boxSummary").textContent = !qn ? "Add some questions to start." :
-    `${bp.total} mystery boxes: ${bp.used} questions${bp.repeats?` + ${bp.repeats} repeated`:""}${bp.unused?` (random ${bp.used} of your ${qn})`:""} + ${bp.nItems} items` +
+  const gen = (bp.nListen?` + ${bp.nListen} listening`:"") + (bp.nStaff?` + ${bp.nStaff} staff`:"");
+  $("#boxSummary").textContent = !qn && !(bp.nListen+bp.nStaff) ? "Add some questions to start." :
+    `${bp.total} mystery boxes: ${bp.used} questions${bp.repeats?` + ${bp.repeats} repeated`:""}${bp.unused?` (random ${bp.used} of your ${qn})`:""}${gen} + ${bp.nItems} items` +
     (bp.repeats ? ` — add ${bp.repeats} more question${bp.repeats>1?"s":""} to avoid repeats` : "");
-  $("#startBtn").disabled = qn===0;
+  $("#startBtn").disabled = qn===0 && !(bp.nListen+bp.nStaff);
   const saved = store.get("gb_game", null);
   $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
     <span><button class="btn gold" id="resumeBtn">Resume game</button> <button class="btn ghost" id="discardBtn">Discard</button></span></div>` : "";
@@ -1523,6 +1671,9 @@ $("#itemsCard").addEventListener("toggle", ()=>{ store.set("gb_items_open", $("#
 $("#setSelect").onchange = e=>{ CFG.set = e.target.value; saveCfg(); renderSetup(); };
 $("#editSetBtn").onclick = editSets;
 $("#rulesBtn").onclick = showRules;
+$("#sampleBtn").onclick = e=>{ e.stopPropagation(); if(typeof MUSIC==="undefined") return;
+  try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(err){}
+  musicStop(); MUSIC.play({events:[60,64,67,72].map((m,i)=>({t:i*0.3, midi:m, dur:0.3, vel:0.8})).concat([60,64,67,72].map(m=>({t:1.3, midi:m, dur:1.2, vel:0.55})))}, ()=>{ if(musicOn) musicPlay(); }); };
 $("#startBtn").onclick = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} preloadSounds(); playSnd("start"); newGame(); };
 $("#musicBtn").onclick = e=>{ e.stopPropagation(); musicOn = !musicOn; store.set("gb_music", musicOn); updateMusicBtn(); if(musicOn) musicPlay(); else musicStop(); };
 // browsers block music until the first tap, so start it on the first interaction with the setup screen

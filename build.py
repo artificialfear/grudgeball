@@ -14,5 +14,11 @@ for f in sorted(glob.glob('questions/*.txt')):
     t=open(f,encoding='utf-8').read(); m=re.search(r'^# Set:\s*(.+)$',t,re.M)
     sets[(m.group(1) if m else os.path.splitext(os.path.basename(f))[0]).strip()]=t
 s=s.replace('__BUILTIN_SETS__', json.dumps(sets, ensure_ascii=False).replace('</','<\\/'))
+# inline local scripts (VexFlow for staff notation, the music question generator)
+def inline(m):
+    js=open(m.group(1),encoding='utf-8').read()
+    if '</script' in js.lower(): sys.exit('script contains </script: '+m.group(1))
+    return '<script>\n'+js+'\n</script>'
+s=re.sub(r'<!--INLINE:([\w/.\-]+)-->',inline,s)
 out=re.sub(r'__A_(\w+?)__',lambda m:uri(m.group(1)),s)
 open('index.html','w').write(out); print(len(out)//1024,'KB')

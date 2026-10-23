@@ -21,6 +21,7 @@ A team review game for band class, made to run on a classroom viewboard with a m
   - **Modulation**: reverses the turn order (only one per game).
   - **Three Free Shots** (used right away): three shots no matter what.
   - **Traumatic Scale** (used right away): lose a heart.
+- **Final round** 🏁: tap it when class is almost over. Choose "finish this round" or "one more full round". Every team still in ends with the same number of turns (bonus turns still play), then the winner screen shows.
 - **Fairness:**
   - **Shooters rotate:** students number off, and the game calls who shoots next.
   - **Underdog bonus:** the last-place team gets +1 heart whenever it opens an item box.
@@ -31,6 +32,13 @@ All of these can be adjusted on the setup screen.
 ## Editing questions
 Use **Edit questions** in the game itself. Write one question per line as `Question | Answer`, or keep your questions in a Google Sheet (column A = question, column B = answer) and paste the columns in. The header row, blank rows and any extra columns are skipped.
 Question sets save in that browser. Use **Export .txt** to back them up or move them to another device.
+
+## Music questions (made fresh every game)
+Besides the written questions, each game adds new **listening** 🎧 and **staff** 🎼 questions (3 of each by default, set on the setup screen). The level follows the question set's name ("Level 3 …" makes Level 3 questions) or can be picked by hand.
+- **Listening:** tap ▶ Play. The question clock starts when the sound ends; replaying restarts it, so stealing teams can hear it again too. Level 1: higher/lower, same/different, up/down, fast/slow. Level 2: major/minor chords, steps/skips, crescendo/decrescendo, meter in 3 or 4, staccato/legato. Level 3: major/minor scales, 2nd/3rd/5th/octave, accelerando/ritardando. Level 4: interval quality, major/minor/diminished chords, chromatic scale.
+- **Staff:** notation is drawn on screen. Level 1: note names on the staff, note and rest values. Level 2: ledger lines and accidentals, adding up beats, counting sharps/flats. Level 3: naming major keys, interval numbers, sixteenth-note rhythms. Level 4: interval quality, major/minor triads, relative minors.
+- The answer key (☰ menu) shows every music question with its staff or a play button.
+- **Test speakers** on the setup screen plays a short chord.
 
 ## Built-in question sets
 The `questions/` folder holds the sets that come with the game and show up in the Questions dropdown on every device:
@@ -46,4 +54,7 @@ Each file is one set: a `# Set: Name` line, then `Question | Answer` lines. Run 
 - `src/grudgeball.src.html`: the editable source, with image placeholders.
 - `assets/`: the art taken from the original myViewBoard file.
 - `sounds/`: the game's sound effects and menu music, as MP3s. To change a sound, upload a new MP3 with the **same file name** (for example `sounds/correct.mp3`). basketball.mp3 plays when the Free Shots box opens. Sounds without a file (Fermata, Modulation, MADE IT) use built-in beeps.
+- `src/music.js`: makes the listening and staff questions, draws the staff and plays the sounds.
+- `lib/vexflow-bravura.js`: [VexFlow](https://www.vexflow.com) 4.2.3 (MIT license, see `lib/LICENSE`), which draws the notation. It's built into `index.html`, so it works without internet.
+- `tests/music_theory.js`: checks thousands of generated questions against music theory (`node tests/music_theory.js`).
 - `build.py`: rebuilds `index.html` from the source and the art (`python3 build.py`).
