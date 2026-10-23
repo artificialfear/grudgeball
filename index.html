@@ -2089,7 +2089,7 @@ function renderSetup(){
   $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
     <span><button class="btn gold" id="resumeBtn">Resume game</button> <button class="btn ghost" id="discardBtn">Discard</button></span></div>` : "";
   if($("#resumeBtn")){
-    $("#resumeBtn").onclick = ()=>{ S = saved.S; UNDO = saved.UNDO||[]; if(S.phase==="question"||S.phase==="steal"){ const tt = phaseTime(); timerState={left:tt,total:tt,running:false}; } showScreen("game"); render(); };
+    $("#resumeBtn").onclick = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} preloadSounds(); playSnd("start"); S = saved.S; UNDO = saved.UNDO||[]; if(S.phase==="question"||S.phase==="steal"){ const tt = phaseTime(); timerState={left:tt,total:tt,running:false}; } showScreen("game"); render(); };
     $("#discardBtn").onclick = ()=>{ store.del("gb_game"); renderSetup(); };
   }
 }
