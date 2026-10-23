@@ -973,7 +973,7 @@ const ATTACK_SND_HIT = 370;
 const uiSel = () => playSnd("select");
 const ITEM_SND = { shots:"basket", shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
 const SND = {}, SND_BAD = {};
-const SOUND_VER = {"attack": "427d63b3", "basketball": "1656cf6e", "correct": "a19de987", "cursed-sword": "2d9a5015", "final-round": "84c8e866", "incorrect": "3ba2e6ea", "main-menu-music": "8d20fda8", "make-basket": "f86dc21e", "metronome": "8bb844e8", "open-box": "d639f8d7", "reed": "89b7ff89", "repeat": "a897ae50", "ring": "e0ce43f7", "select": "b8741f7a", "shield": "5b333b22", "start-game": "c5f93d15", "traumatic-scale": "93fd144f", "victory": "c5c6e871"};   // filled in by build.py
+const SOUND_VER = {"attack": "427d63b3", "basketball": "1656cf6e", "correct": "f86dc21e", "cursed-sword": "2d9a5015", "final-round": "84c8e866", "incorrect": "3ba2e6ea", "main-menu-music": "8d20fda8", "make-basket": "f86dc21e", "metronome": "8bb844e8", "open-box": "d639f8d7", "reed": "89b7ff89", "repeat": "a897ae50", "ring": "e0ce43f7", "select": "b8741f7a", "shield": "5b333b22", "start-game": "c5f93d15", "traumatic-scale": "93fd144f", "victory": "c5c6e871"};   // filled in by build.py
 function getSnd(k){
   if(!SND[k]){
     const v = SOUND_VER[SOUND_FILES[k]];
