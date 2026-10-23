@@ -158,6 +158,8 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .teambar.compact .fxb img{height:calc(var(--u)*2.3)}
 .teambar.compact .fxb.sd,.teambar.compact .fxb.out{font-size:calc(var(--u)*1)}
 .teambar.compact .team .inv button{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9)}
+/* while a team is choosing whom to attack, only the targets move; the current team's card holds still */
+.teambar.targeting .team.current{animation:none;transform:none;box-shadow:0 0 0 3px #000;border-color:#b8960f}
 .team.current{border-color:var(--gold);border-width:5px;transform:translateY(-6px);animation:turnglow 1.4s ease-in-out infinite}
 @keyframes turnglow{0%,100%{box-shadow:0 0 0 3px #000,0 0 14px 2px #ffd40099,inset 0 0 10px #ffd40033}50%{box-shadow:0 0 0 3px #000,0 0 40px 12px #ffd400,inset 0 0 22px #ffd40066;border-color:#fff3a0}}
 .team.target{cursor:pointer;border-color:var(--red);animation:targetpulse .9s infinite}
@@ -1233,6 +1235,7 @@ function renderTeams(){
   if(p==="attack") targets = validTargets(S.cur.attacker);
   if(p==="shoot" && S.cur.pending && !S.cur.heartsOnly && T(S.cur.shooter).status==="alive") targets = validTargets(S.cur.shooter);
   const targeting = targets.length>0;
+  bar.classList.toggle("targeting", targeting);
   bar.classList.toggle("compact", S.teams.length>=6);
   bar.innerHTML = S.teams.map((t,i)=>{
     const max = S.cfg.maxHearts;
