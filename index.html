@@ -953,7 +953,7 @@ const SFX = {
 const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
   shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
   basket:"basketball", scale:"traumatic-scale",
-  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select" };
+  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round" };
 // attack.mp3's impact is ~0.34s into the file (+ ~30ms for audio to start): start it that long before the orb lands
 const ATTACK_SND_HIT = 370;
 const uiSel = () => playSnd("select");
@@ -1905,7 +1905,7 @@ $("#teambar").addEventListener("click", e=>{
 const setFinal = act(extra=>{
   if(extra<0){ S.final = null; toast("Final round cancelled — play on!"); return; }
   const mx = Math.max(...activeTeams().map(i=>T(i).turns||0));
-  S.final = {target: mx + extra};
+  S.final = {target: mx + extra}; playSnd("finalRound");
   const left = finalTurnsLeft();
   toast(`🏁 FINAL ROUND!<br>${left ? `${left} more turn${left===1?"":"s"}, then the game ends` : `This is the last turn`}`, "cyan");
 });
@@ -1968,7 +1968,7 @@ function modal(html, onAction){
   m.addEventListener("click", e=>{
     if(e.target===m){ root.innerHTML=""; return; }
     const b = e.target.closest("[data-m]"); if(!b) return;
-    const v = b.dataset.m; if(b.dataset.play==null) uiSel();
+    const v = b.dataset.m; if(b.dataset.play==null && v!=="f0" && v!=="f1") uiSel();
     if(v!=="keep") root.innerHTML = "";
     if(v!=="close" && onAction) onAction(v, m);
   });
