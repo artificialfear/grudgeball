@@ -952,7 +952,11 @@ const SFX = {
 /* ---------- recorded sounds (files in sounds/) ---------- */
 const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
   shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
-  basket:"basketball", scale:"traumatic-scale" };
+  basket:"basketball", scale:"traumatic-scale",
+  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select" };
+// attack.mp3's impact is ~0.34s into the file (+ ~30ms for audio to start): start it that long before the orb lands
+const ATTACK_SND_HIT = 370;
+const uiSel = () => playSnd("select");
 const ITEM_SND = { shots:"basket", shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
 const SND = {}, SND_BAD = {};
 function getSnd(k){
@@ -975,6 +979,8 @@ function playSnd(k, fallback){
 }
 function stopSnd(k){ const a = SND[k]; if(a){ try{ a.pause(); }catch(e){} } }
 function itemSound(k){ if(ITEM_SND[k]) playSnd(ITEM_SND[k], SFX.item); else SFX.item(); }
+// after the box-opening click, so the two don't land on top of each other
+function itemSoundSoon(k){ setTimeout(()=>itemSound(k), 160); }
 
 let musicOn = store.get("gb_music", true), musicFade = null;
 const MUSIC_VOL = 0.45;
@@ -1145,12 +1151,13 @@ function bigTextAt(x, y, text, color, size, delay=0){ const U = fxU(); const d =
   run(d, [{transform:P(x,y,"scale(3)"), opacity:0},{transform:P(x,y,"scale(1)"), opacity:1, offset:.22},{transform:P(x,y,"scale(1)"), opacity:1, offset:.8},{transform:P(x,y-U*3,"scale(1)"), opacity:0}], 1500, {delay, easing:"cubic-bezier(.2,.9,.3,1.15)"}); }
 function bigText(i, text, color, size, delay){ const c = ctr(i); if(c) bigTextAt(c.x, c.y, text, color, size, delay); }
 // something flying from one card to another on an arc
-function fly(from, to, html, cls, size, ms, spin, onLand){ const p1 = ctr(from), p2 = ctr(to); if(!p1||!p2) return;
+function fly(from, to, html, cls, size, ms, spin, onLand, onStart){ const p1 = ctr(from), p2 = ctr(to); if(!p1||!p2) return;
   const U = fxU(), mx = (p1.x+p2.x)/2, my = Math.min(p1.y,p2.y) - U*13 - Math.abs(p1.x-p2.x)*.08;
   const d = fxDiv(html, cls, size, size);
   const a = d.animate([{transform:P(p1.x,p1.y,"scale(.5) rotate(0deg)"), opacity:1},{transform:P(mx,my,`scale(1.2) rotate(${spin/2}deg)`), opacity:1, offset:.5},{transform:P(p2.x,p2.y,`scale(1) rotate(${spin}deg)`), opacity:1}],
     {duration:ms, easing:"ease-in-out", fill:"forwards"});
-  a.onfinish = ()=>{ d.remove(); if(onLand) onLand(p2); }; }
+  a.onfinish = ()=>{ d.remove(); if(onLand) onLand(p2); };
+  if(onStart) a.ready.then(()=>onStart(ms)); }
 const UP = s => esc(s).toUpperCase();
 
 const ANIMS = {
@@ -1161,7 +1168,7 @@ const ANIMS = {
       shake(a.to, a.dmg>1); flash(a.to, "rgba(255,30,30,.55)", 500);
       if(a.dmg>1) bigTextAt(p.x, p.y, `${a.dmg}× HIT!`, "#ff5050", 2.6);
       fxTag(a.to, `⚔ HIT BY ${UP(T(a.from).name)}`, col);
-    }); },
+    }, ms=>setTimeout(()=>playSnd("attack", SFX.hit), Math.max(0, ms - ATTACK_SND_HIT))); },
   drain(a){ const U = fxU();
     for(let k=0;k<Math.max(1,a.n||1)+1;k++) setTimeout(()=>fly(a.from, a.to, `<img src="${A.heart}" alt="">`, "fxheart", U*3.2, 620, 0, k===0 ? p=>{
       burst(p.x, p.y, "#3dff7a", 8, U*6, "♥"); fxTag(a.to, `♥ LIFESTEAL +${a.n||1}`, "#16a34a"); } : null), k*130); },
@@ -1248,7 +1255,8 @@ function attack(attacker, target, countsForGangUp=true){
   if(t.sword>0) dmg *= 2;
   const lost = Math.min(dmg, t.hearts);
   t.hearts -= lost;
-  pendingFx.push([target, "-"+lost, "minus"]); SFX.hit();
+  pendingFx.push([target, "-"+lost, "minus"]);
+  if(CFG.anims===0 || REDUCED_MOTION) playSnd("attack", SFX.hit);   // no orb: play right away
   if(countsForGangUp){
     (S.turnAttacks[target] = S.turnAttacks[target] || []);
     if(!S.turnAttacks[target].includes(attacker)) S.turnAttacks[target].push(attacker);
@@ -1308,7 +1316,7 @@ function act(fn){ return (...args)=>{ snapshot(); pendingFx = []; pendingAnim = 
 
 const pickBox = act(i=>{
   const b = S.boxes[i]; if(!b || b.opened) return;
-  b.opened = true; S.cur = {box:i};
+  b.opened = true; S.cur = {box:i}; playSnd("openBox");
   if(b.kind==="q"){
     S.phase = "question"; S.cur.answerShown = false;
     const t = T(S.turnTeam);
@@ -1318,7 +1326,7 @@ const pickBox = act(i=>{
     if(isListen(b)){ stopTimer(); const tt = S.cfg.qTime + S.cur.qBonus; timerState = {left:tt, total:tt, running:false}; }
     else startTimer(S.cfg.qTime + S.cur.qBonus);
   }else{
-    S.phase = "item"; S.cur.item = b.item; itemSound(b.item);
+    S.phase = "item"; S.cur.item = b.item; itemSoundSoon(b.item);
     const ti = S.turnTeam, t = T(ti), k = b.item;
     // underdog bonus: last place gets +1 heart for any item box
     if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1); anim("heal", {i:ti}); S.cur.underdog = true; }
@@ -1403,7 +1411,7 @@ function phaseTime(){
   return 0;
 }
 const stealGo = act(()=>{
-  S.cur.stealing = true; SFX.swish();
+  S.cur.stealing = true; uiSel();
   startTimer(S.cfg.stealAnswerTime||5);
 });
 const stealTimeout = act(()=>{
@@ -1432,7 +1440,7 @@ const doAttackTarget = act(target=>{
   if(S.cur.noShots){ toast(`${esc(T(a).name)} took a heart — no shots on a steal.`); endTurn(); return; }
   startShoot(a, "streak");
 });
-const shotMade = act(()=>{ SFX.swish(); S.cur.pending = true; });
+const shotMade = act(()=>{ playSnd("makeBasket", SFX.swish); S.cur.pending = true; });
 const shotMiss = act(()=>{
   S.cur.results.push("miss");
   if(S.cur.mode==="streak"){ toast("MISSED! Turn over."); endTurn(); return; }
@@ -1870,8 +1878,9 @@ function showScreen(n){
 ============================================================ */
 $("#stage").addEventListener("click", e=>{
   const b = e.target.closest("[data-box]"); if(b){ pickBox(+b.dataset.box); return; }
-  const dc = e.target.closest("[data-discard]"); if(dc){ discardItem(dc.dataset.discard); return; }
+  const dc = e.target.closest("[data-discard]"); if(dc){ uiSel(); discardItem(dc.dataset.discard); return; }
   const a = e.target.closest("[data-act]"); if(!a) return;
+  if(["stealpass","revealdone","itemcont","peek","timer","reshuffle"].includes(a.dataset.act)) uiSel();
   ({ correct:answerCorrect, wrong:answerWrong, stealok:stealCorrect, stealbad:stealWrong, stealpass:stealPass, stealgo:stealGo,
      revealdone:revealDone, itemcont:itemContinue, made:shotMade, miss:shotMiss, madeheal:madeHeal,
      reshuffle, peek:showAnswer, timer:restartTimer, play:playListen })[a.dataset.act]?.();
@@ -1900,7 +1909,7 @@ const setFinal = act(extra=>{
   const left = finalTurnsLeft();
   toast(`🏁 FINAL ROUND!<br>${left ? `${left} more turn${left===1?"":"s"}, then the game ends` : `This is the last turn`}`, "cyan");
 });
-$("#finalBtn").onclick = ()=>{
+$("#finalBtn").onclick = ()=>{ uiSel();
   if(!S || S.over) return;
   const act_ = activeTeams(), mx = Math.max(...act_.map(i=>T(i).turns||0));
   if(S.final){
@@ -1925,7 +1934,7 @@ $("#finalBtn").onclick = ()=>{
 $("#undoBtn").onclick = undo;
 $("#adjBtn").onclick = ()=>{ adjusting=!adjusting; render(); };
 $("#soundBtn").onclick = ()=>{ soundOn=!soundOn; store.set("gb_sound",soundOn); render(); };
-$("#menuBtn").onclick = ()=>{
+$("#menuBtn").onclick = ()=>{ uiSel();
   modal(`<div class="card"><h2>MENU</h2>
     <div class="row"><button class="btn" data-m="skip">Skip ${esc(T(S.turnTeam).name)}'s turn</button></div>
     <div class="row"><button class="btn" data-m="rules">📜 Rules</button></div>
@@ -1959,7 +1968,7 @@ function modal(html, onAction){
   m.addEventListener("click", e=>{
     if(e.target===m){ root.innerHTML=""; return; }
     const b = e.target.closest("[data-m]"); if(!b) return;
-    const v = b.dataset.m;
+    const v = b.dataset.m; if(b.dataset.play==null) uiSel();
     if(v!=="keep") root.innerHTML = "";
     if(v!=="close" && onAction) onAction(v, m);
   });
@@ -2085,6 +2094,7 @@ function renderSetup(){
   }
 }
 $("#setup").addEventListener("click", e=>{
+  if(e.target.closest("[data-step],[data-seg] button,[data-istep],[data-iafter] button,#editSetBtn,#rulesBtn")) uiSel();
   const st = e.target.closest("[data-step]");
   if(st){ const [k,d] = st.dataset.step.split(":"); CFG[k] = Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], CFG[k]+(+d)));
     if(k==="startHearts" && CFG.maxHearts<CFG.startHearts) CFG.maxHearts = CFG.startHearts;
