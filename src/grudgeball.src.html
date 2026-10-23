@@ -132,6 +132,12 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .gridtitle .who{padding:2px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
 .gridtitle .bonuspill{margin:0 0 0 12px;font-size:calc(var(--u)*1.2)}
 #stage{position:relative;margin:calc(var(--u)*1) calc(var(--u)*1.5);border-radius:16px;overflow:hidden;min-height:0}
+.teambar.has-tip{padding-top:calc(var(--u)*1.4 + 22px + var(--tiplines,1)*var(--u)*2.6)}
+.cardtip{position:absolute;bottom:calc(100% + 30px);left:50%;transform:translateX(-50%);width:max-content;max-width:min(46vw,720px);
+  text-align:center;font-size:calc(var(--u)*1.35);line-height:1.35;color:#fff;background:#000e;border:2px solid var(--gold);border-radius:8px;padding:5px 12px;pointer-events:none;z-index:3}
+.cardtip.edge-l{left:0;transform:none}
+.cardtip.edge-r{left:auto;right:0;transform:none}
+.cardtip .warn{color:#ffb347}
 .teambar{position:relative;display:flex;gap:calc(var(--u)*1);padding:calc(var(--u)*1) calc(var(--u)*1.5) calc(var(--u)*1.2);background:url(__A_fire__) bottom center/100% auto no-repeat}
 
 /* team card */
@@ -165,6 +171,8 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .team.target{cursor:pointer;border-color:var(--red);animation:targetpulse .9s infinite}
 .team.target.gang{border-color:#ff9d00;animation:gangpulse .9s infinite}
 .team.target.gang::after{content:"⚠ GANG-UP: BONUS TURN";background:#ff9d00;color:#000}
+.teambar.compact .team.target.gang::after{content:"⚠ GANG-UP"}
+.teambar.compact .team.target::after{content:"ATTACK"}
 @keyframes gangpulse{50%{box-shadow:0 0 30px #ff9d00;transform:translateY(-4px)}}
 .fxb.hit{background:#8a4b00;outline:2px solid #ff9d00;font-size:calc(var(--u)*1.35)}
 .fxb .em{font-size:inherit}
@@ -1089,8 +1097,7 @@ function renderStage(){
       }).join("") + `</div>` +
       (left===0 ? `<div style="margin-top:16px"><button class="btn big gold" data-act="reshuffle">All boxes opened — Reshuffle</button></div>` : "") +
       `</div>`;
-    const inv = T(ti).inv.length && S.itemUsedTurn!==S.turnNo ? `<span class="destiny-hint">They can play <b>one</b> item from their card this turn.</span>` : "";
-    instr = `<span class="destiny">${teamTag(ti)}, CHOOSE YOUR DESTINY</span>${S.isBonus?'<span class="bonuspill" style="margin-left:12px">BONUS TURN</span>':''}${inv}`;
+    instr = `<span class="destiny">${teamTag(ti)}, CHOOSE YOUR DESTINY</span>${S.isBonus?'<span class="bonuspill" style="margin-left:12px">BONUS TURN</span>':''}`;
   }
   else if(p==="question" || p==="steal" || p==="reveal"){
     const b = curBox(); const len = (b.q||"").length;
@@ -1161,7 +1168,7 @@ function renderStage(){
       <h3>${esc(T(a).name)} ${S.cur.noShots?"STOLE IT!":"GOT IT RIGHT!"}</h3>
       ${S.lastAnswer?`<div class="answer"><small>ANSWER</small>${esc(S.lastAnswer)}</div>`:""}
       <h3 style="color:var(--red)">▼ TAP A TEAM BELOW TO TAKE ${dmg>1?dmg+" HEARTS":"A HEART"} ▼</h3></div></div>`;
-    instr = `${tname(a)}: <b>choose a team to attack.</b>${S.cur.noShots?" No shots on a steal.":""} Shielded and sudden-death teams can't be targeted.` + gangNote(validTargets(a));
+    instr = `${tname(a)}: <b>choose a team to attack.</b>${S.cur.noShots?" No shots on a steal.":""} Shielded and sudden-death teams can't be targeted.`;
   }
   else if(p==="shoot"){
     const c = S.cur, sh = T(c.shooter);
@@ -1179,7 +1186,7 @@ function renderStage(){
       body = `<div class="choice"><h3 style="font-family:'Press Start 2P';font-size:calc(var(--u)*1.8);margin:0">BASKET! CHOOSE:</h3>
         <button class="btn big good" data-act="madeheal">❤ +1 heart for ${esc(sh.name)}</button>
         ${canAttack?`<div class="or">— OR —<br>TAP A TEAM BELOW<br>TO ATTACK</div>`:""}</div>`;
-      instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.` + (canAttack ? gangNote(validTargets(c.shooter)) : "");
+      instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.`;
     }else{
       body = `<div class="qrow"><button class="btn big good" data-act="made">🏀 MADE IT</button><button class="btn big bad" data-act="miss">✗ MISSED</button></div>`;
       const who = c.shooterNo ? `Player ${c.shooterNo}` : "one player";
@@ -1236,6 +1243,13 @@ function renderTeams(){
   if(p==="shoot" && S.cur.pending && !S.cur.heartsOnly && T(S.cur.shooter).status==="alive") targets = validTargets(S.cur.shooter);
   const targeting = targets.length>0;
   bar.classList.toggle("targeting", targeting);
+  // helper tips shown just above the current team's card
+  const ct = S.turnTeam, tips = [];
+  if(canUseItems(ct) && T(ct).inv.some(k=>!itemBlockReason(ct,k))) tips.push(`Tap a glowing item on this card to play it (one per turn)`);
+  if(targeting){ const g = targets.filter(wouldGangUp);
+    if(g.length) tips.push(`<b class="warn">⚠ ${g.map(i=>esc(T(i).name)).join(" & ")} ${g.length>1?"were":"was"} hit last turn: attacking ${g.length>1?"them":"them"} gives a bonus turn</b>`); }
+  bar.classList.toggle("has-tip", tips.length>0);
+  bar.style.setProperty("--tiplines", tips.length);
   bar.classList.toggle("compact", S.teams.length>=6);
   bar.innerHTML = S.teams.map((t,i)=>{
     const max = S.cfg.maxHearts;
@@ -1264,6 +1278,7 @@ function renderTeams(){
       <div class="hrow"><div class="tname" style="background:${t.color}">${esc(t.name)}</div><div class="hcount">${t.hearts}</div></div>
       <div class="hearts" style="grid-template-columns:repeat(${Math.min(12,Math.max(max,1))},minmax(0,calc(var(--u)*2.6)))">${hearts}</div>
       <div class="brow"><div class="fx">${fx.join("")}</div><div class="inv">${inv}</div></div>
+      ${i===ct && tips.length ? `<div class="cardtip ${i===0?"edge-l":i===S.teams.length-1?"edge-r":""}">${tips.join("<br>")}</div>` : ""}
       <div class="adj"><button data-adj="${i}:-1">−</button><button data-adj="${i}:1">+</button></div>
     </div>`;
   }).join("");
