@@ -27,6 +27,8 @@ A team review game for band class, made to run on a classroom viewboard with a m
   - **Underdog bonus:** the last-place team gets +1 heart whenever it opens an item box.
   - **Leader tax:** a team at max hearts can't collect items.
 
+- **Action animations:** hits fly from the attacking team to its target ("HIT BY RED"), and the Shield, Ring, Sword, Reed, Metronome, Repeat Sign, Fermata, Modulation, lifesteal, sudden death and knockouts each have a short effect on the team cards. They can be turned off on the setup screen.
+
 All of these can be adjusted on the setup screen.
 
 ## Editing questions

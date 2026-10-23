@@ -252,6 +252,21 @@ header.top .hbtns.left{justify-content:flex-start}
 .finalpill{display:inline-block;margin-right:14px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:#fff;color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1.2s infinite}
 #finalBtn.on{background:#fff;color:#000;border-color:#fff}
 .keylist li .minibtn{margin-top:4px}
+/* action animations */
+#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:44;overflow:hidden}
+.fx1{position:absolute;left:0;top:0;will-change:transform,opacity}
+.fxicon img,.fxheart img,.fxorb img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 10px #fffc) drop-shadow(0 0 22px #ffd40099)}
+.fxorb{border-radius:50%;border:3px solid #fff;background:radial-gradient(circle at 35% 30%,#fff 0 12%,#ff4d4d 30%,#8a0000 100%);display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)*3);color:#fff;text-shadow:2px 2px 0 #000;box-shadow:0 0 18px #ff3b3b,0 0 44px #ff3b3b99}
+.fxorb.sword{border:0;background:none;box-shadow:none}
+.fxheart img{filter:drop-shadow(0 0 8px #3dff7a) drop-shadow(0 0 16px #3dff7a)}
+.fxspark{font-weight:700;text-shadow:0 0 8px currentColor}
+.fxring{border:5px solid #fff;border-radius:50%}
+.fxflash{border-radius:12px;mix-blend-mode:screen}
+.fxtag{font-family:"Press Start 2P";color:#fff;padding:7px 11px;border-radius:8px;white-space:nowrap;text-shadow:2px 2px 0 #000;border:2px solid #fff;box-shadow:0 4px 0 #000a,0 0 18px #0008}
+.fxbig{font-family:"Press Start 2P";white-space:nowrap;text-shadow:3px 3px 0 #000,6px 6px 0 #0008}
+.fxdome{border:4px solid #7ff6ff;border-radius:22px;background:radial-gradient(ellipse at 50% 40%,#7ff6ff22,#0fb5b555 70%,#7ff6ff88);box-shadow:0 0 26px #3ad7ff,inset 0 0 30px #3ad7ffaa}
+.fxcolumn{background:linear-gradient(to top,#ffd400cc,#ffd40044 60%,#ffd40000);border-radius:40% 40% 8px 8px;transform-origin:50% 100%;filter:blur(2px)}
+.fxslash{background:linear-gradient(90deg,#fff0,#fff 30%,#ff2a4d 70%,#ff2a4d00);border-radius:50%;box-shadow:0 0 16px #ff2a4d}
 .minibtn{background:#0008;border:2px solid #fff4;border-radius:8px;padding:6px 10px;font-size:calc(var(--u)*1.3);font-weight:700}
 .steal-who{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);padding:calc(var(--u)*1) calc(var(--u)*1.6);border-radius:10px;color:#fff;text-shadow:3px 3px 0 #000;animation:pulse 1s infinite}
 
@@ -407,6 +422,9 @@ header.top .hbtns.left{justify-content:flex-start}
       <div class="row"><label>Leader tax</label>
         <div class="seg" data-seg="leaderTax"><button data-v="0">Off</button><button data-v="1">On</button></div>
         <div class="hint">A team at max hearts can't collect items — they pick again.</div></div>
+      <div class="row"><label>Action animations</label>
+        <div class="seg" data-seg="anims"><button data-v="0">Off</button><button data-v="1">On</button></div>
+        <div class="hint">Hits, shields, revives and other item effects play over the team cards. Turn off if the board lags.</div></div>
       <div class="row" style="margin-top:14px"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
     </div>
     <details class="card wide collapsible" id="itemsCard">
@@ -439,6 +457,7 @@ header.top .hbtns.left{justify-content:flex-start}
 
 <section id="endscreen" class="hidden"></section>
 <div id="modalRoot"></div>
+<div id="fxLayer"></div>
 <div id="toasts"></div>
 
 <script>
@@ -837,7 +856,7 @@ const DEFAULT_CFG = {
   teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5, stealAnswerTime:5,
   wrongCost:1, stealCost:1, cfgVer:3,
   handLimit:2, players:6, underdog:1, leaderTax:1, boxCount:30,
-  listenCount:3, staffCount:3, musicLevel:0,
+  listenCount:3, staffCount:3, musicLevel:0, anims:1,
   items:{ shield:{count:1,after:"again"}, ring:{count:1,after:"again"}, sword:{count:1,after:"again"},
           reed:{count:1,after:"again"}, metronome:{count:1,after:"again"}, repeat:{count:1,after:"again"},
           fermata:{count:1,after:"again"}, modulation:{count:1,after:"again"},
@@ -1089,6 +1108,105 @@ function floatFx(i, text, cls){
   setTimeout(()=>d.remove(), 1300);
 }
 
+/* ============================================================
+   ACTION ANIMATIONS — quick overlay effects on the team cards.
+   They never block the game: everything runs on a separate layer and cleans itself up.
+============================================================ */
+let pendingAnim = [];
+const REDUCED_MOTION = (()=>{ try{ return matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } })();
+function anim(type, o){ if(CFG.anims===0 || REDUCED_MOTION) return; pendingAnim.push(Object.assign({type, delay:0}, o||{})); }
+function playAnims(){
+  const list = pendingAnim; pendingAnim = [];
+  list.forEach(a=>{ const go = ()=>{ try{ ANIMS[a.type] && ANIMS[a.type](a); }catch(e){} }; a.delay ? setTimeout(go, a.delay) : go(); });
+}
+const fxU = () => Math.min(innerWidth/100, innerHeight*1.78/100);
+const teamEl = i => document.querySelector(`.team[data-i="${i}"]`);
+function ctr(i){ const e = teamEl(i); if(!e) return null; const r = e.getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top+r.height/2, r}; }
+const P = (x,y,t="") => `translate(${x}px,${y}px) translate(-50%,-50%) ${t}`;
+function fxDiv(html, cls, w, h){ const d = document.createElement("div"); d.className = "fx1 "+(cls||""); d.innerHTML = html||"";
+  if(w) d.style.width = w+"px"; if(h) d.style.height = h+"px"; d.style.opacity = 0; $("#fxLayer").appendChild(d); return d; }
+function run(el, kf, ms, opt){ const a = el.animate(kf, Object.assign({duration:ms, easing:"ease-out", fill:"forwards"}, opt||{})); a.onfinish = ()=>el.remove(); return a; }
+function fxIcon(src, size, kf, ms, opt){ return run(fxDiv(`<img src="${src}" alt="">`, "fxicon", size, size), kf, ms, opt); }
+function shake(i, big){ const e = teamEl(i); if(!e) return; const s = big?16:9;
+  e.animate([0,-s,s,-s*.6,s*.6,-s*.3,0].map(x=>({transform:`translateX(${x}px)`})), {duration:450}); }
+function flash(i, color, ms=600){ const c = ctr(i); if(!c) return; const d = fxDiv("", "fxflash", c.r.width, c.r.height); d.style.background = color;
+  run(d, [{transform:`translate(${c.r.left}px,${c.r.top}px)`, opacity:1},{transform:`translate(${c.r.left}px,${c.r.top}px)`, opacity:0}], ms); }
+function burst(x, y, color, n=8, dist, ch="✦", up=false){ const U = fxU(); dist = dist || U*7;
+  for(let k=0;k<n;k++){ const ang = up ? -Math.PI/2 + (Math.random()-.5)*1.2 : k/n*Math.PI*2 + Math.random()*.4;
+    const d = fxDiv(ch, "fxspark"); d.style.color = color; d.style.fontSize = (U*(1.6+Math.random()))+"px";
+    run(d, [{transform:P(x,y,"scale(.4)"), opacity:1},{transform:P(x+Math.cos(ang)*dist, y+Math.sin(ang)*dist, "scale(1.1)"), opacity:0}], 600+Math.random()*300, {delay:up?Math.random()*300:0}); } }
+function ringPulse(x, y, color, size){ const d = fxDiv("", "fxring", size, size); d.style.borderColor = color; d.style.boxShadow = `0 0 24px ${color}, inset 0 0 18px ${color}`;
+  run(d, [{transform:P(x,y,"scale(.15)"), opacity:1},{transform:P(x,y,"scale(1.5)"), opacity:0}], 560); }
+// a label that pops above a team card, e.g. "HIT BY RED"
+function fxTag(i, html, color, delay=0){ const c = ctr(i); if(!c) return; const U = fxU(); const d = fxDiv(html, "fxtag"); d.style.background = color; d.style.fontSize = (U*1.2)+"px";
+  const y0 = c.r.top - U*1.2;
+  run(d, [{transform:P(c.x,y0+U*2,"scale(.5)"), opacity:0},{transform:P(c.x,y0,"scale(1.12)"), opacity:1, offset:.12},{transform:P(c.x,y0,"scale(1)"), opacity:1, offset:.8},{transform:P(c.x,y0-U*2.5,"scale(1)"), opacity:0}], 1900, {delay}); }
+function bigTextAt(x, y, text, color, size, delay=0){ const U = fxU(); const d = fxDiv(text, "fxbig"); d.style.fontSize = (U*(size||3))+"px"; d.style.color = color||"#fff";
+  run(d, [{transform:P(x,y,"scale(3)"), opacity:0},{transform:P(x,y,"scale(1)"), opacity:1, offset:.22},{transform:P(x,y,"scale(1)"), opacity:1, offset:.8},{transform:P(x,y-U*3,"scale(1)"), opacity:0}], 1500, {delay, easing:"cubic-bezier(.2,.9,.3,1.15)"}); }
+function bigText(i, text, color, size, delay){ const c = ctr(i); if(c) bigTextAt(c.x, c.y, text, color, size, delay); }
+// something flying from one card to another on an arc
+function fly(from, to, html, cls, size, ms, spin, onLand){ const p1 = ctr(from), p2 = ctr(to); if(!p1||!p2) return;
+  const U = fxU(), mx = (p1.x+p2.x)/2, my = Math.min(p1.y,p2.y) - U*13 - Math.abs(p1.x-p2.x)*.08;
+  const d = fxDiv(html, cls, size, size);
+  const a = d.animate([{transform:P(p1.x,p1.y,"scale(.5) rotate(0deg)"), opacity:1},{transform:P(mx,my,`scale(1.2) rotate(${spin/2}deg)`), opacity:1, offset:.5},{transform:P(p2.x,p2.y,`scale(1) rotate(${spin}deg)`), opacity:1}],
+    {duration:ms, easing:"ease-in-out", fill:"forwards"});
+  a.onfinish = ()=>{ d.remove(); if(onLand) onLand(p2); }; }
+const UP = s => esc(s).toUpperCase();
+
+const ANIMS = {
+  hit(a){ const U = fxU(), col = T(a.from).color;
+    const html = a.sword ? `<img src="${A.ic_sword}" alt="">` : "⚔";
+    fly(a.from, a.to, html, "fxorb"+(a.sword?" sword":""), U*(a.sword?7.5:5.5), 520, a.sword?540:360, p=>{
+      ringPulse(p.x, p.y, col, U*18); burst(p.x, p.y, "#fff", 10); burst(p.x, p.y, col, 6, U*9, "✸");
+      shake(a.to, a.dmg>1); flash(a.to, "rgba(255,30,30,.55)", 500);
+      if(a.dmg>1) bigTextAt(p.x, p.y, `${a.dmg}× HIT!`, "#ff5050", 2.6);
+      fxTag(a.to, `⚔ HIT BY ${UP(T(a.from).name)}`, col);
+    }); },
+  drain(a){ const U = fxU();
+    for(let k=0;k<Math.max(1,a.n||1)+1;k++) setTimeout(()=>fly(a.from, a.to, `<img src="${A.heart}" alt="">`, "fxheart", U*3.2, 620, 0, k===0 ? p=>{
+      burst(p.x, p.y, "#3dff7a", 8, U*6, "♥"); fxTag(a.to, `♥ LIFESTEAL +${a.n||1}`, "#16a34a"); } : null), k*130); },
+  heal(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    fxIcon(A.heart, U*6, [{transform:P(c.x,c.y,"scale(0)"), opacity:1},{transform:P(c.x,c.y-U*2,"scale(1.4)"), opacity:1, offset:.35},{transform:P(c.x,c.y-U*7,"scale(1)"), opacity:0}], 1000);
+    burst(c.x, c.y, "#ff6b8a", 6, U*5, "♥"); },
+  hurt(a){ shake(a.i); flash(a.i, "rgba(255,30,30,.5)", 500); },
+  sd(a){ const c = ctr(a.i); if(!c) return; ringPulse(c.x, c.y, "#ff2a2a", fxU()*20); bigText(a.i, "SUDDEN DEATH", "#ff4040", 1.9); },
+  ko(a){ const c = ctr(a.i); if(!c) return; flash(a.i, "rgba(200,200,200,.7)", 800); burst(c.x, c.y, "#bbb", 12, fxU()*9, "✖"); shake(a.i, true); bigText(a.i, "K.O.!", "#ff3030", 4); },
+  reed(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    const col = fxDiv("", "fxcolumn", c.r.width*.8, c.r.height*2);
+    run(col, [{transform:P(c.x, c.r.bottom - c.r.height, "scaleY(.2)"), opacity:0},{transform:P(c.x, c.r.bottom - c.r.height, "scaleY(1)"), opacity:1, offset:.3},{transform:P(c.x, c.r.bottom - c.r.height, "scaleY(1)"), opacity:0}], 1500);
+    fxIcon(A.ic_reed, U*9, [{transform:P(c.x, c.r.bottom, "scale(.6)"), opacity:0},{transform:P(c.x, c.y-U*2, "scale(1.3)"), opacity:1, offset:.45},{transform:P(c.x, c.y-U*5, "scale(1.1)"), opacity:0}], 1500);
+    for(let k=0;k<14;k++) setTimeout(()=>burst(c.r.left + Math.random()*c.r.width, c.r.bottom, "#ffd400", 1, U*12, "✦", true), k*60);
+    flash(a.i, "rgba(255,212,0,.45)", 900); fxTag(a.i, "✨ RESURRECTED", "#b08800", 300); },
+  shield(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    const d = fxDiv("", "fxdome", c.r.width+U*2, c.r.height+U*2);
+    run(d, [{transform:P(c.x,c.y,"scale(.6)"), opacity:0},{transform:P(c.x,c.y,"scale(1.05)"), opacity:1, offset:.3},{transform:P(c.x,c.y,"scale(1)"), opacity:.9, offset:.7},{transform:P(c.x,c.y,"scale(1.08)"), opacity:0}], 1400);
+    fxIcon(A.ic_shield, U*9, [{transform:P(c.x,c.y,"scale(0)"), opacity:1},{transform:P(c.x,c.y,"scale(1.4)"), opacity:1, offset:.3},{transform:P(c.x,c.y,"scale(1)"), opacity:1, offset:.7},{transform:P(c.x,c.y,"scale(1)"), opacity:0}], 1300);
+    fxTag(a.i, "🛡 SHIELD UP", "#0b8f8f"); },
+  ring(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    fxIcon(A.ic_ring, U*8, [{transform:P(c.x,c.y,"scale(0) rotate(-360deg)"), opacity:1},{transform:P(c.x,c.y,"scale(1.3) rotate(0deg)"), opacity:1, offset:.45},{transform:P(c.x,c.y-U*2,"scale(1)"), opacity:0}], 1300);
+    burst(c.x, c.y, "#3dff7a", 10, U*8); fxTag(a.i, "♥ LIFESTEAL RING", "#16a34a"); },
+  sword(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    fxIcon(A.ic_sword, U*10, [{transform:P(c.x-U*4,c.y,"rotate(-80deg) scale(.6)"), opacity:0},{transform:P(c.x-U*2,c.y,"rotate(-80deg) scale(1.3)"), opacity:1, offset:.25},{transform:P(c.x+U*3,c.y,"rotate(45deg) scale(1.3)"), opacity:1, offset:.5},{transform:P(c.x+U*3,c.y,"rotate(45deg) scale(1.1)"), opacity:0}], 1200);
+    const sl = fxDiv("", "fxslash", c.r.width*.9, U*.9);
+    run(sl, [{transform:P(c.x,c.y,"rotate(-22deg) scaleX(0)"), opacity:1},{transform:P(c.x,c.y,"rotate(-22deg) scaleX(1)"), opacity:1, offset:.4},{transform:P(c.x,c.y,"rotate(-22deg) scaleX(1)"), opacity:0}], 700, {delay:450});
+    setTimeout(()=>{ shake(a.i); flash(a.i, "rgba(255,0,60,.4)", 500); }, 500); fxTag(a.i, "⚔ CURSED SWORD 2×", "#a3132b"); },
+  metronome(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    const d = fxDiv(`<img src="${A.ic_metronome}" alt="">`, "fxicon", U*8, U*8);
+    run(d, [-28,28,-28,28,0].map((r,k,arr)=>({transform:P(c.x,c.y,`rotate(${r}deg) scale(${k===0?.5:1.2})`), opacity:k===arr.length-1?0:1})), 1400, {easing:"ease-in-out"});
+    fxTag(a.i, "⏱ +10 SECONDS", "#8a4b1f"); },
+  repeat(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
+    fxIcon(A.ic_repeat, U*8, [{transform:P(c.x,c.y,"scale(0) rotate(0deg)"), opacity:1},{transform:P(c.x,c.y,"scale(1.3) rotate(360deg)"), opacity:1, offset:.5},{transform:P(c.x,c.y,"scale(1) rotate(360deg)"), opacity:0}], 1200);
+    ringPulse(c.x, c.y, "#ffd400", U*16); fxTag(a.i, "𝄇 GOES AGAIN", "#16a34a"); },
+  fermata(a){ const U = fxU();
+    fly(a.from, a.to, `<img src="${A.ic_fermata}" alt="">`, "fxicon", U*7, 650, 0, p=>{
+      flash(a.to, "rgba(120,210,255,.7)", 900); burst(p.x, p.y, "#bfefff", 10, U*8, "❄");
+      fxTag(a.to, `HELD BY ${UP(T(a.from).name)} — NO STEAL`, "#2463e0"); }); },
+  modulation(a){ const bar = $("#teambar").getBoundingClientRect(); const U = fxU(), x = bar.left+bar.width/2, y = bar.top+bar.height/2;
+    fxIcon(A.ic_modulation, U*14, [{transform:P(x,y,"scale(0) rotate(0deg)"), opacity:1},{transform:P(x,y,"scale(1.2) rotate(360deg)"), opacity:1, offset:.5},{transform:P(x,y,"scale(1) rotate(540deg)"), opacity:0}], 1400);
+    document.querySelectorAll(".team").forEach((e,k)=>e.animate([{transform:"translateY(0)"},{transform:"translateY(-18px)"},{transform:"translateY(0)"}], {duration:420, delay:k*70, easing:"ease-out"}));
+    bigTextAt(x, bar.top - U*2, "ORDER REVERSED!", "#3ad7ff", 2.4, 200); }
+};
+
 function heal(i, n){
   const t = T(i), before = t.hearts;
   t.hearts = Math.min(S.cfg.maxHearts, t.hearts + n);
@@ -1105,20 +1223,20 @@ function loseHearts(i, n){
   if(t.hearts<=0){ return; }
   const lost = Math.min(n, t.hearts);
   t.hearts -= lost;
-  pendingFx.push([i, "-"+lost, "minus"]); SFX.hit();
-  if(t.hearts===0 && t.status==="alive"){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); }
+  pendingFx.push([i, "-"+lost, "minus"]); SFX.hit(); anim("hurt", {i});
+  if(t.hearts===0 && t.status==="alive"){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); anim("sd", {i, delay:350}); }
 }
 function eliminate(i){
   const t = T(i);
   const r = t.inv.indexOf("reed");
   if(r>=0){
     t.inv.splice(r,1); t.hearts = Math.min(2, S.cfg.maxHearts); t.status="alive";
-    pendingFx.push([i, "+2", "plus"]); itemSound("reed");
+    pendingFx.push([i, "+2", "plus"]); itemSound("reed"); anim("reed", {i});
     toast(`REED OF RESURRECTION!<br>${esc(t.name)} rises with 2 hearts!`, "green");
     return;
   }
   t.status = "out"; t.hearts = 0; t.shield=false; t.ring=0; t.sword=0;
-  SFX.ko(); toast(`${esc(t.name)} IS OUT!`, "red");
+  SFX.ko(); toast(`${esc(t.name)} IS OUT!`, "red"); anim("ko", {i});
 }
 function validTargets(attacker){
   return S.teams.map((t,i)=>i).filter(i=> i!==attacker && T(i).status==="alive" && T(i).hearts>0 && !T(i).shield);
@@ -1135,8 +1253,9 @@ function attack(attacker, target, countsForGangUp=true){
     (S.turnAttacks[target] = S.turnAttacks[target] || []);
     if(!S.turnAttacks[target].includes(attacker)) S.turnAttacks[target].push(attacker);
   }
-  if(a.ring>0 && lost>0){ heal(attacker, lost); }
-  if(t.hearts===0){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); }
+  anim("hit", {from:attacker, to:target, dmg:lost, sword:dmg>1});
+  if(a.ring>0 && lost>0){ heal(attacker, lost); anim("drain", {from:target, to:attacker, n:lost, delay:560}); }
+  if(t.hearts===0){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); anim("sd", {i:target, delay:dmg>1?1700:900}); }
 }
 
 /* ---------- turn flow ---------- */
@@ -1185,7 +1304,7 @@ function endTurn(){
 
 /* ---------- actions (each snapshots first) ---------- */
 let pendingFx = [];
-function act(fn){ return (...args)=>{ snapshot(); pendingFx = []; fn(...args); render(); persist(); }; }
+function act(fn){ return (...args)=>{ snapshot(); pendingFx = []; pendingAnim = []; fn(...args); render(); persist(); }; }
 
 const pickBox = act(i=>{
   const b = S.boxes[i]; if(!b || b.opened) return;
@@ -1202,7 +1321,7 @@ const pickBox = act(i=>{
     S.phase = "item"; S.cur.item = b.item; itemSound(b.item);
     const ti = S.turnTeam, t = T(ti), k = b.item;
     // underdog bonus: last place gets +1 heart for any item box
-    if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1); S.cur.underdog = true; }
+    if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1); anim("heal", {i:ti}); S.cur.underdog = true; }
     // leader tax: a team at max hearts can't collect good items
     if(C("leaderTax",0) && k!=="scale" && t.hearts >= S.cfg.maxHearts){ S.cur.taxed = true; return; }
     if(ITEMS[k].held){
@@ -1235,7 +1354,7 @@ function resolveCorrect(i, stolen=false){
   const t = T(i);
   S.lastAnswer = curBox().a || null;
   if(t.status==="sd"){
-    heal(i, 1);
+    heal(i, 1); anim("heal", {i});
     toast(`${esc(t.name)} earns a heart back from SUDDEN DEATH!`, "green");
     S.phase = "reveal"; S.cur.revealMsg = `${tname(i)} is back in the game. <b>No shots</b> when coming back from sudden death.`;
     return;
@@ -1323,7 +1442,7 @@ function afterMadeChoice(){
   S.cur.pending = false; S.cur.made++; S.cur.results.push("made");
   if(S.cur.mode==="free"){ S.cur.shotsLeft--; if(S.cur.shotsLeft<=0){ endTurn(); } }
 }
-const madeHeal = act(()=>{ heal(S.cur.shooter, 1); afterMadeChoice(); });
+const madeHeal = act(()=>{ heal(S.cur.shooter, 1); anim("heal", {i:S.cur.shooter}); afterMadeChoice(); });
 const madeAttack = act(target=>{ attack(S.cur.shooter, target); afterMadeChoice(); });
 
 function itemBlockReason(ti, k){
@@ -1341,6 +1460,7 @@ const useItem = act((ti, k)=>{
   if(S.itemUsedTurn===S.turnNo){ UNDO.pop(); toast("One item per turn!"); return; }
   const why = itemBlockReason(ti, k); if(why){ UNDO.pop(); toast(why); return; }
   t.inv.splice(idx,1); itemSound(k); S.itemUsedTurn = S.turnNo;
+  if(["reed","shield","ring","sword","metronome","repeat","modulation"].includes(k)) anim(k, {i:ti});
   if(k==="reed"){ t.hearts = 2; t.status="alive"; pendingFx.push([ti,"+2","plus"]);
     toast(`${esc(t.name)} plays the REED OF RESURRECTION!<br>Back with 2 hearts`, "green"); }
   if(k==="shield"){ t.shield = true; toast(`${esc(t.name)} raises the SHIELD!<br>No attacks on them until their next turn`, "cyan"); }
@@ -1375,7 +1495,7 @@ function startFermata(ti){
 const applyFermata = act((ti, target)=>{
   const t = T(ti); const idx = t.inv.indexOf("fermata"); if(idx<0) return;
   t.inv.splice(idx,1); SFX.item(); S.itemUsedTurn = S.turnNo;
-  T(target).fermata = true;
+  T(target).fermata = true; anim("fermata", {from:ti, to:target});
   toast(`FERMATA!<br>${esc(T(target).name)} is held — no steal on the next wrong answer`, "cyan");
 });
 function canUseItems(ti){
@@ -1421,7 +1541,7 @@ function stopListening(){ if(listening && typeof MUSIC!=="undefined"){ MUSIC.sto
 
 function undo(){
   if(!UNDO.length){ toast("Nothing to undo"); return; }
-  stopTimer(); stopListening(); S = JSON.parse(UNDO.pop()); pendingFx = [];
+  stopTimer(); stopListening(); S = JSON.parse(UNDO.pop()); pendingFx = []; pendingAnim = []; $("#fxLayer").innerHTML = "";
   if(S.phase==="question" || S.phase==="steal"){ const tt = phaseTime(); timerState = {left:tt, total:tt, running:false}; }
   render(); persist(); toast("Undone");
 }
@@ -1484,7 +1604,9 @@ function render(){
   $("#soundBtn").textContent = soundOn ? "🔊" : "🔇";
   renderTeams();
   renderStage();
-  pendingFx.forEach(([i,txt,cls])=>floatFx(i,txt,cls)); pendingFx = [];
+  const lateHit = new Set(pendingAnim.filter(a=>a.type==="hit").map(a=>a.to));
+  pendingFx.forEach(([i,txt,cls])=>{ if(cls==="minus" && lateHit.has(i)) setTimeout(()=>floatFx(i,txt,cls), 520); else floatFx(i,txt,cls); }); pendingFx = [];
+  playAnims();
 }
 
 function renderStage(){
