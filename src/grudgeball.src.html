@@ -650,9 +650,11 @@ const ATTACK_SND_HIT = 370;
 const uiSel = () => playSnd("select");
 const ITEM_SND = { shots:"basket", shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
 const SND = {}, SND_BAD = {};
+const SOUND_VER = __SOUND_VER__;   // filled in by build.py
 function getSnd(k){
   if(!SND[k]){
-    const a = new Audio("sounds/" + SOUND_FILES[k] + ".mp3"); a.preload = "auto";
+    const v = SOUND_VER[SOUND_FILES[k]];
+    const a = new Audio("sounds/" + SOUND_FILES[k] + ".mp3" + (v ? "?v=" + v : "")); a.preload = "auto";
     a.addEventListener("error", ()=>{ SND_BAD[k] = true; });
     SND[k] = a;
   }

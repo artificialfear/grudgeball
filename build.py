@@ -20,5 +20,9 @@ def inline(m):
     if '</script' in js.lower(): sys.exit('script contains </script: '+m.group(1))
     return '<script>\n'+js+'\n</script>'
 s=re.sub(r'<!--INLINE:([\w/.\-]+)-->',inline,s)
+# sound files keep their names when replaced, so tag each with a content hash: browsers fetch the new one
+import hashlib
+sver={os.path.splitext(os.path.basename(p))[0]: hashlib.md5(open(p,'rb').read()).hexdigest()[:8] for p in sorted(glob.glob('sounds/*.mp3'))}
+s=s.replace('__SOUND_VER__', json.dumps(sver))
 out=re.sub(r'__A_(\w+?)__',lambda m:uri(m.group(1)),s)
 open('index.html','w').write(out); print(len(out)//1024,'KB')

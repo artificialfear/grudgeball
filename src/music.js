@@ -267,9 +267,23 @@ const MUSIC = (function(){
   let ctxA = null, live = [], endTimer = null;
   function audio(){ try{ ctxA = ctxA || (typeof actx!=="undefined" && actx) || new (window.AudioContext||window.webkitAudioContext)(); if(ctxA.state==="suspended") ctxA.resume(); }catch(e){} return ctxA; }
   function stop(){ live.forEach(n=>{ try{ n.stop(); }catch(e){} }); live = []; if(endTimer){ clearTimeout(endTimer); endTimer=null; } }
+  // output bus: about +10 dB louder than before, with a limiter that only catches the loudest peaks
+  // (soft notes pass untouched, so crescendo/decrescendo questions keep their contrast)
+  const BOOST = { gain: 3.2 };
+  const buses = new WeakMap();
+  function bus(ac){
+    let b = buses.get(ac);
+    if(!b){
+      const g = ac.createGain(); g.gain.value = BOOST.gain;
+      const lim = ac.createDynamicsCompressor();
+      lim.threshold.value = -4; lim.knee.value = 3; lim.ratio.value = 12; lim.attack.value = 0.002; lim.release.value = 0.12;
+      g.connect(lim).connect(ac.destination); b = g; buses.set(ac, b);
+    }
+    return b;
+  }
   function tone(ac, t0, midi, dur, vel){
     const f = 440*Math.pow(2,(midi-69)/12);
-    const g = ac.createGain(); g.connect(ac.destination);
+    const g = ac.createGain(); g.connect(bus(ac));
     const peak = 0.22*vel;
     g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0+0.015);
     g.gain.exponentialRampToValueAtTime(peak*0.55, t0+Math.min(0.25, dur*0.6));
@@ -282,7 +296,7 @@ const MUSIC = (function(){
   function click(ac, t0, accent){
     const o = ac.createOscillator(), g = ac.createGain(); o.type="square"; o.frequency.value = accent?1500:950;
     g.gain.setValueAtTime(accent?0.3:0.14, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0+0.05);
-    o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0+0.06); live.push(o);
+    o.connect(g).connect(bus(ac)); o.start(t0); o.stop(t0+0.06); live.push(o);
   }
   function play(m, onEnd){
     stop(); const ac = audio(); if(!ac){ if(onEnd) onEnd(); return 0; }
@@ -294,6 +308,6 @@ const MUSIC = (function(){
   }
 
   return { make, renderStaff, staffReady, play, stop,
-           _test:{S, L, spellAbove, midiOf, dLetter, dOct, KEYS, INTERVALS, STAFF_BY_LEVEL, LISTEN_BY_LEVEL} };
+           _test:{tone, click, bus, BOOST, S, L, spellAbove, midiOf, dLetter, dOct, KEYS, INTERVALS, STAFF_BY_LEVEL, LISTEN_BY_LEVEL} };
 })();
 if(typeof module!=="undefined") module.exports = MUSIC;
