@@ -756,7 +756,7 @@ function renderStage(){
     html = `<div class="gridwrap redsmoke"><div class="gridtitle">CHOOSE YOUR DESTINY</div>
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
       S.boxes.map((b,i)=>{
-        if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px;animation-delay:-${(((i*0.6180339887)%1)*0.82).toFixed(3)}s" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
+        if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
         const ic = b.kind==="item" ? `<img src="${ITEMS[b.item].icon}" alt="">` : `<span class="qm">?</span>`;
         return `<div class="box opened" style="width:${size}px">${ic}</div>`;
       }).join("") + `</div>` +
