@@ -108,6 +108,7 @@ table.items .ds{font-size:calc(var(--u)*1.25);color:var(--dim)}
 header.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-width:0;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.5);background:linear-gradient(#000a,#0000)}
 header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2.6);color:#fff;text-shadow:3px 3px 0 #b00000,6px 6px 0 #000;text-align:center;white-space:nowrap}
 header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
+header.top .hbtns.left{justify-content:flex-start}
 .turnban{flex:1;min-width:0;text-align:center;font-family:"Press Start 2P";font-size:calc(var(--u)*2.2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .turnban .who{padding:4px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
 .turnban .nextup{display:inline-block;margin-left:14px;font-size:calc(var(--u)*1.1);color:var(--dim);vertical-align:middle}
@@ -418,12 +419,13 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 <!-- ================= GAME ================= -->
 <section id="game" class="hidden">
   <header class="top">
-    <div class="hside"></div>
-    <div class="logo">GRUDGE BALL</div>
-    <div class="hside hbtns">
+    <div class="hside hbtns left">
       <button class="topbtn" id="finalBtn" title="Final round: everyone gets the same number of turns, then the game ends">🏁 Final round</button>
       <button class="topbtn" id="undoBtn" title="Undo last action">↶ Undo</button>
       <button class="topbtn" id="adjBtn" title="Manually adjust hearts">± Hearts</button>
+    </div>
+    <div class="logo">GRUDGE BALL</div>
+    <div class="hside hbtns">
       <button class="topbtn" id="soundBtn">🔊</button>
       <button class="topbtn" id="menuBtn">☰</button>
     </div>
