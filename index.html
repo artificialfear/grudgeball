@@ -469,7 +469,7 @@ const SFX = {
 const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
   shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
   basket:"basketball", scale:"traumatic-scale" };
-const ITEM_SND = { shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
+const ITEM_SND = { shots:"basket", shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
 const SND = {}, SND_BAD = {};
 function getSnd(k){
   if(!SND[k]){
@@ -800,7 +800,7 @@ const doAttackTarget = act(target=>{
   if(S.cur.noShots){ toast(`${esc(T(a).name)} took a heart — no shots on a steal.`); endTurn(); return; }
   startShoot(a, "streak");
 });
-const shotMade = act(()=>{ playSnd("basket", SFX.swish); S.cur.pending = true; });
+const shotMade = act(()=>{ SFX.swish(); S.cur.pending = true; });
 const shotMiss = act(()=>{
   S.cur.results.push("miss");
   if(S.cur.mode==="streak"){ toast("MISSED! Turn over."); endTurn(); return; }
