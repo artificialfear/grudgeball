@@ -129,10 +129,12 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .gridwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--u)*1)}
 .gridtitle{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);color:#fff;text-shadow:3px 3px 0 #b00000;margin-bottom:calc(var(--u)*1.2)}
 .boxes{display:grid;gap:calc(var(--u)*.9);justify-content:center}
-.box{position:relative;padding:0;background:transparent url(__A_qbox__) center/contain no-repeat;image-rendering:pixelated;aspect-ratio:1;transition:transform .1s}
+.box{position:relative;padding:0;background:transparent url(__A_qbox_strip__) 0 0/400% 100% no-repeat;image-rendering:pixelated;aspect-ratio:1;transition:transform .1s;animation:qbox .82s infinite step-end}
+/* frame timings copied from the original GIF: 140 / 140 / 400 / 140 ms */
+@keyframes qbox{0%{background-position:0% 0}17.07%{background-position:33.333% 0}34.15%{background-position:66.667% 0}82.93%{background-position:100% 0}100%{background-position:100% 0}}
 .box:active{transform:scale(.92)}
 .box .n{position:absolute;right:4%;bottom:2%;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);color:#fff;text-shadow:2px 2px 0 #000}
-.box.opened{background:#ffffff10;border:2px dashed #ffffff30;border-radius:8px;pointer-events:none}
+.box.opened{animation:none;background:#ffffff10;border:2px dashed #ffffff30;border-radius:8px;pointer-events:none}
 .box.opened img{position:absolute;inset:18%;width:64%;height:64%;object-fit:contain;opacity:.4;image-rendering:pixelated}
 .box.opened .qm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);color:#ffffff44}
 
@@ -754,7 +756,7 @@ function renderStage(){
     html = `<div class="gridwrap redsmoke"><div class="gridtitle">CHOOSE YOUR DESTINY</div>
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
       S.boxes.map((b,i)=>{
-        if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
+        if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px;animation-delay:-${(((i*0.6180339887)%1)*0.82).toFixed(3)}s" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
         const ic = b.kind==="item" ? `<img src="${ITEMS[b.item].icon}" alt="">` : `<span class="qm">?</span>`;
         return `<div class="box opened" style="width:${size}px">${ic}</div>`;
       }).join("") + `</div>` +
