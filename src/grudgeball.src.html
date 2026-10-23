@@ -644,7 +644,7 @@ const SFX = {
 const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
   shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
   basket:"basketball", scale:"traumatic-scale",
-  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round" };
+  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round", victory:"victory" };
 // attack.mp3's impact is ~0.34s into the file (+ ~30ms for audio to start): start it that long before the orb lands
 const ATTACK_SND_HIT = 370;
 const uiSel = () => playSnd("select");
@@ -1558,10 +1558,11 @@ function finishGame(){
   $("#endscreen").innerHTML = `<h1 class="${winners.length>2?"long":""}">${title}</h1><div class="rank ${S.teams.length>5?"two":""}">${rows}</div>
     <div class="qrow"><button class="btn big" id="endBack">↶ Back to game</button><button class="btn big good" id="endAgain">Play again</button><button class="btn big" id="endSetup">Setup</button></div>`;
   showScreen("end");
-  SFX.item();
-  $("#endBack").onclick = ()=>{ S.over=false; if((activeTeams().length<=1 || S.finalEnded) && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
-  $("#endAgain").onclick = ()=>{ playSnd("start"); newGame(); };
-  $("#endSetup").onclick = ()=>{ store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); };
+  // the end screen can be drawn twice by one action; only start the fanfare once
+  if(finishGame.state !== S || finishGame.turn !== S.turnNo){ finishGame.state = S; finishGame.turn = S.turnNo; playSnd("victory", SFX.item); }
+  $("#endBack").onclick = ()=>{ stopSnd("victory"); S.over=false; if((activeTeams().length<=1 || S.finalEnded) && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
+  $("#endAgain").onclick = ()=>{ stopSnd("victory"); playSnd("start"); newGame(); };
+  $("#endSetup").onclick = ()=>{ stopSnd("victory"); store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); };
 }
 
 function showScreen(n){
