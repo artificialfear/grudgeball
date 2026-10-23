@@ -16,7 +16,10 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Pixelify Sans",system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Pixelify Sans",system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none}
+/* touch screens: no double-tap zoom, no long-press "save image" menus, no dragging pictures around */
+img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
+#setup,.modal .card,.view{touch-action:pan-y}
 button{font-family:inherit;color:inherit;cursor:pointer;border:0;touch-action:manipulation}
 input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:text}
 .px{font-family:"Press Start 2P",monospace;letter-spacing:.02em}
@@ -1333,6 +1336,8 @@ $("#setup").addEventListener("pointerdown", ()=>musicPlay());
 document.addEventListener("keydown", ()=>{ if(!$("#setup").classList.contains("hidden")) musicPlay(); });
 updateMusicBtn();
 
+// long-press on a touch board shouldn't pop up the browser menu (text fields still allow it)
+document.addEventListener("contextmenu", e=>{ if(!e.target.closest("input,textarea")) e.preventDefault(); });
 renderSetup();
 showScreen("setup");
 </script>
