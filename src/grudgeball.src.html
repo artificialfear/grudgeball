@@ -249,6 +249,11 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
   background:radial-gradient(circle at 50% 38%,#5a2694 0%,#2a1050 45%,#120724 80%);box-shadow:0 0 50px #a14bff88,inset 0 0 0 3px #8a6a3a;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
 .mcard .mt{font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);color:#ffb3ec;background:#2a1240;border:2px solid #8a5ab0;border-radius:6px;padding:8px 12px;text-align:center;line-height:1.4}
 .mcard img{flex:1;min-height:50%;width:78%;object-fit:contain;filter:drop-shadow(0 0 18px #c77dff)}
+.mcard.wide{aspect-ratio:1.15;max-width:48%}
+.mcard.wide img{width:94%;min-height:0;border-radius:6px;filter:drop-shadow(0 0 14px #ff6b6b)}
+.mcard .mballs{flex:1;min-height:0;width:90%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4% 6%}
+.mcard .mballs img{flex:none;width:42%;min-height:0;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 0 14px #ff9d3a);image-rendering:pixelated;animation:bounce 1.2s infinite}
+.mcard .mballs img:nth-child(2){animation-delay:.15s}.mcard .mballs img:nth-child(3){animation-delay:.3s}
 .mcard .md{font-size:calc(var(--u)*1.35);color:#e9d5ff;text-align:center;line-height:1.3;background:#0008;border-radius:8px;padding:8px 10px}
 .shooterno{font-family:"Press Start 2P";font-size:calc(var(--u)*1.5);color:var(--cyan);background:#0009;border:2px solid var(--cyan);border-radius:8px;padding:8px 12px}
 .balls{display:flex;gap:calc(var(--u)*1)}
@@ -410,7 +415,7 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 const A = {
   heart:"__A_heart__", qbox:"__A_qbox__", ball:"__A_ball__",
   ic_shield:"__A_ic_shield__", ic_ring:"__A_ic_ring__", ic_reed:"__A_ic_reed__", ic_sword:"__A_ic_sword__",
-  card_shield:"__A_card_shield__", card_reed:"__A_card_reed__", card_sword:"__A_card_sword__", card_scale:"__A_card_scale__"
+  card_scale:"__A_card_scale__"
 };
 
 const SVG = s => "data:image/svg+xml;utf8,"+encodeURIComponent(s);
@@ -420,17 +425,17 @@ A.ic_fermata = SVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
 A.ic_modulation = SVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 30 A20 20 0 0 1 48 18" stroke="#1a0a02" stroke-width="10"/><path d="M12 30 A20 20 0 0 1 48 18" stroke="#3ad7ff" stroke-width="5"/><path d="M52 34 A20 20 0 0 1 16 46" stroke="#1a0a02" stroke-width="10"/><path d="M52 34 A20 20 0 0 1 16 46" stroke="#ff6bd6" stroke-width="5"/></g><path d="M41 8 L54 17 L42 26 Z" fill="#3ad7ff" stroke="#1a0a02" stroke-width="2.5" stroke-linejoin="round"/><path d="M23 56 L10 47 L22 38 Z" fill="#ff6bd6" stroke="#1a0a02" stroke-width="2.5" stroke-linejoin="round"/></svg>`);
 const FREE_SHOTS = 3;
 const ITEMS = {
-  shield:{name:"Magical Shield of Protection", short:"Shield", icon:A.ic_shield, card:A.card_shield, held:true,
+  shield:{name:"Magical Shield of Protection", short:"Shield", icon:A.ic_shield, card:null, held:true,
     desc:"Use it on your turn: nobody can attack your team until your next turn."},
   ring:{name:"Magical Lifesteal Ring", short:"Lifesteal", icon:A.ic_ring, card:null, held:true,
     desc:"Use it on your turn: for the rest of this turn, every heart you take from another team heals you +1."},
-  sword:{name:"Cursed Sword", short:"Sword", icon:A.ic_sword, card:A.card_sword, held:true,
+  sword:{name:"Cursed Sword", short:"Sword", icon:A.ic_sword, card:null, held:true,
     desc:"Use it on your turn: for two of your turns, your attacks take 2 hearts — but attacks on YOU also take 2."},
-  reed:{name:"Reed of Resurrection", short:"Reed", icon:A.ic_reed, card:A.card_reed, held:true,
+  reed:{name:"Reed of Resurrection", short:"Reed", icon:A.ic_reed, card:null, held:true,
     desc:"If your team gets knocked out, the Reed brings you back with 2 hearts automatically. (Or play it during sudden death.)"},
   shots:{name:"Three Free Shots", short:"Free Shots", icon:A.ball, card:null, held:false,
     desc:"Take 3 shots no matter what. Every basket = +1 heart OR take a heart from another team."},
-  scale:{name:"The Traumatic Scale", short:"Traumatic Scale", icon:A.ic_sword, card:A.card_scale, held:false,
+  scale:{name:"The Traumatic Scale", short:"Traumatic Scale", icon:A.card_scale, card:null, held:false,
     desc:"Aka the chromatic scale (hasn't been practiced enough). Your team loses one heart."},
   metronome:{name:"Metronome", short:"Metronome", icon:A.ic_metronome, card:null, held:true,
     desc:"Use it on your turn: your team gets +10 seconds on its question (works even while the clock is running)."},
@@ -1152,8 +1157,11 @@ function renderStage(){
       if(it.held && !S.cur.taxed) notes.push(`<div class="note">${S.cur.resolved?"":`Added to ${esc(t.name)}'s items — `}play it from their card on one of their turns (one item per turn).</div>`);
       actions = `<div><button class="btn big gold" data-act="itemcont">${btn}</button></div>`;
     }
-    const visual = it.card ? `<img class="cardimg" src="${it.card}" alt="${esc(it.name)}">`
-      : k==="shots" ? `<div class="balls">${Array(FREE_SHOTS).fill(`<img src="${A.ball}" alt="">`).join("")}</div>`
+    // every item uses the same framed card: title plate + glowing art
+    const visual = k==="shots"
+      ? `<div class="mcard"><div class="mt">${esc(it.name.toUpperCase())}</div><div class="mballs">${Array(FREE_SHOTS).fill(`<img src="${A.ball}" alt="">`).join("")}</div></div>`
+      : k==="scale"
+      ? `<div class="mcard wide"><div class="mt">${esc(it.name.toUpperCase())}</div><img src="${A.card_scale}" alt=""></div>`
       : `<div class="mcard"><div class="mt">${esc(it.name.toUpperCase())}</div><img src="${it.icon}" alt=""></div>`;
     html = `<div class="view synth"><div class="itemview">${visual}
       <div class="info"><h3>YOU FOUND ${esc(it.found)}!</h3>
