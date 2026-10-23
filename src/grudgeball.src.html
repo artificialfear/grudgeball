@@ -105,8 +105,9 @@ table.items .ds{font-size:calc(var(--u)*1.25);color:var(--dim)}
 
 /* ---------- GAME ---------- */
 #game{position:fixed;inset:0;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:minmax(0,1fr);background:radial-gradient(ellipse at 50% 30%,#3a0812 0%,#16040a 60%,#0a0205 100%)}
-header.top{display:flex;align-items:center;min-width:0;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.5);background:linear-gradient(#000a,#0000)}
-header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#fff;text-shadow:3px 3px 0 #b00000}
+header.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-width:0;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.5);background:linear-gradient(#000a,#0000)}
+header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2.6);color:#fff;text-shadow:3px 3px 0 #b00000,6px 6px 0 #000;text-align:center;white-space:nowrap}
+header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .turnban{flex:1;min-width:0;text-align:center;font-family:"Press Start 2P";font-size:calc(var(--u)*2.2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .turnban .who{padding:4px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
 .turnban .nextup{display:inline-block;margin-left:14px;font-size:calc(var(--u)*1.1);color:var(--dim);vertical-align:middle}
@@ -114,8 +115,14 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .turnban .bonus{display:inline-block;margin-left:10px;font-size:calc(var(--u)*1.2);background:var(--gold);color:#000;padding:6px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
 .topbtn{background:#0008;border:2px solid var(--line);border-radius:10px;padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1.5);font-weight:700}
 .topbtn.on{background:#7a5a00;border-color:var(--gold)}
-.instr{margin:0 calc(var(--u)*1.5);padding:calc(var(--u)*.7) calc(var(--u)*1.4);background:#000a;border-left:6px solid var(--gold);border-radius:8px;font-size:calc(var(--u)*1.9);min-height:calc(var(--u)*4)}
+.instr{display:flex;align-items:center;gap:calc(var(--u)*1.5);margin:0 calc(var(--u)*1.5);padding:calc(var(--u)*.7) calc(var(--u)*1.4);background:#000a;border-left:6px solid var(--gold);border-radius:8px;font-size:calc(var(--u)*1.9);min-height:calc(var(--u)*4)}
 .instr b{color:var(--gold)}
+.instr-text{flex:1;min-width:0}
+.instr .nextup{flex:none;font-family:"Press Start 2P";font-size:calc(var(--u)*1.2);color:var(--dim);white-space:nowrap}
+.instr .nextup i{font-style:normal;filter:brightness(1.4)}
+.bonuspill{display:inline-block;margin-right:10px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:var(--gold);color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
+.gridtitle .who{padding:2px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
+.gridtitle .bonuspill{margin:0 0 0 12px;font-size:calc(var(--u)*1.2)}
 #stage{position:relative;margin:calc(var(--u)*1) calc(var(--u)*1.5);border-radius:16px;overflow:hidden;min-height:0}
 .teambar{position:relative;display:flex;gap:calc(var(--u)*1);padding:calc(var(--u)*1) calc(var(--u)*1.5) calc(var(--u)*1.2);background:url(__A_fire__) bottom center/100% auto no-repeat}
 
@@ -359,14 +366,16 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 <!-- ================= GAME ================= -->
 <section id="game" class="hidden">
   <header class="top">
+    <div class="hside"></div>
     <div class="logo">GRUDGE BALL</div>
-    <div class="turnban" id="turnBan"></div>
-    <button class="topbtn" id="undoBtn" title="Undo last action">↶ Undo</button>
-    <button class="topbtn" id="adjBtn" title="Manually adjust hearts">± Hearts</button>
-    <button class="topbtn" id="soundBtn">🔊</button>
-    <button class="topbtn" id="menuBtn">☰</button>
+    <div class="hside hbtns">
+      <button class="topbtn" id="undoBtn" title="Undo last action">↶ Undo</button>
+      <button class="topbtn" id="adjBtn" title="Manually adjust hearts">± Hearts</button>
+      <button class="topbtn" id="soundBtn">🔊</button>
+      <button class="topbtn" id="menuBtn">☰</button>
+    </div>
   </header>
-  <div class="instr" id="instr"></div>
+  <div class="instr"><div class="instr-text" id="instr"></div><div class="nextup" id="nextUp"></div></div>
   <div id="stage"></div>
   <div class="teambar" id="teambar"></div>
 </section>
@@ -1041,7 +1050,7 @@ function render(){
   if(S.over){ finishGame(); return; }
   const ti = S.turnTeam, t = T(ti);
   const nx = nextUp();
-  $("#turnBan").innerHTML = `${teamTag(ti)}'S TURN${S.isBonus?'<span class="bonus">BONUS TURN</span>':''}${nx!=null?`<span class="nextup">NEXT ▸ <i style="color:${T(nx).color}">${esc(T(nx).name)}</i></span>`:''}`;
+  $("#nextUp").innerHTML = nx!=null ? `NEXT ▸ <i style="color:${T(nx).color}">${esc(T(nx).name)}</i>` : "";
   $("#game").classList.toggle("adjusting", adjusting);
   $("#adjBtn").classList.toggle("on", adjusting);
   $("#soundBtn").textContent = soundOn ? "🔊" : "🔇";
@@ -1061,7 +1070,7 @@ function renderStage(){
     const cols = Math.min(10, n), rows = Math.ceil(n/cols);
     const best = {cols, size: Math.min((W-(cols-1)*12)/cols, (H-(rows-1)*12)/rows)};
     const size = Math.floor(Math.min(best.size, 170));
-    html = `<div class="gridwrap redsmoke"><div class="gridtitle">CHOOSE YOUR DESTINY</div>
+    html = `<div class="gridwrap redsmoke"><div class="gridtitle">${teamTag(ti)}, CHOOSE YOUR DESTINY${S.isBonus?'<span class="bonuspill">BONUS TURN</span>':''}</div>
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
       S.boxes.map((b,i)=>{
         if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
@@ -1171,7 +1180,7 @@ function renderStage(){
   }
   st.innerHTML = html; st.scrollTop = 0; st.scrollLeft = 0;
   fitStage();
-  $("#instr").innerHTML = instr;
+  $("#instr").innerHTML = (S.isBonus && p!=="pick" ? '<span class="bonuspill">BONUS TURN</span>' : '') + instr;
   if(p==="question"||p==="steal") drawTimer();
 }
 
