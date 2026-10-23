@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grudge Ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12040a; --bg2:#2a0710; --panel:#1b0b14; --panel2:#26101c; --line:#5a1a2a;
+  --ink:#fff6ea; --dim:#c9a9b4; --red:#ff2a2a; --gold:#ffd400; --gold2:#e0a400;
+  --good:#2fd16b; --bad:#ff3b3b; --purple:#7b3cff; --cyan:#3ad7ff;
+  --u:min(1vw,1.78vh);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Pixelify Sans",system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;touch-action:manipulation}
+input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:text}
+.px{font-family:"Press Start 2P",monospace;letter-spacing:.02em}
+.hidden{display:none!important}
+
+/* ---------- shared buttons ---------- */
+.btn{background:var(--panel2);border:3px solid var(--line);border-radius:10px;padding:calc(var(--u)*1) calc(var(--u)*1.8);font-size:calc(var(--u)*1.7);font-weight:700;box-shadow:0 5px 0 #000;transition:transform .06s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #000}
+.btn.big{font-size:calc(var(--u)*2.6);padding:calc(var(--u)*1.4) calc(var(--u)*3);border-radius:14px}
+.btn.good{background:#10652f;border-color:var(--good)}
+.btn.bad{background:#7a1010;border-color:var(--bad)}
+.btn.gold{background:#7a5a00;border-color:var(--gold);color:#fff}
+.btn.purple{background:#3a1a80;border-color:#a77bff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.35;pointer-events:none}
+
+/* ---------- SETUP ---------- */
+#setup{position:fixed;inset:0;overflow:auto;background:linear-gradient(rgba(10,0,4,.92),rgba(10,0,4,.7) 40%,rgba(10,0,4,.9)),url(__A_lair__) center bottom/cover fixed;padding:calc(var(--u)*2) calc(var(--u)*3) calc(var(--u)*6)}
+#setup h1{font-family:"Press Start 2P";font-size:calc(var(--u)*5.2);margin:calc(var(--u)*1) 0 calc(var(--u)*.4);text-align:center;color:#fff;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
+#setup .tag{text-align:center;color:var(--dim);font-size:calc(var(--u)*1.8);margin-bottom:calc(var(--u)*2)}
+.setup-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(var(--u)*2);max-width:1500px;margin:0 auto}
+@media (max-width:900px){.setup-grid{grid-template-columns:1fr}}
+.card{background:rgba(27,11,20,.92);border:3px solid var(--line);border-radius:14px;padding:calc(var(--u)*1.6)}
+.card h2{font-family:"Press Start 2P";font-size:calc(var(--u)*1.5);margin:0 0 calc(var(--u)*1.2);color:var(--gold)}
+.row{display:flex;align-items:center;gap:calc(var(--u)*1);margin:calc(var(--u)*.7) 0;flex-wrap:wrap}
+.row label{font-size:calc(var(--u)*1.7);flex:1;min-width:180px}
+.row .hint{font-size:calc(var(--u)*1.3);color:var(--dim);flex-basis:100%;margin-top:-4px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:calc(var(--u)*4);height:calc(var(--u)*4);border-radius:8px;background:var(--panel2);border:2px solid var(--line);font-size:calc(var(--u)*2);font-weight:700}
+.stepper span{min-width:calc(var(--u)*4.5);text-align:center;font-family:"Press Start 2P";font-size:calc(var(--u)*1.6)}
+.team-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.team-inputs .ti{display:flex;align-items:center;gap:8px}
+.team-inputs .sw{width:calc(var(--u)*3);height:calc(var(--u)*3);border-radius:6px;flex:none;border:2px solid #000}
+.team-inputs input{flex:1;min-width:0;background:#0d0408;border:2px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:calc(var(--u)*1.7)}
+select,.setup-select{background:#0d0408;border:2px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:calc(var(--u)*1.6)}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:#0d0408;padding:8px 12px;font-size:calc(var(--u)*1.4)}
+.seg button.on{background:#7a1010;color:#fff}
+table.items{width:100%;border-collapse:collapse;font-size:calc(var(--u)*1.5);table-layout:auto}
+table.items td:nth-child(2){width:100%}
+table.items .seg{flex-direction:row}
+table.items .stepper button{width:calc(var(--u)*3);height:calc(var(--u)*3);font-size:calc(var(--u)*1.6)}
+table.items .stepper span{min-width:calc(var(--u)*2.6)}
+table.items .seg button{padding:6px 8px;font-size:calc(var(--u)*1.2)}
+table.items .seg button{white-space:nowrap}
+table.items td{padding:6px 4px;border-top:1px solid var(--line);vertical-align:middle}
+table.items img{width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);object-fit:contain;image-rendering:pixelated}
+table.items .nm{font-weight:700}
+table.items .ds{font-size:calc(var(--u)*1.25);color:var(--dim)}
+.start-wrap{text-align:center;margin-top:calc(var(--u)*2.5)}
+.resume{max-width:1500px;margin:0 auto calc(var(--u)*1.5);background:#3a2a00;border:3px solid var(--gold);border-radius:14px;padding:calc(var(--u)*1.2);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:calc(var(--u)*1.7)}
+.qcount{font-size:calc(var(--u)*1.5);color:var(--dim)}
+
+/* ---------- GAME ---------- */
+#game{position:fixed;inset:0;display:grid;grid-template-rows:auto auto 1fr auto;background:radial-gradient(ellipse at 50% 30%,#3a0812 0%,#16040a 60%,#0a0205 100%)}
+header.top{display:flex;align-items:center;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.5);background:linear-gradient(#000a,#0000)}
+header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#fff;text-shadow:3px 3px 0 #b00000}
+.turnban{flex:1;text-align:center;font-family:"Press Start 2P";font-size:calc(var(--u)*2.2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.turnban .who{padding:4px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
+.turnban .bonus{display:inline-block;margin-left:10px;font-size:calc(var(--u)*1.2);background:var(--gold);color:#000;padding:6px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
+.topbtn{background:#0008;border:2px solid var(--line);border-radius:10px;padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1.5);font-weight:700}
+.topbtn.on{background:#7a5a00;border-color:var(--gold)}
+.instr{margin:0 calc(var(--u)*1.5);padding:calc(var(--u)*.7) calc(var(--u)*1.4);background:#000a;border-left:6px solid var(--gold);border-radius:8px;font-size:calc(var(--u)*1.9);min-height:calc(var(--u)*4)}
+.instr b{color:var(--gold)}
+#stage{position:relative;margin:calc(var(--u)*1) calc(var(--u)*1.5);border-radius:16px;overflow:hidden;min-height:0}
+.teambar{position:relative;display:flex;gap:calc(var(--u)*1);padding:calc(var(--u)*1) calc(var(--u)*1.5) calc(var(--u)*1.2);background:url(__A_fire__) bottom center/100% auto no-repeat}
+
+/* team card */
+.team{position:relative;flex:1;min-width:0;background:rgba(0,0,0,.82);border:4px solid #fff3;border-radius:14px;padding:calc(var(--u)*.6);display:flex;flex-direction:column;gap:calc(var(--u)*.45);transition:transform .15s, box-shadow .15s}
+.team .hrow{display:flex;align-items:center;gap:calc(var(--u)*.6)}
+.team .tname{flex:1;min-width:0;font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);padding:calc(var(--u)*.55) calc(var(--u)*.6);border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.team .hcount{font-family:"Press Start 2P";font-size:calc(var(--u)*2.6);min-width:calc(var(--u)*4.2);text-align:center;color:#fff;text-shadow:3px 3px 0 #900}
+.team .hearts{display:grid;gap:1px;align-content:center}
+.team .hearts img{width:100%;aspect-ratio:1;image-rendering:pixelated}
+.team .hearts img.ghost{opacity:.12;filter:grayscale(1)}
+.team .hearts img.lost{animation:lose .7s ease-out}
+.team .brow{display:flex;align-items:center;gap:6px;min-height:calc(var(--u)*3.4)}
+.team .fx{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+.fxb{font-size:calc(var(--u)*1.15);font-weight:700;padding:3px 7px;border-radius:6px;background:#333;display:inline-flex;align-items:center;gap:4px}
+.fxb img{height:calc(var(--u)*1.8);image-rendering:pixelated}
+.fxb.shield{background:#0d3b7a}.fxb.ring{background:#7a0d2a}.fxb.sword{background:#4a1070}.fxb.sd{background:#b00;animation:pulse 1s infinite}.fxb.out{background:#444}
+.team .inv{display:flex;gap:5px}
+.team .inv button{background:#ffffff14;border:2px dashed #fff5;border-radius:8px;width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);padding:2px;position:relative}
+.team .inv button img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.team .inv button.ready{border:2px solid var(--gold);background:#ffd40026;animation:glow 1.2s infinite}
+.team .inv .lbl{font-size:calc(var(--u)*1.1);color:var(--dim);align-self:center}
+.team.current{border-color:var(--gold);box-shadow:0 0 0 3px #000,0 0 28px #ffd400aa;transform:translateY(-6px)}
+.team.target{cursor:pointer;border-color:var(--red);animation:targetpulse .9s infinite}
+.team.target::after{content:"TAP TO ATTACK";position:absolute;left:50%;top:-14px;transform:translateX(-50%);background:var(--red);color:#fff;font-family:"Press Start 2P";font-size:calc(var(--u)*1);padding:6px 8px;border-radius:6px;white-space:nowrap}
+.team.notarget{opacity:.45}
+.team.out{opacity:.35;filter:grayscale(1)}
+.team .adj{display:none;gap:6px;justify-content:center}
+.adjusting .team .adj{display:flex}
+.team .adj button{background:var(--panel2);border:2px solid var(--line);border-radius:8px;font-size:calc(var(--u)*2);width:calc(var(--u)*5);font-weight:700}
+.team .dmg{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);font-family:"Press Start 2P";font-size:calc(var(--u)*4);pointer-events:none;text-shadow:3px 3px 0 #000;animation:floatup 1.2s ease-out forwards}
+.team .dmg.minus{color:var(--red)}.team .dmg.plus{color:var(--good)}.team .dmg.block{color:var(--cyan);font-size:calc(var(--u)*2)}
+
+/* stage views */
+.view{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.5)}
+.synth{background:
+  linear-gradient(180deg,#1a0a2e 0%,#2a0d3a 45%,#120626 46%,#0b0520 100%)}
+.synth::before{content:"";position:absolute;left:-50%;right:-50%;bottom:0;height:54%;background:
+  repeating-linear-gradient(90deg,transparent 0 calc(var(--u)*7.4),#c02bff 0 calc(var(--u)*7.4 + 2px)),
+  repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*3.4),#c02bff 0 calc(var(--u)*3.4 + 2px));
+  transform:perspective(400px) rotateX(58deg);transform-origin:bottom;opacity:.55;pointer-events:none}
+.synth>*{position:relative;z-index:1}
+.redsmoke{background:radial-gradient(ellipse at 50% 40%,#5a0a12 0%,#2a0508 55%,#120204 100%)}
+
+/* grid */
+.gridwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--u)*1)}
+.gridtitle{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);color:#fff;text-shadow:3px 3px 0 #b00000;margin-bottom:calc(var(--u)*1.2)}
+.boxes{display:grid;gap:calc(var(--u)*.9);justify-content:center}
+.box{position:relative;padding:0;background:transparent url(__A_qbox__) center/contain no-repeat;image-rendering:pixelated;aspect-ratio:1;transition:transform .1s}
+.box:active{transform:scale(.92)}
+.box .n{position:absolute;right:4%;bottom:2%;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);color:#fff;text-shadow:2px 2px 0 #000}
+.box.opened{background:#ffffff10;border:2px dashed #ffffff30;border-radius:8px;pointer-events:none}
+.box.opened img{position:absolute;inset:18%;width:64%;height:64%;object-fit:contain;opacity:.4;image-rendering:pixelated}
+.box.opened .qm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);color:#ffffff44}
+
+/* question */
+.qcard{position:relative;margin-top:calc(var(--u)*3);background:#fff;color:#1a1020;border:calc(var(--u)*1.1) solid var(--gold);box-shadow:0 calc(var(--u)*.9) 0 var(--gold2),0 20px 40px #000a;border-radius:6px;width:min(78%,1300px);min-height:26%;display:flex;align-items:center;justify-content:center;padding:calc(var(--u)*3.4) calc(var(--u)*3) calc(var(--u)*1.6);text-align:center}
+.qcard .coin{position:absolute;top:calc(var(--u)*-4);left:50%;transform:translateX(-50%);width:calc(var(--u)*7.5);height:calc(var(--u)*7.5);border-radius:50%;background:var(--gold);border:5px dashed #fff8;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*3.6);color:#6b3a00}
+.qtext{font-family:"Pixelify Sans";font-weight:700;font-size:calc(var(--u)*4.2);line-height:1.18;text-transform:uppercase}
+.qtext.long{font-size:calc(var(--u)*3)}
+.qtext.xlong{font-size:calc(var(--u)*2.4)}
+.answer{background:#123d1f;border:3px solid var(--good);color:#fff;border-radius:10px;padding:calc(var(--u)*1) calc(var(--u)*2);font-size:calc(var(--u)*2.6);font-weight:700;max-width:80%;text-align:center}
+.answer small{display:block;font-size:calc(var(--u)*1.3);color:#9fe3b4;font-family:"Press Start 2P";margin-bottom:6px}
+.qrow{display:flex;gap:calc(var(--u)*2);align-items:center;justify-content:center;flex-wrap:wrap}
+.timer{position:relative;width:calc(var(--u)*11);height:calc(var(--u)*11);flex:none}
+.timer svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer .t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*3.4);color:#fff;text-shadow:3px 3px 0 #000}
+.timer.low .t{color:var(--red);animation:pulse .5s infinite}
+.timer.done .t{color:var(--red);font-size:calc(var(--u)*1.6)}
+.minibtn{background:#0008;border:2px solid #fff4;border-radius:8px;padding:6px 10px;font-size:calc(var(--u)*1.3);font-weight:700}
+.steal-who{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);padding:calc(var(--u)*1) calc(var(--u)*1.6);border-radius:10px;color:#fff;text-shadow:3px 3px 0 #000;animation:pulse 1s infinite}
+
+/* item reveal */
+.itemview{display:flex;gap:calc(var(--u)*3);align-items:center;justify-content:center;width:100%;height:100%}
+.itemview img.cardimg{max-height:88%;max-width:44%;border-radius:10px;box-shadow:0 0 50px #a14bff88;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.itemview .info{max-width:44%;display:flex;flex-direction:column;gap:calc(var(--u)*1.4)}
+.itemview h3{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);line-height:1.4;margin:0;color:#fff;text-shadow:3px 3px 0 #b000ff}
+.itemview p{font-size:calc(var(--u)*2.2);margin:0;line-height:1.3}
+.itemview .note{font-size:calc(var(--u)*1.6);color:var(--gold)}
+.balls{display:flex;gap:calc(var(--u)*1)}
+.balls img{width:calc(var(--u)*9);image-rendering:pixelated;animation:bounce 1.2s infinite}
+.balls img:nth-child(2){animation-delay:.1s}.balls img:nth-child(3){animation-delay:.2s}.balls img:nth-child(4){animation-delay:.3s}.balls img:nth-child(5){animation-delay:.4s}
+
+/* shooting */
+.shoot{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.6)}
+.shoot h3{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);margin:0;text-align:center;line-height:1.5}
+.shotdots{display:flex;gap:calc(var(--u)*.8)}
+.shotdots img{width:calc(var(--u)*5);image-rendering:pixelated}
+.shotdots img.used{opacity:.18;filter:grayscale(1)}
+.shotdots img.made{filter:drop-shadow(0 0 10px #2fd16b)}
+.made-count{font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);color:var(--gold)}
+.bigball{width:calc(var(--u)*8);image-rendering:pixelated;animation:bounce 1.2s infinite}
+.choice{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2);background:#000b;border:3px solid var(--gold);border-radius:16px;padding:calc(var(--u)*1.6) calc(var(--u)*2.4)}
+.choice .or{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:var(--dim)}
+
+/* end */
+#endscreen{position:fixed;inset:0;background:linear-gradient(rgba(10,0,4,.6),rgba(10,0,4,.9)),url(__A_lair__) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2)}
+#endscreen h1{font-family:"Press Start 2P";font-size:calc(var(--u)*4.2);text-align:center;line-height:1.4;margin:0;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
+.rank{display:flex;flex-direction:column;gap:10px;min-width:min(90vw,700px)}
+.rank div{display:flex;align-items:center;gap:16px;background:#000c;border:3px solid #fff3;border-radius:12px;padding:12px 18px;font-size:calc(var(--u)*2.2);font-weight:700}
+.rank div.win{border-color:var(--gold);box-shadow:0 0 30px #ffd40088}
+.rank .pl{font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);width:calc(var(--u)*4)}
+.rank .sw{width:22px;height:22px;border-radius:5px}
+.rank .h{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.8)}
+.rank .h img{width:calc(var(--u)*3);image-rendering:pixelated}
+
+/* modals / toasts */
+.modal{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .card{max-width:1100px;width:100%;max-height:92vh;overflow:auto}
+.modal textarea{width:100%;min-height:46vh;background:#0d0408;color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:12px;font-size:calc(var(--u)*1.6);line-height:1.5;font-family:"Pixelify Sans",monospace}
+.modal p,.modal li{font-size:calc(var(--u)*1.6);line-height:1.45}
+.modal input[type=text]{background:#0d0408;color:var(--ink);border:2px solid var(--line);border-radius:8px;padding:8px 10px;font-size:calc(var(--u)*1.6)}
+#toasts{position:fixed;left:50%;top:calc(var(--u)*6.5);transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+.toast{background:#000e;border:3px solid var(--gold);color:#fff;border-radius:12px;padding:calc(var(--u)*1.2) calc(var(--u)*2.2);font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);line-height:1.5;text-align:center;max-width:80vw;animation:toastin .3s ease-out, toastout .4s ease-in 2.8s forwards;box-shadow:0 10px 40px #000}
+.toast.red{border-color:var(--red)}.toast.green{border-color:var(--good)}.toast.cyan{border-color:var(--cyan)}
+
+@keyframes pulse{50%{opacity:.55}}
+@keyframes glow{50%{box-shadow:0 0 14px var(--gold)}}
+@keyframes targetpulse{50%{box-shadow:0 0 30px var(--red);transform:translateY(-4px)}}
+@keyframes lose{0%{transform:scale(1.6);filter:brightness(3)}100%{transform:scale(1)}}
+@keyframes floatup{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+@keyframes pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-18%)}}
+@keyframes toastin{from{opacity:0;transform:translateY(-20px)}}
+@keyframes toastout{to{opacity:0;transform:translateY(-20px)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= SETUP ================= -->
+<section id="setup">
+  <h1>GRUDGE BALL</h1>
+  <div class="tag">Pick boxes · answer fast · take their hearts · shoot your shot</div>
+  <div id="resumeBox"></div>
+  <div class="setup-grid">
+    <div class="card">
+      <h2>TEAMS</h2>
+      <div class="row"><label>Number of teams</label>
+        <div class="stepper"><button data-step="teams:-1">−</button><span id="v_teams"></span><button data-step="teams:1">+</button></div></div>
+      <div class="team-inputs" id="teamInputs"></div>
+      <h2 style="margin-top:22px">HEARTS & TIMERS</h2>
+      <div class="row"><label>Starting hearts</label>
+        <div class="stepper"><button data-step="startHearts:-1">−</button><span id="v_startHearts"></span><button data-step="startHearts:1">+</button></div></div>
+      <div class="row"><label>Max hearts</label>
+        <div class="stepper"><button data-step="maxHearts:-1">−</button><span id="v_maxHearts"></span><button data-step="maxHearts:1">+</button></div></div>
+      <div class="row"><label>Seconds to answer</label>
+        <div class="stepper"><button data-step="qTime:-5">−</button><span id="v_qTime"></span><button data-step="qTime:5">+</button></div></div>
+      <div class="row"><label>Seconds per steal</label>
+        <div class="stepper"><button data-step="stealTime:-1">−</button><span id="v_stealTime"></span><button data-step="stealTime:1">+</button></div></div>
+      <div class="row"><label>Wrong answer on your own turn costs</label>
+        <div class="seg" data-seg="wrongCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div>
+        <div class="hint">Sudden-death teams are out on a wrong answer either way.</div></div>
+      <div class="row"><label>Wrong steal costs</label>
+        <div class="seg" data-seg="stealCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div></div>
+    </div>
+    <div class="card">
+      <h2>QUESTIONS</h2>
+      <div class="row"><select id="setSelect" class="setup-select" style="flex:1"></select>
+        <button class="btn" id="editSetBtn">Edit questions</button></div>
+      <div class="qcount" id="setCount"></div>
+      <h2 style="margin-top:22px">MYSTERY ITEMS</h2>
+      <table class="items" id="itemTable"></table>
+      <div class="row" style="margin-top:14px"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
+    </div>
+  </div>
+  <div class="start-wrap"><button class="btn big good px" id="startBtn">START GAME</button>
+    <div class="qcount" id="boxSummary" style="margin-top:10px"></div></div>
+</section>
+
+<!-- ================= GAME ================= -->
+<section id="game" class="hidden">
+  <header class="top">
+    <div class="logo">GRUDGE BALL</div>
+    <div class="turnban" id="turnBan"></div>
+    <button class="topbtn" id="undoBtn" title="Undo last action">↶ Undo</button>
+    <button class="topbtn" id="adjBtn" title="Manually adjust hearts">± Hearts</button>
+    <button class="topbtn" id="soundBtn">🔊</button>
+    <button class="topbtn" id="menuBtn">☰</button>
+  </header>
+  <div class="instr" id="instr"></div>
+  <div id="stage"></div>
+  <div class="teambar" id="teambar"></div>
+</section>
+
+<section id="endscreen" class="hidden"></section>
+<div id="modalRoot"></div>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   ASSETS
+============================================================ */
+const A = {
+  heart:"__A_heart__", qbox:"__A_qbox__", ball:"__A_ball__",
+  ic_shield:"__A_ic_shield__", ic_ring:"__A_ic_ring__", ic_reed:"__A_ic_reed__", ic_sword:"__A_ic_sword__",
+  card_shield:"__A_card_shield__", card_ring:"__A_card_ring__", card_reed:"__A_card_reed__", card_sword:"__A_card_sword__", card_scale:"__A_card_scale__"
+};
+
+const ITEMS = {
+  shield:{name:"Magical Shield of Protection", short:"Shield", icon:A.ic_shield, card:A.card_shield, held:true,
+    desc:"Use it on your turn: nobody can attack your team until your next turn."},
+  ring:{name:"Magical Lifesteal Ring", short:"Lifesteal", icon:A.ic_ring, card:A.card_ring, held:true,
+    desc:"Use it on your turn: for two of your turns, every heart you take from another team heals you +1."},
+  sword:{name:"Cursed Sword", short:"Sword", icon:A.ic_sword, card:A.card_sword, held:true,
+    desc:"Use it on your turn: for two of your turns, your attacks take 2 hearts — but attacks on YOU also take 2."},
+  reed:{name:"Reed of Resurrection", short:"Reed", icon:A.ic_reed, card:A.card_reed, held:true,
+    desc:"If your team gets knocked out, the Reed brings you back with 2 hearts automatically. (Or play it during sudden death.)"},
+  shots:{name:"Five Free Shots", short:"Free Shots", icon:A.ball, card:null, held:false,
+    desc:"Take 5 shots no matter what. Every basket = +1 heart OR take a heart from another team."},
+  scale:{name:"The Traumatic Scale", short:"Traumatic Scale", icon:A.ic_sword, card:A.card_scale, held:false,
+    desc:"Aka the chromatic scale (hasn't been practiced enough). Your team loses one heart."}
+};
+ITEMS.scale.icon = A.card_scale;
+ITEMS.shield.found="A MAGICAL SHIELD OF PROTECTION"; ITEMS.ring.found="A MAGICAL LIFESTEAL RING"; ITEMS.sword.found="A CURSED SWORD";
+ITEMS.reed.found="A REED OF RESURRECTION"; ITEMS.shots.found="FIVE FREE SHOTS"; ITEMS.scale.found="THE TRAUMATIC SCALE (LOSE ONE HEART)";
+const ITEM_ORDER = ["shield","ring","sword","reed","shots","scale"];
+
+const TEAM_COLORS = ["#e02424","#2463e0","#16a34a","#d4a000","#9333ea","#ea6a0c","#0fb5b5","#e0389a"];
+const DEFAULT_NAMES = ["Red","Blue","Green","Gold","Purple","Orange","Teal","Pink"];
+
+const DEFAULT_SET_NAME = "Music Terms & Rhythm (v3 slides)";
+const DEFAULT_SET = `# One question per line:   Question | Answer
+# Lines starting with # are ignored. You can also paste two columns straight from Google Sheets.
+What does it mean to subdivide in music? | Break each beat into smaller equal parts (like counting 1-&-2-&) to keep steady time
+What does tenuto mean? | Hold the note for its full value (a slight stress) — shown by a line over or under the note
+What does it mean if a pitch is described as sharp? | The pitch is too high
+What does a fermata indicate? | Hold the note or rest longer than its value, until the conductor releases it
+What is intonation? | How in tune you play — the accuracy of your pitch
+What is the enharmonic equivalent of F#? | G♭ (G-flat)
+What is the value of a quarter rest + eighth note + eighth rest combined in 4/4? | 2 beats
+What is a scale? | A series of notes in step-wise order, going up or down, following a pattern of whole and half steps
+What is the difference between tempo and dynamics? | Tempo = speed; dynamics = volume (how loud or soft)
+What does accent (>) indicate? | Play that note with extra emphasis / a stronger attack
+What does marcato mean? | Marked — play with a heavy accent, strong and separated (^)
+In 4/4 time, how many eighth notes equal one whole note? | 8
+What does legato mean? | Smooth and connected
+What symbol raises a note by one half step? | The sharp (♯)
+What is the difference between a tie and a slur? | A tie connects two notes of the SAME pitch (hold as one note); a slur connects DIFFERENT pitches (play smoothly, only tongue the first)
+How many beats does a dotted eighth note receive in 4/4 time? | 3/4 of a beat
+What is the value (in beats) of a dotted half note tied to a quarter note in 4/4? | 4 beats`;
+
+/* ============================================================
+   STORAGE (safe)
+============================================================ */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+/* ============================================================
+   CONFIG
+============================================================ */
+const DEFAULT_CFG = {
+  teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5,
+  wrongCost:1, stealCost:1, cfgVer:2,
+  items:{ shield:{count:2,after:"again"}, ring:{count:2,after:"again"}, sword:{count:1,after:"again"},
+          reed:{count:1,after:"again"}, shots:{count:2,after:"end"}, scale:{count:2,after:"again"} },
+  set:DEFAULT_SET_NAME
+};
+let CFG = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), store.get("gb_cfg", {}));
+if((store.get("gb_cfg", {}).cfgVer||1)<2){ CFG.wrongCost = 1; CFG.stealCost = 1; CFG.cfgVer = 2; }
+CFG.items = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG.items)), CFG.items||{});
+let SETS = store.get("gb_sets", null);
+if(!SETS || typeof SETS !== "object" || !Object.keys(SETS).length){ SETS = {}; SETS[DEFAULT_SET_NAME] = DEFAULT_SET; }
+if(!SETS[CFG.set]) CFG.set = Object.keys(SETS)[0];
+function saveCfg(){ store.set("gb_cfg", CFG); }
+function saveSets(){ store.set("gb_sets", SETS); }
+
+function parseSet(text){
+  const out = [];
+  (text||"").split(/\r?\n/).forEach(line=>{
+    const l = line.trim(); if(!l || l.startsWith("#")) return;
+    let parts = l.includes("\t") ? l.split("\t") : l.split("|");
+    parts = parts.map(s=>s.trim()).filter((s,i)=> i<2 || s);
+    const q = parts[0]; const a = parts.slice(1).join(" | ").trim();
+    if(q) out.push({q, a});
+  });
+  return out;
+}
+
+/* ============================================================
+   UTIL
+============================================================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function toast(msg, cls=""){
+  const d = document.createElement("div"); d.className = "toast "+cls; d.innerHTML = msg;
+  const box = $("#toasts"); box.appendChild(d);
+  while(box.children.length>2) box.firstChild.remove();
+  setTimeout(()=>d.remove(), 3300);
+}
+
+/* ============================================================
+   SOUND (WebAudio, no files)
+============================================================ */
+let soundOn = store.get("gb_sound", true);
+let actx = null;
+function tone(freq, dur=.12, type="square", vol=.08, when=0){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0 = actx.currentTime + when;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+    o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0+dur+.02);
+  }catch(e){}
+}
+const SFX = {
+  tick(){ tone(880,.06,"square",.05); },
+  buzzer(){ tone(140,.6,"sawtooth",.12); tone(110,.6,"sawtooth",.1,.05); },
+  correct(){ [523,659,784,1047].forEach((f,i)=>tone(f,.14,"square",.07,i*.08)); },
+  wrong(){ tone(220,.25,"square",.09); tone(160,.35,"square",.09,.18); },
+  hit(){ tone(300,.08,"square",.1); tone(120,.25,"triangle",.12,.05); },
+  heal(){ [660,880].forEach((f,i)=>tone(f,.12,"triangle",.08,i*.08)); },
+  item(){ [392,523,659,784,1047,1319].forEach((f,i)=>tone(f,.1,"triangle",.07,i*.06)); },
+  swish(){ [784,988,1175].forEach((f,i)=>tone(f,.1,"square",.06,i*.05)); },
+  block(){ tone(1200,.2,"sine",.08); tone(1500,.3,"sine",.06,.08); },
+  ko(){ [400,300,200,100].forEach((f,i)=>tone(f,.2,"sawtooth",.09,i*.15)); }
+};
+
+/* ============================================================
+   GAME STATE
+============================================================ */
+let S = null;          // live state
+let UNDO = [];          // snapshots
+let adjusting = false;
+
+function snapshot(){ UNDO.push(JSON.stringify(S)); if(UNDO.length>80) UNDO.shift(); }
+function persist(){ if(S) store.set("gb_game", {S, UNDO:UNDO.slice(-30)}); }
+
+function newGame(){
+  const qs = parseSet(SETS[CFG.set]);
+  const boxes = qs.map(o=>({kind:"q", q:o.q, a:o.a, opened:false}));
+  ITEM_ORDER.forEach(k=>{ for(let i=0;i<(CFG.items[k]?.count||0);i++) boxes.push({kind:"item", item:k, opened:false}); });
+  shuffle(boxes);
+  const teams = [];
+  for(let i=0;i<CFG.teams;i++){
+    teams.push({ name:(CFG.names[i]||DEFAULT_NAMES[i]).trim()||DEFAULT_NAMES[i], color:TEAM_COLORS[i],
+      hearts:CFG.startHearts, status:"alive", inv:[], shield:false, ring:0, sword:0 });
+  }
+  const order = teams.map((_,i)=>i);
+  S = {
+    cfg: JSON.parse(JSON.stringify(CFG)),
+    teams, boxes, order, ptr:0, bonus:[], turnTeam:order[0], isBonus:false, turnNo:1,
+    phase:"pick", cur:{}, turnAttacks:{}, prevAttacks:{}, lastAnswer:null, over:false
+  };
+  UNDO = [];
+  startOfTurn();
+  showScreen("game");
+  render();
+}
+
+/* ---------- helpers on state ---------- */
+const T = i => S.teams[i];
+const activeTeams = () => S.teams.map((t,i)=>i).filter(i=>T(i).status!=="out");
+function teamTag(i){ const t=T(i); return `<span class="who" style="background:${t.color}">${esc(t.name)}</span>`; }
+function tname(i){ return `<b style="color:${T(i).color};filter:brightness(1.4)">${esc(T(i).name)}</b>`; }
+
+function floatFx(i, text, cls){
+  const el = document.querySelector(`.team[data-i="${i}"]`); if(!el) return;
+  const d = document.createElement("div"); d.className = "dmg "+cls; d.textContent = text; el.appendChild(d);
+  setTimeout(()=>d.remove(), 1300);
+}
+
+function heal(i, n){
+  const t = T(i), before = t.hearts;
+  t.hearts = Math.min(S.cfg.maxHearts, t.hearts + n);
+  const got = t.hearts - before;
+  if(t.status==="sd" && t.hearts>0) t.status = "alive";
+  pendingFx.push([i, got>0 ? "+"+got : "MAX", "plus"]);
+  if(got>0) SFX.heal();
+  return got;
+}
+// direct loss (penalty / traumatic scale): not an attack, ignores shield & curse
+function loseHearts(i, n){
+  const t = T(i);
+  if(t.status==="out") return;
+  if(t.hearts<=0){ return; }
+  const lost = Math.min(n, t.hearts);
+  t.hearts -= lost;
+  pendingFx.push([i, "-"+lost, "minus"]); SFX.hit();
+  if(t.hearts===0 && t.status==="alive"){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); }
+}
+function eliminate(i){
+  const t = T(i);
+  const r = t.inv.indexOf("reed");
+  if(r>=0){
+    t.inv.splice(r,1); t.hearts = Math.min(2, S.cfg.maxHearts); t.status="alive";
+    pendingFx.push([i, "+2", "plus"]); SFX.item();
+    toast(`REED OF RESURRECTION!<br>${esc(t.name)} rises with 2 hearts!`, "green");
+    return;
+  }
+  t.status = "out"; t.hearts = 0; t.shield=false; t.ring=0; t.sword=0;
+  SFX.ko(); toast(`${esc(t.name)} IS OUT!`, "red");
+}
+function validTargets(attacker){
+  return S.teams.map((t,i)=>i).filter(i=> i!==attacker && T(i).status==="alive" && T(i).hearts>0 && !T(i).shield);
+}
+function attack(attacker, target, countsForGangUp=true){
+  const a = T(attacker), t = T(target);
+  let dmg = 1;
+  if(a.sword>0) dmg *= 2;
+  if(t.sword>0) dmg *= 2;
+  const lost = Math.min(dmg, t.hearts);
+  t.hearts -= lost;
+  pendingFx.push([target, "-"+lost, "minus"]); SFX.hit();
+  if(countsForGangUp){
+    (S.turnAttacks[target] = S.turnAttacks[target] || []);
+    if(!S.turnAttacks[target].includes(attacker)) S.turnAttacks[target].push(attacker);
+  }
+  if(a.ring>0 && lost>0){ heal(attacker, lost); }
+  if(t.hearts===0){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); }
+}
+
+/* ---------- turn flow ---------- */
+function startOfTurn(){
+  const t = T(S.turnTeam);
+  t.shield = false;  // shield lasts until this team's next turn
+  S.phase = "pick"; S.cur = {}; S.lastAnswer = null;
+}
+function endTurn(){
+  const t = T(S.turnTeam);
+  if(t.ring>0) t.ring--;
+  if(t.sword>0) t.sword--;
+  // gang-up rule: a team attacked this turn AND by a different team on the previous turn gets a bonus turn next
+  const ganged = [];
+  Object.keys(S.turnAttacks).forEach(k=>{
+    const target = +k, now = S.turnAttacks[k], prev = S.prevAttacks[k]||[];
+    if(prev.length && now.some(a=> prev.some(p=>p!==a))){
+      if(T(target).status!=="out" && !S.bonus.includes(target)) ganged.push(target);
+    }
+  });
+  S.prevAttacks = S.turnAttacks; S.turnAttacks = {};
+  ganged.forEach(g=>{ S.bonus.push(g); toast(`GANG-UP RULE!<br>${esc(T(g).name)} was attacked back-to-back — they get a BONUS TURN next!`, "cyan"); });
+
+  // game over?
+  const alive = activeTeams();
+  if(alive.length<=1){ S.over = true; finishGame(); return; }
+
+  // next team
+  S.bonus = S.bonus.filter(i=>T(i).status!=="out");
+  if(S.bonus.length){
+    S.turnTeam = S.bonus.shift(); S.isBonus = true;
+  }else{
+    let p = S.ptr;
+    for(let k=0;k<S.order.length;k++){ p = (p+1) % S.order.length; if(T(S.order[p]).status!=="out") break; }
+    S.ptr = p; S.turnTeam = S.order[p]; S.isBonus = false;
+  }
+  S.turnNo++;
+  startOfTurn();
+}
+
+/* ---------- actions (each snapshots first) ---------- */
+let pendingFx = [];
+function act(fn){ return (...args)=>{ snapshot(); pendingFx = []; fn(...args); render(); persist(); }; }
+
+const pickBox = act(i=>{
+  const b = S.boxes[i]; if(!b || b.opened) return;
+  b.opened = true; S.cur = {box:i};
+  if(b.kind==="q"){
+    S.phase = "question"; S.cur.answerShown = false;
+    startTimer(S.cfg.qTime);
+  }else{
+    S.phase = "item"; S.cur.item = b.item; SFX.item();
+    const t = T(S.turnTeam);
+    if(ITEMS[b.item].held){ t.inv.push(b.item); }
+    else if(b.item==="scale"){
+      if(t.hearts>0) loseHearts(S.turnTeam, 1);
+      else toast(`${esc(t.name)} has no hearts to lose — the scale spares you.`);
+    }
+  }
+});
+
+const itemContinue = act(()=>{
+  const k = S.cur.item;
+  if(k==="shots"){
+    S.phase = "shoot"; S.cur = {mode:"free", shooter:S.turnTeam, shotsLeft:5, made:0, results:[], heartsOnly:T(S.turnTeam).status!=="alive"};
+    return;
+  }
+  if(S.cfg.items[k]?.after==="again"){ S.phase="pick"; S.cur={}; toast(`${esc(T(S.turnTeam).name)} picks another box!`, "green"); }
+  else endTurn();
+});
+
+function resolveCorrect(i, stolen=false){
+  stopTimer(); SFX.correct();
+  const t = T(i);
+  S.lastAnswer = curBox().a || null;
+  if(t.status==="sd"){
+    heal(i, 1);
+    toast(`${esc(t.name)} earns a heart back from SUDDEN DEATH!`, "green");
+    S.phase = "reveal"; S.cur.revealMsg = `${tname(i)} is back in the game. <b>No shots</b> when coming back from sudden death.`;
+    return;
+  }
+  const tg = validTargets(i);
+  if(stolen){
+    if(tg.length){ S.phase = "attack"; S.cur.attacker = i; S.cur.noShots = true; }
+    else { S.phase = "reveal"; S.cur.revealMsg = `${tname(i)} stole it, but no team can be attacked right now.`; }
+    return;
+  }
+  if(tg.length){ S.phase = "attack"; S.cur.attacker = i; }
+  else { toast("No team can be attacked right now — straight to the hoop!"); S.phase="shoot"; S.cur = {mode:"streak", shooter:i, made:0, results:[], heartsOnly:false}; }
+}
+const answerCorrect = act(()=>{ resolveCorrect(S.turnTeam); });
+const answerWrong = act(()=>{
+  stopTimer(); SFX.wrong();
+  const i = S.turnTeam, t = T(i);
+  if(t.status==="sd"){ eliminate(i); }
+  else if(S.cfg.wrongCost>0) loseHearts(i, S.cfg.wrongCost);
+  beginSteal();
+});
+function beginSteal(){
+  const list = [];
+  const n = S.order.length; const start = S.order.indexOf(S.turnTeam);
+  for(let k=1;k<n;k++){ const idx = S.order[(start+k)%n]; if(T(idx).status!=="out" && idx!==S.turnTeam) list.push(idx); }
+  S.cur.stealList = list; S.cur.si = 0;
+  if(!list.length){ S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="Nobody left to steal."; return; }
+  S.phase = "steal"; startTimer(S.cfg.stealTime);
+}
+function nextStealer(){
+  S.cur.si++;
+  if(S.cur.si >= S.cur.stealList.length){
+    stopTimer(); S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="No one stole it.";
+  } else startTimer(S.cfg.stealTime);
+}
+const stealCorrect = act(()=>{
+  const i = S.cur.stealList[S.cur.si];
+  toast(`STOLEN by ${esc(T(i).name)}!`, "green");
+  resolveCorrect(i, true);
+});
+const stealWrong = act(()=>{
+  const i = S.cur.stealList[S.cur.si]; SFX.wrong();
+  if(T(i).status==="sd") eliminate(i);
+  else if(S.cfg.stealCost>0) loseHearts(i, S.cfg.stealCost);
+  nextStealer();
+});
+const stealPass = act(()=>{ nextStealer(); });
+const showAnswer = act(()=>{ S.cur.answerShown = true; });
+const revealDone = act(()=>{ endTurn(); });
+
+const doAttackTarget = act(target=>{
+  const a = S.cur.attacker;
+  attack(a, target, !S.cur.noShots);
+  if(S.cur.noShots){ toast(`${esc(T(a).name)} took a heart — no shots on a steal.`); endTurn(); return; }
+  S.phase = "shoot"; S.cur = {mode:"streak", shooter:a, made:0, results:[], heartsOnly:false};
+});
+const shotMade = act(()=>{ SFX.swish(); S.cur.pending = true; });
+const shotMiss = act(()=>{
+  S.cur.results.push("miss");
+  if(S.cur.mode==="streak"){ toast("MISSED! Turn over."); endTurn(); return; }
+  S.cur.shotsLeft--; if(S.cur.shotsLeft<=0) endTurn();
+});
+function afterMadeChoice(){
+  S.cur.pending = false; S.cur.made++; S.cur.results.push("made");
+  if(S.cur.mode==="free"){ S.cur.shotsLeft--; if(S.cur.shotsLeft<=0){ endTurn(); } }
+}
+const madeHeal = act(()=>{ heal(S.cur.shooter, 1); afterMadeChoice(); });
+const madeAttack = act(target=>{ attack(S.cur.shooter, target); afterMadeChoice(); });
+
+const useItem = act((ti, k)=>{
+  const t = T(ti); const idx = t.inv.indexOf(k); if(idx<0) return;
+  if(k==="reed"){
+    if(t.status!=="sd"){ UNDO.pop(); toast("The Reed works automatically if you get knocked out — or play it while in sudden death."); return; }
+    t.inv.splice(idx,1); t.hearts = 2; t.status="alive"; pendingFx.push([ti,"+2","plus"]); SFX.item();
+    toast(`${esc(t.name)} plays the REED OF RESURRECTION!<br>Back with 2 hearts`, "green"); return;
+  }
+  t.inv.splice(idx,1); SFX.item();
+  if(k==="shield"){ t.shield = true; toast(`${esc(t.name)} raises the SHIELD!<br>No attacks on them until their next turn`, "cyan"); }
+  if(k==="ring"){ t.ring = 2; toast(`${esc(t.name)} wears the LIFESTEAL RING!<br>Hearts they take heal them (2 turns)`, "green"); }
+  if(k==="sword"){ t.sword = 2; toast(`${esc(t.name)} draws the CURSED SWORD!<br>Deal 2× — take 2× (2 turns)`, "red"); }
+});
+function canUseItems(ti){
+  return S && !S.over && ti===S.turnTeam && ["pick","question","attack","shoot","item"].includes(S.phase) && !(S.phase==="shoot" && S.cur.pending);
+}
+
+const adjust = act((i, d)=>{
+  const t = T(i);
+  if(d>0){
+    if(t.status==="out"){ t.status="alive"; t.hearts=0; }
+    t.hearts = Math.min(S.cfg.maxHearts, t.hearts+1); if(t.hearts>0) t.status="alive";
+    pendingFx.push([i,"+1","plus"]);
+  }else{
+    if(t.hearts>0){ t.hearts--; pendingFx.push([i,"-1","minus"]); if(t.hearts===0) t.status="sd"; }
+    else if(t.status==="sd"){ t.status="out"; }
+  }
+});
+const reshuffle = act(()=>{ S.boxes.forEach(b=>b.opened=false); shuffle(S.boxes); toast("Boxes reshuffled!"); });
+const skipTurn = act(()=>{ stopTimer(); endTurn(); });
+
+function curBox(){ return S.boxes[S.cur.box] || {}; }
+
+function undo(){
+  if(!UNDO.length){ toast("Nothing to undo"); return; }
+  stopTimer(); S = JSON.parse(UNDO.pop()); pendingFx = [];
+  if(S.phase==="question" || S.phase==="steal") timerState = {left: S.phase==="question"?S.cfg.qTime:S.cfg.stealTime, total: S.phase==="question"?S.cfg.qTime:S.cfg.stealTime, running:false};
+  render(); persist(); toast("Undone");
+}
+
+/* ============================================================
+   TIMER
+============================================================ */
+let timerState = {left:0,total:0,running:false}, timerInt = null, lastTick = 0;
+function startTimer(sec){
+  stopTimer(); timerState = {left:sec, total:sec, running:true, end:performance.now()+sec*1000};
+  lastTick = Math.ceil(sec);
+  timerInt = setInterval(timerLoop, 100);
+}
+function stopTimer(){ if(timerInt) clearInterval(timerInt); timerInt=null; timerState.running=false; }
+function restartTimer(){ startTimer(timerState.total); drawTimer(); }
+function timerLoop(){
+  const left = Math.max(0,(timerState.end - performance.now())/1000);
+  timerState.left = left;
+  const s = Math.ceil(left);
+  if(s!==lastTick){ lastTick = s; if(s>0 && s<=5) SFX.tick(); if(s===0){ SFX.buzzer(); stopTimer(); } }
+  drawTimer();
+}
+function timerHTML(){
+  return `<div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#000a" stroke="#ffffff22" stroke-width="10"/>
+  <circle id="tArc" cx="50" cy="50" r="44" fill="none" stroke="#ffd400" stroke-width="10" stroke-linecap="butt" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg>
+  <div class="t" id="tNum"></div></div>`;
+}
+function drawTimer(){
+  const el = $("#timer"); if(!el) return;
+  const frac = timerState.total ? timerState.left/timerState.total : 0;
+  $("#tArc").setAttribute("stroke-dashoffset", (276.5*(1-frac)).toFixed(1));
+  $("#tArc").setAttribute("stroke", frac>.34 ? "#ffd400" : "#ff2a2a");
+  const s = Math.ceil(timerState.left);
+  el.classList.toggle("low", s<=5 && s>0 && timerState.running);
+  el.classList.toggle("done", s===0);
+  $("#tNum").textContent = s===0 ? "TIME!" : (!timerState.running && timerState.left===timerState.total ? s : s);
+  const rb = $("#timerRestart"); if(rb) rb.textContent = timerState.running ? "↻ Restart timer" : "▶ Start timer";
+}
+
+/* ============================================================
+   RENDER — GAME
+============================================================ */
+function render(){
+  if(!S) return;
+  if(S.over){ finishGame(); return; }
+  const ti = S.turnTeam, t = T(ti);
+  $("#turnBan").innerHTML = `${teamTag(ti)}'S TURN${S.isBonus?'<span class="bonus">BONUS TURN</span>':''}`;
+  $("#game").classList.toggle("adjusting", adjusting);
+  $("#adjBtn").classList.toggle("on", adjusting);
+  $("#soundBtn").textContent = soundOn ? "🔊" : "🔇";
+  renderTeams();
+  renderStage();
+  pendingFx.forEach(([i,txt,cls])=>floatFx(i,txt,cls)); pendingFx = [];
+}
+
+function renderStage(){
+  const st = $("#stage"), ti = S.turnTeam;
+  let html = "", instr = "";
+  const p = S.phase;
+
+  if(p==="pick"){
+    const n = S.boxes.length, left = S.boxes.filter(b=>!b.opened).length;
+    const r = st.getBoundingClientRect(); const W = Math.max(300,r.width-40), H = Math.max(200,r.height-90);
+    let best = {size:0, cols:1};
+    for(let c=1;c<=n;c++){ const rows = Math.ceil(n/c); const size = Math.min((W-(c-1)*12)/c, (H-(rows-1)*12)/rows); if(size>best.size) best={size,cols:c}; }
+    const size = Math.floor(Math.min(best.size, 170));
+    html = `<div class="gridwrap redsmoke"><div class="gridtitle">CHOOSE YOUR DESTINY</div>
+      <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
+      S.boxes.map((b,i)=>{
+        if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
+        const ic = b.kind==="item" ? `<img src="${ITEMS[b.item].icon}" alt="">` : `<span class="qm">?</span>`;
+        return `<div class="box opened" style="width:${size}px">${ic}</div>`;
+      }).join("") + `</div>` +
+      (left===0 ? `<div style="margin-top:16px"><button class="btn big gold" data-act="reshuffle">All boxes opened — Reshuffle</button></div>` : "") +
+      `</div>`;
+    const inv = T(ti).inv.length ? ` They can use an item from their card first.` : "";
+    instr = `${tname(ti)}: <b>pick a mystery box.</b>${inv}`;
+  }
+  else if(p==="question" || p==="steal" || p==="reveal"){
+    const b = curBox(); const len = (b.q||"").length;
+    const cls = len>95 ? "xlong" : len>50 ? "long" : "";
+    let controls = "", side = "";
+    if(p==="question"){
+      side = timerHTML();
+      controls = `<div class="qrow"><button class="btn big good" data-act="correct">✓ Correct</button>
+        <button class="btn big bad" data-act="wrong">✗ Wrong</button></div>
+        <div class="qrow"><button class="minibtn" id="timerRestart" data-act="timer"></button>
+        <button class="minibtn" data-act="peek">${S.cur.answerShown?"Answer shown":"👁 Show answer"}</button></div>`;
+      instr = `${tname(ti)} has <b>${S.cfg.qTime} seconds</b> to answer as a team.${T(ti).status==="sd"?' <b style="color:var(--red)">SUDDEN DEATH — wrong answer = OUT.</b>':''}`;
+    }else if(p==="steal"){
+      const si = S.cur.stealList[S.cur.si], stt = T(si);
+      side = timerHTML();
+      controls = `<div class="qrow"><div class="steal-who" style="background:${stt.color}">${esc(stt.name)} — STEAL?</div><button class="btn big good" data-act="stealok">✓ Stole it</button>
+        <button class="btn big bad" data-act="stealbad">✗ Wrong</button>
+        <button class="btn big" data-act="stealpass">Pass →</button><button class="minibtn" id="timerRestart" data-act="timer"></button></div>`;
+      instr = `${tname(si)} can <b>steal or pass</b> (${S.cfg.stealTime}s). ${S.cfg.stealCost?`A wrong steal costs <b>${S.cfg.stealCost} heart</b>.`:''}${stt.status==="sd"?' They are in sudden death: wrong = OUT.':''}`;
+    }else{
+      controls = `<button class="btn big gold" data-act="revealdone">Next turn →</button>`;
+      instr = S.cur.revealMsg || "";
+    }
+    const ans = (p==="reveal" || S.cur.answerShown) && b.a ? `<div class="answer"><small>ANSWER</small>${esc(b.a)}</div>` : "";
+    html = `<div class="view synth">
+      <div class="qrow" style="width:100%;gap:calc(var(--u)*3)">
+        <div class="qcard"><div class="coin">?</div><div class="qtext ${cls}">${esc(b.q)}</div></div>${side}
+      </div>${p==="reveal"?`<div class="qrow">${ans}${controls}</div>`:ans+controls}</div>`;
+  }
+  else if(p==="item"){
+    const k = S.cur.item, it = ITEMS[k], t = T(ti);
+    const after = S.cfg.items[k]?.after;
+    let note = "";
+    if(it.held) note = `Added to ${esc(t.name)}'s items — tap it on their card during any of their turns.`;
+    let btn = k==="shots" ? "🏀 Start shooting" : (after==="again" ? "Pick another box →" : "End turn →");
+    const visual = it.card ? `<img class="cardimg" src="${it.card}" alt="${esc(it.name)}">`
+      : `<div class="balls">${Array(5).fill(`<img src="${A.ball}" alt="">`).join("")}</div>`;
+    html = `<div class="view synth"><div class="itemview">${visual}
+      <div class="info"><h3>YOU FOUND ${esc(it.found)}!</h3>
+      <p>${esc(it.desc)}</p>${note?`<div class="note">${note}</div>`:""}
+      <div><button class="btn big gold" data-act="itemcont">${btn}</button></div></div></div></div>`;
+    instr = `${tname(ti)} opened a mystery item.`;
+  }
+  else if(p==="attack"){
+    const a = S.cur.attacker;
+    const dmg = (T(a).sword>0?2:1);
+    html = `<div class="view redsmoke"><div class="shoot">
+      <h3>${esc(T(a).name)} ${S.cur.noShots?"STOLE IT!":"GOT IT RIGHT!"}</h3>
+      ${S.lastAnswer?`<div class="answer"><small>ANSWER</small>${esc(S.lastAnswer)}</div>`:""}
+      <h3 style="color:var(--red)">▼ TAP A TEAM BELOW TO TAKE ${dmg>1?dmg+" HEARTS":"A HEART"} ▼</h3></div></div>`;
+    instr = `${tname(a)}: <b>choose a team to attack.</b>${S.cur.noShots?" No shots on a steal.":""} Shielded and sudden-death teams can't be targeted.`;
+  }
+  else if(p==="shoot"){
+    const c = S.cur, sh = T(c.shooter);
+    let top = "";
+    if(c.mode==="free"){
+      const dots = Array.from({length:5},(_,k)=>{ const r=c.results[k]; return `<img src="${A.ball}" class="${r==="made"?"made":r==="miss"?"used":""}" alt="">`; }).join("");
+      top = `<h3>FREE SHOTS — SHOT ${Math.min(5,5-c.shotsLeft+1)} OF 5</h3><div class="shotdots">${dots}</div>`;
+    }else{
+      top = `<h3>${esc(sh.name)} SHOOTS UNTIL THEY MISS!</h3><img class="bigball" src="${A.ball}" alt="">`;
+    }
+    let body;
+    if(c.pending){
+      const canAttack = !c.heartsOnly && sh.status==="alive" && validTargets(c.shooter).length>0;
+      body = `<div class="choice"><h3 style="font-family:'Press Start 2P';font-size:calc(var(--u)*1.8);margin:0">BASKET! CHOOSE:</h3>
+        <button class="btn big good" data-act="madeheal">❤ +1 heart for ${esc(sh.name)}</button>
+        ${canAttack?`<div class="or">— OR TAP A TEAM BELOW TO ATTACK —</div>`:""}</div>`;
+      instr = `Basket made! ${tname(c.shooter)} takes <b>+1 heart</b>${canAttack?" or <b>taps a team to attack</b>":""}.`;
+    }else{
+      body = `<div class="qrow"><button class="btn big good" data-act="made">🏀 MADE IT</button><button class="btn big bad" data-act="miss">✗ MISSED</button></div>`;
+      instr = c.mode==="free" ? `${tname(c.shooter)} gets <b>5 shots no matter what.</b>` : `${tname(c.shooter)}: one player shoots <b>until they miss.</b> Missing costs nothing.`;
+    }
+    html = `<div class="view redsmoke"><div class="shoot">${top}
+      <div class="made-count">BASKETS MADE: ${c.made}</div>${body}</div></div>`;
+  }
+  st.innerHTML = html;
+  $("#instr").innerHTML = instr;
+  if(p==="question"||p==="steal") drawTimer();
+}
+
+function renderTeams(){
+  const bar = $("#teambar");
+  const p = S.phase;
+  let targets = [];
+  if(p==="attack") targets = validTargets(S.cur.attacker);
+  if(p==="shoot" && S.cur.pending && !S.cur.heartsOnly && T(S.cur.shooter).status==="alive") targets = validTargets(S.cur.shooter);
+  const targeting = targets.length>0;
+  bar.innerHTML = S.teams.map((t,i)=>{
+    const max = S.cfg.maxHearts;
+    const hearts = Array.from({length:Math.max(max,1)},(_,k)=>`<img src="${A.heart}" class="${k<t.hearts?"":"ghost"}" alt="">`).join("");
+    const fx = [];
+    if(t.status==="sd") fx.push(`<span class="fxb sd">SUDDEN DEATH</span>`);
+    if(t.status==="out") fx.push(`<span class="fxb out">OUT</span>`);
+    if(t.shield) fx.push(`<span class="fxb shield"><img src="${A.ic_shield}" alt="">SHIELDED</span>`);
+    if(t.ring>0) fx.push(`<span class="fxb ring"><img src="${A.ic_ring}" alt="">LIFESTEAL ×${t.ring}</span>`);
+    if(t.sword>0) fx.push(`<span class="fxb sword"><img src="${A.ic_sword}" alt="">2× DMG ×${t.sword}</span>`);
+    const can = canUseItems(i);
+    const inv = t.inv.length ? t.inv.map(k=>`<button class="${can?"ready":""}" data-use="${i}:${k}" title="${esc(ITEMS[k].name)}"><img src="${ITEMS[k].icon}" alt="${esc(ITEMS[k].short)}"></button>`).join("")
+      : ``;
+    let cls = "team";
+    if(i===S.turnTeam) cls += " current";
+    if(t.status==="out") cls += " out";
+    if(targeting){ cls += targets.includes(i) ? " target" : (i===(S.cur.attacker??S.cur.shooter) ? "" : " notarget"); }
+    return `<div class="${cls}" data-i="${i}" ${targets.includes(i)?`data-target="${i}"`:""}>
+      <div class="hrow"><div class="tname" style="background:${t.color}">${esc(t.name)}</div><div class="hcount">${t.hearts}</div></div>
+      <div class="hearts" style="grid-template-columns:repeat(${Math.min(12,Math.max(max,1))},1fr)">${hearts}</div>
+      <div class="brow"><div class="fx">${fx.join("")}</div><div class="inv">${inv}</div></div>
+      <div class="adj"><button data-adj="${i}:-1">−</button><button data-adj="${i}:1">+</button></div>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   END SCREEN
+============================================================ */
+function finishGame(){
+  stopTimer();
+  S.over = true; persist();
+  const ranked = S.teams.map((t,i)=>({t,i})).sort((a,b)=>{
+    const sa = a.t.status==="out"?-1:a.t.hearts, sb = b.t.status==="out"?-1:b.t.hearts; return sb-sa;
+  });
+  const top = ranked[0].t.status==="out"?-1:ranked[0].t.hearts;
+  const winners = ranked.filter(r=>(r.t.status==="out"?-1:r.t.hearts)===top);
+  const title = winners.length>1 ? `IT'S A TIE!<br>${winners.map(w=>esc(w.t.name)).join(" & ")}` : `${esc(winners[0].t.name)} WINS!`;
+  let place = 0, last = null;
+  const rows = ranked.map((r,k)=>{
+    const sc = r.t.status==="out"?-1:r.t.hearts; if(sc!==last){ place=k+1; last=sc; }
+    return `<div class="${sc===top?"win":""}"><span class="pl">#${place}</span><span class="sw" style="background:${r.t.color}"></span>${esc(r.t.name)}
+      <span class="h">${r.t.status==="out"?"OUT":`<img src="${A.heart}" alt="">${r.t.hearts}`}</span></div>`;
+  }).join("");
+  $("#endscreen").innerHTML = `<h1>${title}</h1><div class="rank">${rows}</div>
+    <div class="qrow"><button class="btn big" id="endBack">↶ Back to game</button><button class="btn big good" id="endAgain">Play again</button><button class="btn big" id="endSetup">Setup</button></div>`;
+  showScreen("end");
+  SFX.item();
+  $("#endBack").onclick = ()=>{ S.over=false; if(activeTeams().length<=1 && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
+  $("#endAgain").onclick = ()=>{ newGame(); };
+  $("#endSetup").onclick = ()=>{ store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); };
+}
+
+function showScreen(n){
+  $("#setup").classList.toggle("hidden", n!=="setup");
+  $("#game").classList.toggle("hidden", n!=="game");
+  $("#endscreen").classList.toggle("hidden", n!=="end");
+}
+
+/* ============================================================
+   EVENTS — GAME
+============================================================ */
+$("#stage").addEventListener("click", e=>{
+  const b = e.target.closest("[data-box]"); if(b){ pickBox(+b.dataset.box); return; }
+  const a = e.target.closest("[data-act]"); if(!a) return;
+  ({ correct:answerCorrect, wrong:answerWrong, stealok:stealCorrect, stealbad:stealWrong, stealpass:stealPass,
+     revealdone:revealDone, itemcont:itemContinue, made:shotMade, miss:shotMiss, madeheal:madeHeal,
+     reshuffle, peek:showAnswer, timer:restartTimer })[a.dataset.act]?.();
+});
+$("#teambar").addEventListener("click", e=>{
+  const u = e.target.closest("[data-use]");
+  if(u){ const [i,k] = u.dataset.use.split(":"); if(canUseItems(+i)) useItem(+i,k); else toast(`Items can only be used during ${esc(T(+i).name)}'s own turn.`); return; }
+  const ad = e.target.closest("[data-adj]");
+  if(ad){ const [i,d] = ad.dataset.adj.split(":").map(Number); adjust(i,d); return; }
+  const tg = e.target.closest("[data-target]");
+  if(tg){
+    const i = +tg.dataset.target;
+    if(S.phase==="attack") doAttackTarget(i);
+    else if(S.phase==="shoot" && S.cur.pending) madeAttack(i);
+  }
+});
+$("#undoBtn").onclick = undo;
+$("#adjBtn").onclick = ()=>{ adjusting=!adjusting; render(); };
+$("#soundBtn").onclick = ()=>{ soundOn=!soundOn; store.set("gb_sound",soundOn); render(); };
+$("#menuBtn").onclick = ()=>{
+  modal(`<div class="card"><h2>MENU</h2>
+    <div class="row"><button class="btn" data-m="skip">Skip ${esc(T(S.turnTeam).name)}'s turn</button></div>
+    <div class="row"><button class="btn" data-m="rules">📜 Rules</button></div>
+    <div class="row"><button class="btn" data-m="key">🔑 Answer key</button></div>
+    <div class="row"><button class="btn gold" data-m="end">🏆 End game & show winner</button></div>
+    <div class="row"><button class="btn bad" data-m="quit">Quit to setup</button></div>
+    <div class="row"><button class="btn ghost" data-m="close">Close</button></div></div>`, m=>{
+      if(m==="skip") skipTurn();
+      if(m==="rules") showRules();
+      if(m==="key") showKey();
+      if(m==="end") finishGame();
+      if(m==="quit"){ if(confirmInline()) { stopTimer(); store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); } }
+    });
+};
+function confirmInline(){ return true; }
+window.addEventListener("resize", ()=>{ if(S && !S.over && S.phase==="pick") renderStage(); });
+document.addEventListener("keydown", e=>{
+  if(e.target.matches("input,textarea,select")) return;
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); if(S && !$("#game").classList.contains("hidden")) undo(); }
+});
+
+/* ============================================================
+   MODALS
+============================================================ */
+function modal(html, onAction){
+  const root = $("#modalRoot");
+  root.innerHTML = `<div class="modal">${html}</div>`;
+  const m = root.firstChild;
+  m.addEventListener("click", e=>{
+    if(e.target===m){ root.innerHTML=""; return; }
+    const b = e.target.closest("[data-m]"); if(!b) return;
+    const v = b.dataset.m;
+    if(v!=="keep") root.innerHTML = "";
+    if(v!=="close" && onAction) onAction(v, m);
+  });
+  return m;
+}
+function showRules(){
+  const c = S ? S.cfg : CFG;
+  const it = k => c.items[k]?.after==="again" ? "then the team picks another box" : "and that ends the turn";
+  modal(`<div class="card"><h2>HOW THIS GAME RUNS</h2><ul>
+    <li>Every team starts with <b>${c.startHearts} hearts</b> (max ${c.maxHearts}).</li>
+    <li>On your turn, pick a mystery box. Questions: your team has <b>${c.qTime} seconds</b>.</li>
+    <li><b>Correct:</b> take a heart from any team, then one player shoots until they miss. Each basket = +1 heart for you <i>or</i> take another heart.</li>
+    <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time (${c.stealTime}s each). Steal or pass (steal attacks don't count toward the gang-up rule). A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes a heart from another team but gets <b>no shots</b>, and turn order doesn't change.</li>
+    <li><b>Gang-up rule:</b> if a team is attacked by one team and then by a different team on the very next turn, they get a <b>bonus turn</b> right away (and keep their normal turn).</li>
+    <li><b>Sudden death (0 hearts):</b> you can't attack. A correct answer earns 1 heart back (no shots). A wrong answer, or a wrong steal, means you're <b>OUT</b>.</li>
+    <li><b>Shield:</b> use it on your turn. No one can attack you until your next turn.</li>
+    <li><b>Lifesteal Ring:</b> for two of your turns, every heart you take heals you +1.</li>
+    <li><b>Cursed Sword:</b> for two of your turns, your attacks take 2 hearts, but attacks on you also take 2.</li>
+    <li><b>Reed of Resurrection:</b> if you're knocked out, you come back with 2 hearts automatically. You can also play it during sudden death.</li>
+    <li>Shield, Ring, Sword and Reed are kept and used later, ${it("shield")}.</li>
+    <li><b>Five Free Shots:</b> 5 shots no matter what, ${it("shots")}. <b>Traumatic Scale:</b> lose a heart, ${it("scale")}.</li>
+    <li>Most hearts when class ends wins. The last team standing also wins.</li></ul>
+    <button class="btn" data-m="close">Close</button></div>`);
+}
+function showKey(){
+  const qs = S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}));
+  modal(`<div class="card"><h2>ANSWER KEY</h2><ol>${qs.map(o=>`<li><b>${esc(o.q)}</b><br><span style="color:var(--good)">${esc(o.a||"(no answer entered)")}</span></li>`).join("")}</ol>
+    <button class="btn" data-m="close">Close</button></div>`);
+}
+function editSets(){
+  let name = CFG.set;
+  const m = modal(`<div class="card"><h2>EDIT QUESTIONS</h2>
+    <p style="margin-top:0">Write one question per line: <b>Question | Answer</b>. You can also copy two columns from Google Sheets and paste them here. Make a separate set for each grade or unit.</p>
+    <div class="row"><input type="text" id="setName" style="flex:1"> <span class="qcount" id="liveCount"></span></div>
+    <textarea id="setText" spellcheck="true"></textarea>
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <button class="btn" data-m="keep" id="newSet">+ New set</button>
+        <button class="btn" data-m="keep" id="dupSet">Duplicate</button>
+        <button class="btn bad" data-m="keep" id="delSet">Delete set</button>
+        <button class="btn" data-m="keep" id="expSet">⬇ Export .txt</button>
+        <label class="btn" style="font-size:calc(var(--u)*1.7)">⬆ Import .txt<input type="file" id="impSet" accept=".txt,.csv,.tsv,text/plain" hidden></label>
+      </div>
+      <div class="row"><button class="btn ghost" data-m="close">Cancel</button><button class="btn good" data-m="keep" id="saveSet">Save</button></div>
+    </div></div>`);
+  const nm = m.querySelector("#setName"), tx = m.querySelector("#setText"), lc = m.querySelector("#liveCount");
+  const load = ()=>{ nm.value = name; tx.value = SETS[name]||""; count(); };
+  const count = ()=>{ lc.textContent = parseSet(tx.value).length + " questions"; };
+  tx.addEventListener("input", count);
+  load();
+  m.querySelector("#newSet").onclick = ()=>{ name = uniqueName("New set"); SETS[name] = "# Question | Answer\n"; load(); tx.focus(); };
+  m.querySelector("#dupSet").onclick = ()=>{ const n = uniqueName(nm.value+" copy"); SETS[n]=tx.value; name=n; load(); };
+  m.querySelector("#delSet").onclick = ()=>{
+    if(Object.keys(SETS).length<=1){ toast("You need at least one set"); return; }
+    delete SETS[name]; name = Object.keys(SETS)[0]; CFG.set = name; saveSets(); saveCfg(); load(); };
+  m.querySelector("#expSet").onclick = ()=>{
+    const blob = new Blob([tx.value],{type:"text/plain"}); const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download=(nm.value||"questions").replace(/[^\w\- ]+/g,"")+".txt"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); };
+  m.querySelector("#impSet").onchange = e=>{
+    const f = e.target.files[0]; if(!f) return; const r = new FileReader();
+    r.onload = ()=>{ const n = uniqueName(f.name.replace(/\.\w+$/,"")); SETS[n]=String(r.result); name=n; saveSets(); load(); toast("Imported "+esc(n)); };
+    r.readAsText(f); };
+  m.querySelector("#saveSet").onclick = ()=>{
+    let newName = nm.value.trim()||"Untitled";
+    if(newName!==name){ if(SETS[newName]) newName = uniqueName(newName); delete SETS[name]; }
+    SETS[newName] = tx.value; name = newName; CFG.set = newName; saveSets(); saveCfg();
+    $("#modalRoot").innerHTML=""; renderSetup(); toast("Saved "+esc(newName), "green"); };
+}
+function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`; return n; }
+
+/* ============================================================
+   SETUP SCREEN
+============================================================ */
+const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30] };
+function renderSetup(){
+  ["teams","startHearts","maxHearts","qTime","stealTime"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
+    `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
+  document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
+  $("#setSelect").innerHTML = Object.keys(SETS).map(n=>`<option ${n===CFG.set?"selected":""}>${esc(n)}</option>`).join("");
+  const qn = parseSet(SETS[CFG.set]).length;
+  const withA = parseSet(SETS[CFG.set]).filter(o=>o.a).length;
+  $("#setCount").textContent = `${qn} questions${qn&&withA<qn?` (${qn-withA} without answers)`:""}`;
+  $("#itemTable").innerHTML = `<tr><td></td><td></td><td style="color:var(--dim);font-size:calc(var(--u)*1.2)">How many</td><td style="color:var(--dim);font-size:calc(var(--u)*1.2)">After it's found</td></tr>` +
+    ITEM_ORDER.map(k=>{ const it=ITEMS[k], c=CFG.items[k];
+      return `<tr><td><img src="${it.icon}" alt=""></td><td><div class="nm">${esc(it.name)}</div></td>
+      <td><div class="stepper"><button data-istep="${k}:-1">−</button><span>${c.count}</span><button data-istep="${k}:1">+</button></div></td>
+      <td><div class="seg" data-iafter="${k}"><button data-v="again" class="${c.after==="again"?"on":""}">Pick again</button><button data-v="end" class="${c.after==="end"?"on":""}">Ends turn</button></div></td></tr>`; }).join("");
+  const items = ITEM_ORDER.reduce((s,k)=>s+CFG.items[k].count,0);
+  $("#boxSummary").textContent = `${qn+items} mystery boxes: ${qn} questions + ${items} items`;
+  $("#startBtn").disabled = qn===0;
+  const saved = store.get("gb_game", null);
+  $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
+    <span><button class="btn gold" id="resumeBtn">Resume game</button> <button class="btn ghost" id="discardBtn">Discard</button></span></div>` : "";
+  if($("#resumeBtn")){
+    $("#resumeBtn").onclick = ()=>{ S = saved.S; UNDO = saved.UNDO||[]; if(S.phase==="question"||S.phase==="steal"){ const tt = S.phase==="question"?S.cfg.qTime:S.cfg.stealTime; timerState={left:tt,total:tt,running:false}; } showScreen("game"); render(); };
+    $("#discardBtn").onclick = ()=>{ store.del("gb_game"); renderSetup(); };
+  }
+}
+$("#setup").addEventListener("click", e=>{
+  const st = e.target.closest("[data-step]");
+  if(st){ const [k,d] = st.dataset.step.split(":"); CFG[k] = Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], CFG[k]+(+d)));
+    if(k==="startHearts" && CFG.maxHearts<CFG.startHearts) CFG.maxHearts = CFG.startHearts;
+    if(k==="maxHearts" && CFG.startHearts>CFG.maxHearts) CFG.startHearts = CFG.maxHearts;
+    saveCfg(); renderSetup(); return; }
+  const sg = e.target.closest("[data-seg] button");
+  if(sg){ CFG[sg.parentElement.dataset.seg] = +sg.dataset.v; saveCfg(); renderSetup(); return; }
+  const is = e.target.closest("[data-istep]");
+  if(is){ const [k,d] = is.dataset.istep.split(":"); CFG.items[k].count = Math.max(0, Math.min(10, CFG.items[k].count + (+d))); saveCfg(); renderSetup(); return; }
+  const ia = e.target.closest("[data-iafter] button");
+  if(ia){ CFG.items[ia.parentElement.dataset.iafter].after = ia.dataset.v; saveCfg(); renderSetup(); return; }
+});
+$("#setup").addEventListener("input", e=>{
+  if(e.target.dataset.name!=null){ CFG.names[+e.target.dataset.name] = e.target.value; saveCfg(); }
+});
+$("#setSelect").onchange = e=>{ CFG.set = e.target.value; saveCfg(); renderSetup(); };
+$("#editSetBtn").onclick = editSets;
+$("#rulesBtn").onclick = showRules;
+$("#startBtn").onclick = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} newGame(); };
+
+renderSetup();
+showScreen("setup");
+</script>
+</body>
+</html>
