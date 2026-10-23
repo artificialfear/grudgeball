@@ -36,4 +36,5 @@ Question sets save in that browser. Use **Export .txt** to back them up or move 
 - `index.html`: the game, with all art built in. This is the file GitHub Pages serves.
 - `src/grudgeball.src.html`: the editable source, with image placeholders.
 - `assets/`: the art taken from the original myViewBoard file.
+- `sounds/`: the game's sound effects and menu music, as MP3s. To change a sound, upload a new MP3 with the **same file name** (for example `sounds/correct.mp3`). Sounds without a file (Fermata, Modulation, Free Shots) use built-in beeps.
 - `build.py`: rebuilds `index.html` from the source and the art (`python3 build.py`).

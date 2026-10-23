@@ -235,6 +235,7 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 
 <!-- ================= SETUP ================= -->
 <section id="setup">
+  <button class="topbtn" id="musicBtn" style="position:fixed;top:14px;right:16px;z-index:5">🎵 Music: On</button>
   <h1>GRUDGE BALL</h1>
   <div class="tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
   <div id="resumeBox"></div>
@@ -464,6 +465,50 @@ const SFX = {
   ko(){ [400,300,200,100].forEach((f,i)=>tone(f,.2,"sawtooth",.09,i*.15)); }
 };
 
+/* ---------- recorded sounds (files in sounds/) ---------- */
+const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
+  shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
+  basket:"basketball", scale:"traumatic-scale" };
+const ITEM_SND = { shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
+const SND = {}, SND_BAD = {};
+function getSnd(k){
+  if(!SND[k]){
+    const a = new Audio("sounds/" + SOUND_FILES[k] + ".mp3"); a.preload = "auto";
+    a.addEventListener("error", ()=>{ SND_BAD[k] = true; });
+    SND[k] = a;
+  }
+  return SND[k];
+}
+function preloadSounds(){ Object.keys(SOUND_FILES).forEach(k=>{ if(k!=="music"){ try{ getSnd(k).load(); }catch(e){} } }); }
+// play a recorded sound; if the file can't play, use the built-in synth sound instead
+function playSnd(k, fallback){
+  if(!soundOn) return;
+  if(SND_BAD[k]){ if(fallback) fallback(); return; }
+  try{
+    const a = getSnd(k); a.pause(); a.currentTime = 0; a.volume = 1;
+    const pr = a.play(); if(pr && pr.catch) pr.catch(()=>{ if(fallback) fallback(); });
+  }catch(e){ if(fallback) fallback(); }
+}
+function stopSnd(k){ const a = SND[k]; if(a){ try{ a.pause(); }catch(e){} } }
+function itemSound(k){ if(ITEM_SND[k]) playSnd(ITEM_SND[k], SFX.item); else SFX.item(); }
+
+let musicOn = store.get("gb_music", true), musicFade = null;
+const MUSIC_VOL = 0.45;
+function musicPlay(){
+  if(!musicOn || $("#setup").classList.contains("hidden")) return;
+  const a = getSnd("music"); a.loop = true;
+  if(musicFade){ clearInterval(musicFade); musicFade = null; }
+  a.volume = MUSIC_VOL;
+  if(a.paused){ const pr = a.play(); if(pr && pr.catch) pr.catch(()=>{}); }
+}
+function musicStop(){
+  const a = SND.music; if(!a || a.paused) return;
+  if(musicFade) clearInterval(musicFade);
+  let v = a.volume;
+  musicFade = setInterval(()=>{ v -= 0.05; if(v<=0){ clearInterval(musicFade); musicFade=null; a.pause(); a.volume = MUSIC_VOL; } else a.volume = v; }, 50);
+}
+function updateMusicBtn(){ const b = $("#musicBtn"); if(b) b.textContent = musicOn ? "🎵 Music: On" : "🎵 Music: Off"; }
+
 /* ============================================================
    GAME STATE
 ============================================================ */
@@ -558,7 +603,7 @@ function eliminate(i){
   const r = t.inv.indexOf("reed");
   if(r>=0){
     t.inv.splice(r,1); t.hearts = Math.min(2, S.cfg.maxHearts); t.status="alive";
-    pendingFx.push([i, "+2", "plus"]); SFX.item();
+    pendingFx.push([i, "+2", "plus"]); itemSound("reed");
     toast(`REED OF RESURRECTION!<br>${esc(t.name)} rises with 2 hearts!`, "green");
     return;
   }
@@ -641,7 +686,7 @@ const pickBox = act(i=>{
     if(t.metronome){ t.metronome = false; S.cur.qBonus = 10; toast(`METRONOME! ${esc(t.name)} gets +10 seconds`, "green"); }
     startTimer(S.cfg.qTime + S.cur.qBonus);
   }else{
-    S.phase = "item"; S.cur.item = b.item; SFX.item();
+    S.phase = "item"; S.cur.item = b.item; itemSound(b.item);
     const ti = S.turnTeam, t = T(ti), k = b.item;
     // underdog bonus: last place gets +1 heart for any item box
     if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1); S.cur.underdog = true; }
@@ -673,7 +718,7 @@ const itemContinue = act(()=>{
 });
 
 function resolveCorrect(i, stolen=false){
-  stopTimer(); SFX.correct();
+  stopTimer(); playSnd("correct", SFX.correct);
   const t = T(i);
   S.lastAnswer = curBox().a || null;
   if(t.status==="sd"){
@@ -693,7 +738,7 @@ function resolveCorrect(i, stolen=false){
 }
 const answerCorrect = act(()=>{ resolveCorrect(S.turnTeam); });
 const answerWrong = act(()=>{
-  stopTimer(); SFX.wrong();
+  stopTimer(); playSnd("wrong", SFX.wrong);
   const i = S.turnTeam, t = T(i);
   if(t.status==="sd"){ eliminate(i); }
   else if(S.cfg.wrongCost>0) loseHearts(i, S.cfg.wrongCost);
@@ -740,7 +785,7 @@ const stealCorrect = act(()=>{
   resolveCorrect(i, true);
 });
 const stealWrong = act(()=>{
-  const i = S.cur.stealList[S.cur.si]; SFX.wrong();
+  const i = S.cur.stealList[S.cur.si]; playSnd("wrong", SFX.wrong);
   if(T(i).status==="sd") eliminate(i);
   else if(S.cfg.stealCost>0) loseHearts(i, S.cfg.stealCost);
   nextStealer();
@@ -755,7 +800,7 @@ const doAttackTarget = act(target=>{
   if(S.cur.noShots){ toast(`${esc(T(a).name)} took a heart — no shots on a steal.`); endTurn(); return; }
   startShoot(a, "streak");
 });
-const shotMade = act(()=>{ SFX.swish(); S.cur.pending = true; });
+const shotMade = act(()=>{ playSnd("basket", SFX.swish); S.cur.pending = true; });
 const shotMiss = act(()=>{
   S.cur.results.push("miss");
   if(S.cur.mode==="streak"){ toast("MISSED! Turn over."); endTurn(); return; }
@@ -782,7 +827,7 @@ const useItem = act((ti, k)=>{
   const t = T(ti); const idx = t.inv.indexOf(k); if(idx<0) return;
   if(S.itemUsedTurn===S.turnNo){ UNDO.pop(); toast("One item per turn!"); return; }
   const why = itemBlockReason(ti, k); if(why){ UNDO.pop(); toast(why); return; }
-  t.inv.splice(idx,1); SFX.item(); S.itemUsedTurn = S.turnNo;
+  t.inv.splice(idx,1); itemSound(k); S.itemUsedTurn = S.turnNo;
   if(k==="reed"){ t.hearts = 2; t.status="alive"; pendingFx.push([ti,"+2","plus"]);
     toast(`${esc(t.name)} plays the REED OF RESURRECTION!<br>Back with 2 hearts`, "green"); }
   if(k==="shield"){ t.shield = true; toast(`${esc(t.name)} raises the SHIELD!<br>No attacks on them until their next turn`, "cyan"); }
@@ -1084,7 +1129,7 @@ function finishGame(){
   showScreen("end");
   SFX.item();
   $("#endBack").onclick = ()=>{ S.over=false; if(activeTeams().length<=1 && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
-  $("#endAgain").onclick = ()=>{ newGame(); };
+  $("#endAgain").onclick = ()=>{ playSnd("start"); newGame(); };
   $("#endSetup").onclick = ()=>{ store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); };
 }
 
@@ -1092,6 +1137,7 @@ function showScreen(n){
   $("#setup").classList.toggle("hidden", n!=="setup");
   $("#game").classList.toggle("hidden", n!=="game");
   $("#endscreen").classList.toggle("hidden", n!=="end");
+  if(n==="setup") musicPlay(); else musicStop();
 }
 
 /* ============================================================
@@ -1280,7 +1326,12 @@ $("#setup").addEventListener("input", e=>{
 $("#setSelect").onchange = e=>{ CFG.set = e.target.value; saveCfg(); renderSetup(); };
 $("#editSetBtn").onclick = editSets;
 $("#rulesBtn").onclick = showRules;
-$("#startBtn").onclick = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} newGame(); };
+$("#startBtn").onclick = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} preloadSounds(); playSnd("start"); newGame(); };
+$("#musicBtn").onclick = e=>{ e.stopPropagation(); musicOn = !musicOn; store.set("gb_music", musicOn); updateMusicBtn(); if(musicOn) musicPlay(); else musicStop(); };
+// browsers block music until the first tap, so start it on the first interaction with the setup screen
+$("#setup").addEventListener("pointerdown", ()=>musicPlay());
+document.addEventListener("keydown", ()=>{ if(!$("#setup").classList.contains("hidden")) musicPlay(); });
+updateMusicBtn();
 
 renderSetup();
 showScreen("setup");
