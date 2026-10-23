@@ -1,0 +1,45 @@
+# Set: Level 2 Developing
+# Ranks 4-5 vocab, eighth notes, dotted notes, ties, repeats, key signatures, partials
+# One question per line:   Question | Answer
+What does cut time (2/2) mean? | 2 beats in each measure, and the half note gets one beat
+Eight notes in a row following the pattern W W H W W W H make what kind of scale? | A major scale
+What is a series of tones using all half steps called? | A chromatic scale
+Moving from one note to another without tonguing is called what? | A slur
+What is a curved line connecting two notes of the same pitch called? | A tie
+What is the word for the loudness and softness in music? | Dynamics
+What are the added lines that make the staff higher or lower called? | Ledger lines
+What does a double bar line show? | The end of a song or section
+What is the main tune of a piece of music called? | The melody
+What is the secondary tune of a piece of music called? | The countermelody
+With 1st and 2nd endings, which ending do you play the first time through? | The 1st ending
+What does ritardando (rit.) mean? | Gradually get slower
+What does crescendo mean? | Gradually get louder
+What does decrescendo mean? | Gradually get softer
+What does mezzo piano (mp) mean? | Medium soft
+What does mezzo forte (mf) mean? | Medium loud
+What does fortissimo (ff) mean? | Very loud
+What does pianissimo (pp) mean? | Very soft
+What does D.S. (Dal Segno) mean? | Go back to the sign
+A note or notes that come before the first full measure are called what? | Pick-up notes
+What is the distance between any two notes called? | An interval
+What is the distance from one note to the next note with the same letter name? | An octave
+What is it called when everyone plays the same notes? | Unison
+What is the highness or lowness of a sound called? | Pitch
+Matching pitches exactly is called what? | Intonation (playing in tune)
+In 4/4 time, how many beats does a dotted half note get? | 3 beats
+A dot after a note adds how much to its value? | Half of the note's value
+How many eighth notes equal one quarter note? | 2
+In 4/4 time, how many eighth notes fit in one measure? | 8
+How do we count a pair of eighth notes on beat 1? | 1 &
+In 4/4 time, how many beats is a half note tied to a quarter note? | 3 beats
+In 4/4 time, how many beats is a whole note tied to a half note? | 6 beats
+What does a repeat sign tell you to do? | Go back and play that section again
+With 1st and 2nd endings, which ending do you skip the second time through? | The 1st ending
+What does a fermata tell you to do? | Hold the note longer than its value, until the conductor cuts it off
+How many flats are in the key signature of concert B♭ major? | 2 (B♭ and E♭)
+How many flats are in the key signature of concert E♭ major? | 3 (B♭, E♭ and A♭)
+On a brass instrument, the different notes you can play with the same fingering or slide position are called what? | Partials
+Which brass instrument uses a slide instead of valves? | Trombone
+Which two woodwind instruments use a double reed? | Oboe and bassoon
+Which is lower: a note on a ledger line below the staff, or a note on the bottom line of the staff? | The ledger line note below the staff
+Moving from a line note to the very next space note above it: is that a step or a skip? | A step

@@ -1,0 +1,65 @@
+# Set: Level 4 Advanced
+# Advanced 8th grade: Ranks 8-10 vocab, key signatures, transposition, chords, intervals, meter
+# One question per line:   Question | Answer
+What does adagietto mean? | Slow, but not as slow as adagio
+What does agitato mean? | Agitated, rapid
+What does al fine mean? | To the finish (the end)
+What does con amore mean? | With love (tenderly)
+What does l'istesso mean? | The same
+What does leggiero mean? | Lightly
+What does grazioso mean? | Gracefully
+What does non troppo mean? | Not too much
+What does pesante mean? | Heavily, with emphasis
+What does cantabile mean? | In a singing style
+What does presto mean? | Very fast
+What does rubato mean? | A temporary irregularity of time (stretching the tempo for expression)
+What does tenuto mean? | Sustain the full value
+What does smorzando mean? | Dying away
+What is a scherzo? | A playful, joking piece, usually fast
+What does vivo mean? | Lively, brisk
+What does stringendo mean? | Gradually faster
+What does sordino mean? | Mute
+What does senza mean? | Without
+What does primo mean? | First
+What does moto mean? | Motion, movement
+What does marcia mean? | March style
+What does giocoso mean? | Joyfully
+What is an etude? | A musical study
+What does calando mean? | Gradually slower and softer
+What does arioso mean? | In a vocal (singing) style
+What does alla mean? | In the style of
+What does ottava (8va) mean? | Octave (play an octave higher)
+What does marziale mean? | Martial, in a march style
+What does con grazia mean? | In a graceful style
+What does larghetto mean? | Slow, but not as slow as largo
+What does energico mean? | Energetically
+What is an opus? | A musical work or composition
+What does larghissimo mean? | Very slow, slower than largo
+What does prestissimo mean? | Very fast, faster than presto
+What does religioso mean? | In a solemn style
+What does ritenuto mean? | A steady pace, but slower than the tempo before it
+What does con spirito mean? | With spirit
+What does grave mean? | Very slow
+What does subito mean? | Suddenly
+What does veloce mean? | Very fast
+What does appassionato mean? | Intensely, passionately, with deep feeling
+What does brillante mean? | Brilliantly
+What is the smallest interval used in our music? | A half step
+What is the order of flats? | B E A D G C F
+What is the order of sharps? | F C G D A E B
+Which major key has 1 flat? | F major
+Which major key has 3 flats? | E♭ major
+Which major key has 4 flats? | A♭ major
+Which major key has 1 sharp? | G major
+A B♭ trumpet or clarinet plays a written C. What concert pitch sounds? | Concert B♭
+An E♭ alto saxophone plays a written C. What concert pitch sounds? | Concert E♭
+A horn in F plays a written C. What concert pitch sounds? | Concert F
+What three notes make a concert B♭ major chord? | B♭, D and F
+What is the relative minor of C major? | A minor
+What is the relative minor of B♭ major? | G minor
+What interval is C up to G? | A perfect 5th
+What interval is C up to E? | A major 3rd
+In 6/8 time, how many big beats (pulses) are in each measure? | 2 (each one a dotted quarter)
+Is 6/8 a simple meter or a compound meter? | Compound
+In 4/4 time, a dotted eighth note plus a sixteenth note equals how many beats? | 1 beat
+On a brass instrument, what is the lowest note of the harmonic series (partials) called? | The fundamental

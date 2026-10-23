@@ -1,0 +1,48 @@
+# Set: Level 3 Intermediate
+# Ranks 6-7 vocab, sixteenths, triplets, 6/8, syncopation, scales, enharmonics, road maps
+# One question per line:   Question | Answer
+What does allegro mean? | Fast
+What does allegretto mean? | Light and lively
+A break in the music where everyone stops, often marked G.P., is called what? | A grand pause
+What does simile mean? | Continue in the same style
+What does andante mean? | Walking tempo
+What does moderato mean? | Moderate tempo
+Emphasis on a weak beat or off-beat is called what? | Syncopation
+Three or more notes played together is called what? | A chord
+Proper tonguing and slurring is called what? | Articulation
+What does rallentando (rall.) mean? | Gradually slower
+What does accelerando (accel.) mean? | Gradually faster
+What does marcato mean? | A marked style of articulation with emphasis (heavy and separated)
+What does legato mean? | Smooth and connected
+What does staccato mean? | Light and detached (short)
+What does a tempo mean? | Go back to the original tempo
+What word means one player? | Solo
+What word means more than one player, but not the full band? | Soli
+What does adagio mean? | Very slow
+What does sempre mean? | Always
+What does più mean? | More
+What does mosso mean? | With motion, moving (più mosso = faster)
+Which tempo is a little quicker than andante? | Andantino
+The final added measures at the end of a piece are called what? | The coda
+What does maestoso mean? | Majestically
+What does molto mean? | Much
+What does meno mean? | Less
+What does poco a poco mean? | Little by little
+What does con mean? | With
+What does assai mean? | Very
+What word means do not play? | Tacet
+How do we count four sixteenth notes on beat 1? | 1 e & a
+How many sixteenth notes equal one quarter note? | 4
+How many sixteenth notes fit in one measure of 4/4? | 16
+How do we count an eighth-note triplet on beat 1? | 1 la le
+In 6/8 time, how many eighth-note counts are in each measure? | 6
+In 6/8 time, a dotted quarter note gets how many eighth-note counts? | 3
+In 4/4 time, how many beats is a dotted quarter note? | 1 and a half beats
+A dotted quarter note followed by an eighth note fills how many beats in 4/4? | 2 beats
+What is the pattern of whole (W) and half (H) steps in a major scale? | W W H W W W H
+What is an enharmonic? | Two names for the same pitch, like F♯ and G♭
+What is the enharmonic of B♭? | A♯
+What is the enharmonic of D♯? | E♭
+What does D.C. al Fine mean? | Go back to the beginning and play until Fine
+What does D.S. al Coda mean? | Go back to the sign, play to the To Coda mark, then jump to the coda
+How long does an accidental last? | Until the end of the measure (the bar line cancels it)

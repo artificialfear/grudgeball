@@ -32,6 +32,15 @@ All of these can be adjusted on the setup screen.
 Use **Edit questions** in the game itself. Write one question per line as `Question | Answer`, or keep your questions in a Google Sheet (column A = question, column B = answer) and paste the columns in. The header row, blank rows and any extra columns are skipped.
 Question sets save in that browser. Use **Export .txt** to back them up or move them to another device.
 
+## Built-in question sets
+The `questions/` folder holds the sets that come with the game and show up in the Questions dropdown on every device:
+- Level 1 Beginner: Rank 3 vocab, note values, staff and clefs, piano landmarks, instruments
+- Level 2 Developing: Ranks 4–5 vocab, eighth notes, dotted notes, ties, repeats, key signatures, partials
+- Level 3 Intermediate: Ranks 6–7 vocab, sixteenths, triplets, 6/8, syncopation, scales, enharmonics
+- Level 4 Advanced: Ranks 8–10 vocab, key signatures, transposition, chords, intervals, compound meter
+
+Each file is one set: a `# Set: Name` line, then `Question | Answer` lines. Run `python3 build.py` after editing.
+
 ## Files
 - `index.html`: the game, with all art built in. This is the file GitHub Pages serves.
 - `src/grudgeball.src.html`: the editable source, with image placeholders.

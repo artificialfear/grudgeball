@@ -1,0 +1,46 @@
+# Set: Level 1 Beginner
+# Beginners: Rank 3 vocab, note values, staff and clefs, piano landmarks, instruments
+# One question per line:   Question | Answer
+What is the speed of the beat called? | Tempo
+What is the steady, underlying pulse of the music called? | The beat
+What does forte (f) mean? | Loud
+What does piano (p) mean? | Soft
+What do we call silence in music? | A rest
+What symbol raises a note a half step? | A sharp (♯)
+What symbol lowers a note a half step? | A flat (♭)
+What symbol cancels a sharp or a flat? | A natural (♮)
+What is the space between two bar lines called? | A measure
+What divides music into measures? | A bar line
+What does D.C. (Da Capo) mean? | Go back to the beginning
+What is another name for the treble clef? | The G clef
+What is another name for the bass clef? | The F clef
+What tells how many counts are in each measure and which note gets one count? | The time signature
+What are the sharps or flats at the beginning of a piece of music called? | The key signature
+How many lines and how many spaces are on a music staff? | 5 lines and 4 spaces
+In 4/4 time, how many beats does a whole note get? | 4 beats
+In 4/4 time, how many beats does a half note get? | 2 beats
+In 4/4 time, how many beats does a quarter note get? | 1 beat
+In 4/4 time, how many beats does a quarter rest get? | 1 beat
+In 4/4 time, how many beats does a whole rest get? | 4 beats (a whole measure)
+How many quarter notes equal one half note? | 2
+How many half notes equal one whole note? | 2
+How many quarter notes equal one whole note? | 4
+In 4/4 time, how many beats are in each measure? | 4
+In 3/4 time, how many beats are in each measure? | 3
+What does the top number of a time signature tell you? | How many beats are in each measure
+When the bottom number of a time signature is 4, which note gets one beat? | The quarter note
+How do we count four quarter notes in a measure of 4/4? | 1 2 3 4
+What are the seven letters of the musical alphabet? | A B C D E F G
+What letter comes after G in the musical alphabet? | A (the alphabet starts over)
+On the piano, which white key is just to the left of the Chopsticks (2 black keys) group? | C
+On the piano, which white key is just to the left of the Fork (3 black keys) group? | F
+Name the treble clef lines from bottom to top. | E G B D F
+Name the treble clef spaces from bottom to top. | F A C E
+Name the bass clef lines from bottom to top. | G B D F A
+Name the bass clef spaces from bottom to top. | A C E G
+What is the shape of your lips and mouth when you play called? | Embouchure
+Which clef do flutes, clarinets, saxophones and trumpets read? | Treble clef
+Which clef do trombones, euphoniums, tubas and bassoons read? | Bass clef
+What is the stick a conductor uses called? | A baton
+Name the two woodwind instruments in our band that use a single reed. | Clarinet and saxophone
+Which woodwind instrument uses no reed at all? | Flute (or piccolo)
