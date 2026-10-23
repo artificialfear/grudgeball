@@ -13,6 +13,7 @@
   --ink:#fff6ea; --dim:#c9a9b4; --red:#ff2a2a; --gold:#ffd400; --gold2:#e0a400;
   --good:#2fd16b; --bad:#ff3b3b; --purple:#7b3cff; --cyan:#3ad7ff;
   --u:min(1vw,1.78vh);
+  --lair:url(__A_lair__);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -24,6 +25,18 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;touch-action:ma
 input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:text}
 .px{font-family:"Press Start 2P",monospace;letter-spacing:.02em}
 .hidden{display:none!important}
+
+/* ---------- TAP TO START ---------- */
+#splash{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center;
+  background:radial-gradient(ellipse at 50% 45%,rgba(10,0,4,.15),rgba(10,0,4,.75) 75%),var(--lair) center/cover;transition:opacity .5s}
+#splash.gone{opacity:0;pointer-events:none}
+#splash .sp-inner{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*3);padding:16px}
+#splash h1{font-family:"Press Start 2P";font-size:calc(var(--u)*10);line-height:1.15;margin:0;color:#fff;
+  text-shadow:6px 6px 0 #b00000,12px 12px 0 #000;animation:spfloat 3s ease-in-out infinite}
+#splash .sp-tag{font-size:calc(var(--u)*2.2);color:#ffe1e1;text-shadow:2px 2px 0 #000;background:#0008;padding:8px 16px;border-radius:10px}
+#splash .sp-tap{font-family:"Press Start 2P";font-size:calc(var(--u)*3.2);color:var(--gold);text-shadow:4px 4px 0 #000;animation:spblink 1.1s steps(1) infinite}
+@keyframes spfloat{50%{transform:translateY(-10px)}}
+@keyframes spblink{50%{opacity:0}}
 
 /* ---------- shared buttons ---------- */
 .btn{background:var(--panel2);border:3px solid var(--line);border-radius:10px;padding:calc(var(--u)*1) calc(var(--u)*1.8);font-size:calc(var(--u)*1.7);font-weight:700;box-shadow:0 5px 0 #000;transition:transform .06s}
@@ -37,7 +50,7 @@ input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:t
 .btn:disabled{opacity:.35;pointer-events:none}
 
 /* ---------- SETUP ---------- */
-#setup{position:fixed;inset:0;overflow:auto;background:linear-gradient(rgba(10,0,4,.92),rgba(10,0,4,.7) 40%,rgba(10,0,4,.9)),url(__A_lair__) center bottom/cover fixed;padding:calc(var(--u)*2) calc(var(--u)*3) calc(var(--u)*6)}
+#setup{position:fixed;inset:0;overflow:auto;background:linear-gradient(rgba(10,0,4,.92),rgba(10,0,4,.7) 40%,rgba(10,0,4,.9)),var(--lair) center bottom/cover fixed;padding:calc(var(--u)*2) calc(var(--u)*3) calc(var(--u)*6)}
 #setup h1{font-family:"Press Start 2P";font-size:calc(var(--u)*5.2);margin:calc(var(--u)*1) 0 calc(var(--u)*.4);text-align:center;color:#fff;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
 #setup .tag{text-align:center;color:var(--dim);font-size:calc(var(--u)*1.8);margin-bottom:calc(var(--u)*2)}
 .setup-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(var(--u)*2);max-width:1500px;margin:0 auto}
@@ -58,6 +71,16 @@ select,.setup-select{background:#0d0408;border:2px solid var(--line);border-radi
 .seg{display:inline-flex;border:2px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{background:#0d0408;padding:8px 12px;font-size:calc(var(--u)*1.4)}
 .seg button.on{background:#7a1010;color:#fff}
+.card.wide{grid-column:1 / -1}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--u)*46)),1fr));gap:8px 18px}
+.itile{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 6px;border-top:1px solid var(--line);font-size:calc(var(--u)*1.5)}
+.itile img{width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);object-fit:contain;image-rendering:pixelated;flex:none}
+.itile .nm{font-weight:700;flex:1;min-width:calc(var(--u)*12)}
+.itile .ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
+.itile .stepper button{width:calc(var(--u)*3);height:calc(var(--u)*3);font-size:calc(var(--u)*1.6)}
+.itile .stepper span{min-width:calc(var(--u)*2.6)}
+.itile .seg button{padding:6px 8px;font-size:calc(var(--u)*1.2);white-space:nowrap}
+.itile .cap{font-size:calc(var(--u)*1.1);color:var(--dim)}
 table.items{width:100%;border-collapse:collapse;font-size:calc(var(--u)*1.5);table-layout:auto}
 table.items td:nth-child(2){width:100%}
 table.items .seg{flex-direction:row}
@@ -212,7 +235,7 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 .choice .or{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:var(--dim)}
 
 /* end */
-#endscreen{position:fixed;inset:0;overflow-y:auto;padding:16px;background:linear-gradient(rgba(10,0,4,.6),rgba(10,0,4,.9)),url(__A_lair__) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2)}
+#endscreen{position:fixed;inset:0;overflow-y:auto;padding:16px;background:linear-gradient(rgba(10,0,4,.6),rgba(10,0,4,.9)),var(--lair) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2)}
 #endscreen h1{font-family:"Press Start 2P";font-size:calc(var(--u)*4.2);text-align:center;line-height:1.4;margin:0;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
 .rank{display:flex;flex-direction:column;gap:10px;min-width:min(90vw,700px)}
 .rank.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:min(94vw,1100px);gap:8px 14px}
@@ -249,6 +272,15 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
 </head>
 <body>
 
+<!-- ================= TAP TO START ================= -->
+<section id="splash" role="button" tabindex="0" aria-label="Tap to start">
+  <div class="sp-inner">
+    <h1>GRUDGE<br>BALL</h1>
+    <div class="sp-tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
+    <div class="sp-tap">TAP TO START</div>
+  </div>
+</section>
+
 <!-- ================= SETUP ================= -->
 <section id="setup">
   <button class="topbtn" id="musicBtn" style="position:fixed;top:14px;right:16px;z-index:5">🎵 Music: On</button>
@@ -284,8 +316,6 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
       <div class="row"><select id="setSelect" class="setup-select" style="flex:1"></select>
         <button class="btn" id="editSetBtn">Edit questions</button></div>
       <div class="qcount" id="setCount"></div>
-      <h2 style="margin-top:22px">MYSTERY ITEMS</h2>
-      <table class="items" id="itemTable"></table>
       <h2 style="margin-top:22px">FAIRNESS</h2>
       <div class="row"><label>Items a team can hold</label>
         <div class="stepper"><button data-step="handLimit:-1">−</button><span id="v_handLimit"></span><button data-step="handLimit:1">+</button></div></div>
@@ -299,6 +329,10 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
         <div class="seg" data-seg="leaderTax"><button data-v="0">Off</button><button data-v="1">On</button></div>
         <div class="hint">A team at max hearts can't collect items — they pick again.</div></div>
       <div class="row" style="margin-top:14px"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
+    </div>
+    <div class="card wide">
+      <h2>MYSTERY ITEMS</h2>
+      <div class="items-grid" id="itemTable"></div>
     </div>
   </div>
   <div class="start-wrap"><button class="btn big good px" id="startBtn">START GAME</button>
@@ -1333,11 +1367,10 @@ function renderSetup(){
   const qn = parseSet(SETS[CFG.set]).length;
   const withA = parseSet(SETS[CFG.set]).filter(o=>o.a).length;
   $("#setCount").textContent = `${qn} questions${qn&&withA<qn?` (${qn-withA} without answers)`:""}`;
-  $("#itemTable").innerHTML = `<tr><td></td><td></td><td style="color:var(--dim);font-size:calc(var(--u)*1.2)">How many</td><td style="color:var(--dim);font-size:calc(var(--u)*1.2)">After it's found</td></tr>` +
-    ITEM_ORDER.map(k=>{ const it=ITEMS[k], c=CFG.items[k];
-      return `<tr><td><img src="${it.icon}" alt=""></td><td><div class="nm">${esc(it.name)}</div></td>
-      <td><div class="stepper"><button data-istep="${k}:-1">−</button><span>${c.count}</span><button data-istep="${k}:1">+</button></div></td>
-      <td><div class="seg" data-iafter="${k}"><button data-v="again" class="${c.after==="again"?"on":""}">Pick again</button><button data-v="end" class="${c.after==="end"?"on":""}">Ends turn</button></div></td></tr>`; }).join("");
+  $("#itemTable").innerHTML = ITEM_ORDER.map(k=>{ const it=ITEMS[k], c=CFG.items[k];
+      return `<div class="itile"><img src="${it.icon}" alt=""><div class="nm">${esc(it.name)}${it.max?` <span class="cap">(max ${it.max})</span>`:""}</div>
+      <div class="ctl"><div class="stepper" title="How many in the game"><button data-istep="${k}:-1">−</button><span>${c.count}</span><button data-istep="${k}:1">+</button></div>
+      <div class="seg" data-iafter="${k}" title="After it's found"><button data-v="again" class="${c.after==="again"?"on":""}">Pick again</button><button data-v="end" class="${c.after==="end"?"on":""}">Ends turn</button></div></div></div>`; }).join("");
   const items = ITEM_ORDER.reduce((s,k)=>s+CFG.items[k].count,0);
   $("#boxSummary").textContent = `${qn+items} mystery boxes: ${qn} questions + ${items} items`;
   $("#startBtn").disabled = qn===0;
@@ -1379,6 +1412,19 @@ updateMusicBtn();
 document.addEventListener("contextmenu", e=>{ if(!e.target.closest("input,textarea")) e.preventDefault(); });
 renderSetup();
 showScreen("setup");
+// TAP TO START: the one tap browsers require before sound, made part of the game
+(function(){
+  const sp = $("#splash"); let done = false;
+  function go(e){
+    if(done) return; done = true; if(e) e.preventDefault();
+    try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.resume) actx.resume(); }catch(err){}
+    preloadSounds(); musicPlay();
+    sp.classList.add("gone"); setTimeout(()=>sp.remove(), 600);
+  }
+  sp.addEventListener("pointerdown", go);
+  sp.addEventListener("click", go);
+  document.addEventListener("keydown", e=>{ if(!done && (e.key===" "||e.key==="Enter")) go(e); });
+})();
 </script>
 </body>
 </html>
