@@ -118,6 +118,11 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .instr{display:flex;align-items:center;gap:calc(var(--u)*1.5);margin:0 calc(var(--u)*1.5);padding:calc(var(--u)*.7) calc(var(--u)*1.4);background:#000a;border-left:6px solid var(--gold);border-radius:8px;font-size:calc(var(--u)*1.9);min-height:calc(var(--u)*4)}
 .instr b{color:var(--gold)}
 .instr-text{flex:1;min-width:0}
+/* board screen: the destiny line is centered on the whole strip; NEXT stays at the right edge */
+.instr.centered{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+.instr.centered::before{content:""}
+.instr.centered .instr-text{text-align:center}
+.instr.centered .nextup{justify-self:end}
 .instr .nextup{flex:none;font-family:"Press Start 2P";font-size:calc(var(--u)*1.2);color:var(--dim);white-space:nowrap}
 .instr .nextup i{font-style:normal;filter:brightness(1.4)}
 .bonuspill{display:inline-block;margin-right:10px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:var(--gold);color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
@@ -1184,6 +1189,7 @@ function renderStage(){
   st.innerHTML = html; st.scrollTop = 0; st.scrollLeft = 0;
   fitStage();
   $("#instr").innerHTML = (S.isBonus && p!=="pick" ? '<span class="bonuspill">BONUS TURN</span>' : '') + instr;
+  $("#instr").parentElement.classList.toggle("centered", p==="pick");
   if(p==="question"||p==="steal") drawTimer();
 }
 
