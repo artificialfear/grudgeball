@@ -121,6 +121,9 @@ header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
 .instr .nextup{flex:none;font-family:"Press Start 2P";font-size:calc(var(--u)*1.2);color:var(--dim);white-space:nowrap}
 .instr .nextup i{font-style:normal;filter:brightness(1.4)}
 .bonuspill{display:inline-block;margin-right:10px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:var(--gold);color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
+.instr .destiny{font-family:"Press Start 2P";font-size:calc(var(--u)*1.9);color:#fff;text-shadow:3px 3px 0 #b00000;vertical-align:middle}
+.instr .destiny .who{padding:2px 12px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
+.instr .destiny-hint{margin-left:14px;font-size:calc(var(--u)*1.5);color:var(--dim);vertical-align:middle}
 .gridtitle .who{padding:2px 14px;border-radius:8px;color:#fff;text-shadow:2px 2px 0 #000}
 .gridtitle .bonuspill{margin:0 0 0 12px;font-size:calc(var(--u)*1.2)}
 #stage{position:relative;margin:calc(var(--u)*1) calc(var(--u)*1.5);border-radius:16px;overflow:hidden;min-height:0}
@@ -1066,11 +1069,11 @@ function renderStage(){
 
   if(p==="pick"){
     const n = S.boxes.length, left = S.boxes.filter(b=>!b.opened).length;
-    const r = st.getBoundingClientRect(); const W = Math.max(300,r.width-40), H = Math.max(200,r.height-90);
+    const r = st.getBoundingClientRect(); const W = Math.max(300,r.width-40), H = Math.max(200,r.height-30);
     const cols = Math.min(10, n), rows = Math.ceil(n/cols);
     const best = {cols, size: Math.min((W-(cols-1)*12)/cols, (H-(rows-1)*12)/rows)};
     const size = Math.floor(Math.min(best.size, 170));
-    html = `<div class="gridwrap redsmoke"><div class="gridtitle">${teamTag(ti)}, CHOOSE YOUR DESTINY${S.isBonus?'<span class="bonuspill">BONUS TURN</span>':''}</div>
+    html = `<div class="gridwrap redsmoke">
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
       S.boxes.map((b,i)=>{
         if(!b.opened) return `<button class="box" data-box="${i}" style="width:${size}px" aria-label="Box ${i+1}"><span class="n">${i+1}</span></button>`;
@@ -1079,8 +1082,8 @@ function renderStage(){
       }).join("") + `</div>` +
       (left===0 ? `<div style="margin-top:16px"><button class="btn big gold" data-act="reshuffle">All boxes opened — Reshuffle</button></div>` : "") +
       `</div>`;
-    const inv = T(ti).inv.length && S.itemUsedTurn!==S.turnNo ? ` They can play <b>one</b> item from their card this turn.` : "";
-    instr = `${tname(ti)}: <b>pick a mystery box.</b>${inv}`;
+    const inv = T(ti).inv.length && S.itemUsedTurn!==S.turnNo ? `<span class="destiny-hint">They can play <b>one</b> item from their card this turn.</span>` : "";
+    instr = `<span class="destiny">${teamTag(ti)}, CHOOSE YOUR DESTINY</span>${S.isBonus?'<span class="bonuspill" style="margin-left:12px">BONUS TURN</span>':''}${inv}`;
   }
   else if(p==="question" || p==="steal" || p==="reveal"){
     const b = curBox(); const len = (b.q||"").length;
