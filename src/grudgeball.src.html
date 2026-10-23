@@ -72,6 +72,13 @@ select,.setup-select{background:#0d0408;border:2px solid var(--line);border-radi
 .seg button{background:#0d0408;padding:8px 12px;font-size:calc(var(--u)*1.4)}
 .seg button.on{background:#7a1010;color:#fff}
 .card.wide{grid-column:1 / -1}
+details.collapsible>summary{list-style:none;display:flex;align-items:center;gap:14px;cursor:pointer;flex-wrap:wrap;min-height:calc(var(--u)*4)}
+details.collapsible>summary::-webkit-details-marker{display:none}
+details.collapsible>summary h2{margin:0}
+details.collapsible .sumline{flex:1;min-width:0;font-size:calc(var(--u)*1.4);color:var(--dim)}
+details.collapsible .chev{font-size:calc(var(--u)*1.8);color:var(--gold);transition:transform .2s;background:#0006;border:2px solid var(--line);border-radius:8px;padding:4px 12px}
+details.collapsible[open] .chev{transform:rotate(180deg)}
+details.collapsible[open]>summary{margin-bottom:10px}
 .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--u)*46)),1fr));gap:8px 18px}
 .itile{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 6px;border-top:1px solid var(--line);font-size:calc(var(--u)*1.5)}
 .itile img{width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);object-fit:contain;image-rendering:pixelated;flex:none}
@@ -330,10 +337,10 @@ header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2);color:#
         <div class="hint">A team at max hearts can't collect items — they pick again.</div></div>
       <div class="row" style="margin-top:14px"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
     </div>
-    <div class="card wide">
-      <h2>MYSTERY ITEMS</h2>
+    <details class="card wide collapsible" id="itemsCard">
+      <summary><h2>MYSTERY ITEMS</h2><span class="sumline" id="itemsSummary"></span><span class="chev">▼</span></summary>
       <div class="items-grid" id="itemTable"></div>
-    </div>
+    </details>
   </div>
   <div class="start-wrap"><button class="btn big good px" id="startBtn">START GAME</button>
     <div class="qcount" id="boxSummary" style="margin-top:10px"></div></div>
@@ -1372,6 +1379,8 @@ function renderSetup(){
       <div class="ctl"><div class="stepper" title="How many in the game"><button data-istep="${k}:-1">−</button><span>${c.count}</span><button data-istep="${k}:1">+</button></div>
       <div class="seg" data-iafter="${k}" title="After it's found"><button data-v="again" class="${c.after==="again"?"on":""}">Pick again</button><button data-v="end" class="${c.after==="end"?"on":""}">Ends turn</button></div></div></div>`; }).join("");
   const items = ITEM_ORDER.reduce((s,k)=>s+CFG.items[k].count,0);
+  const kinds = ITEM_ORDER.filter(k=>CFG.items[k].count>0).length;
+  $("#itemsSummary").textContent = `${items} item box${items===1?"":"es"} · ${kinds} of ${ITEM_ORDER.length} item types on — tap to ${$("#itemsCard").open?"hide":"change"}`;
   $("#boxSummary").textContent = `${qn+items} mystery boxes: ${qn} questions + ${items} items`;
   $("#startBtn").disabled = qn===0;
   const saved = store.get("gb_game", null);
@@ -1398,6 +1407,9 @@ $("#setup").addEventListener("click", e=>{
 $("#setup").addEventListener("input", e=>{
   if(e.target.dataset.name!=null){ CFG.names[+e.target.dataset.name] = e.target.value; saveCfg(); }
 });
+// Mystery Items section: collapsed by default, remembers if you leave it open
+try{ $("#itemsCard").open = !!store.get("gb_items_open", false); }catch(e){}
+$("#itemsCard").addEventListener("toggle", ()=>{ store.set("gb_items_open", $("#itemsCard").open); renderSetup(); });
 $("#setSelect").onchange = e=>{ CFG.set = e.target.value; saveCfg(); renderSetup(); };
 $("#editSetBtn").onclick = editSets;
 $("#rulesBtn").onclick = showRules;
