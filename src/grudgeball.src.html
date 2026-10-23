@@ -999,6 +999,11 @@ function endTurn(){
   }
   S.turnNo++;
   startOfTurn();
+  // final round: announce the very last turn (a bonus turn earned on it gets its own announcement)
+  if(S.final && nextUp()==null){
+    setTimeout(()=>playSnd("finalRound"), 250);   // after the button click that ended the turn
+    toast(`🏁 LAST TURN!<br>${esc(T(S.turnTeam).name)}`, "cyan");
+  }
 }
 
 /* ---------- actions (each snapshots first) ---------- */
