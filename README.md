@@ -29,7 +29,7 @@ A team review game for band class, made to run on a classroom viewboard with a m
 All of these can be adjusted on the setup screen.
 
 ## Editing questions
-Use **Edit questions** in the game itself. Write one question per line as `Question | Answer`, or paste two columns from Google Sheets.
+Use **Edit questions** in the game itself. Write one question per line as `Question | Answer`, or keep your questions in a Google Sheet (column A = question, column B = answer) and paste the columns in. The header row, blank rows and any extra columns are skipped.
 Question sets save in that browser. Use **Export .txt** to back them up or move them to another device.
 
 ## Files

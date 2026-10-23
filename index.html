@@ -482,12 +482,22 @@ function saveSets(){ store.set("gb_sets", SETS); }
 
 function parseSet(text){
   const out = [];
+  // cells copied from Google Sheets/Excel may come wrapped in quotes with "" inside
+  const unq = c => { c = c.trim(); return (c.length>1 && c[0]==='"' && c[c.length-1]==='"') ? c.slice(1,-1).replace(/""/g,'"').trim() : c; };
   (text||"").split(/\r?\n/).forEach(line=>{
     const l = line.trim(); if(!l || l.startsWith("#")) return;
-    let parts = l.includes("\t") ? l.split("\t") : l.split("|");
-    parts = parts.map(s=>s.trim()).filter((s,i)=> i<2 || s);
-    const q = parts[0]; const a = parts.slice(1).join(" | ").trim();
-    if(q) out.push({q, a});
+    let q, a;
+    if(line.includes("\t")){
+      // pasted from a spreadsheet: column A = question, column B = answer, anything to the right is ignored
+      const cells = line.split("\t").map(unq);
+      q = cells[0]; a = cells[1] || "";
+    } else {
+      const parts = l.split("|").map(s=>s.trim());
+      q = parts[0]; a = parts.slice(1).filter(Boolean).join(" | ");
+    }
+    if(!q) return;
+    if(/^question$/i.test(q) && /^answer$/i.test(a)) return;   // header row
+    out.push({q, a});
   });
   return out;
 }
@@ -1367,7 +1377,7 @@ function showKey(){
 function editSets(){
   let name = CFG.set;
   const m = modal(`<div class="card"><h2>EDIT QUESTIONS</h2>
-    <p style="margin-top:0">Write one question per line: <b>Question | Answer</b>. You can also copy two columns from Google Sheets and paste them here. Make a separate set for each grade or unit.</p>
+    <p style="margin-top:0">Write one question per line: <b>Question | Answer</b>. Or copy columns A and B from your Grudgeball Questions sheet and paste them here (the header row and extra columns are skipped). Make a separate set for each grade or unit.</p>
     <div class="row"><input type="text" id="setName" style="flex:1"> <span class="qcount" id="liveCount"></span></div>
     <textarea id="setText" spellcheck="true"></textarea>
     <div class="row" style="justify-content:space-between">
