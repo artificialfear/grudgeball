@@ -52,12 +52,24 @@ Besides the written questions, each game adds new **listening** 🎧 and **staff
 - The answer key (☰ menu) shows every music question with its staff or a play button.
 - **Test speakers** on the setup screen plays a short chord.
 
+## Theory track (Theory 1–4, AP prep)
+Pick a **Theory** set in the Questions dropdown and the game switches to the Theory track automatically (or choose **Question style: Theory** on setup). Theory sets default to **10 listening + 5 staff** questions per game, about half of the question boxes, and keep their own counts separate from the band sets.
+- **Theory 1:** high/low, same/different, up/down, steps/skips, major/minor chords and scales, meter in 3 or 4, 2nds/3rds/5ths/octaves; reading note names, values, beats, key signatures.
+- **Theory 2:** interval quality, major/minor triads, major/natural/harmonic minor/chromatic scales, simple vs. compound duple, authentic vs. half cadence, error detection (6 notes); reading keys (major + relative minor), triads, simple/compound meters, scale-degree names.
+- **Theory 3:** all intervals incl. tritone, triad quality and inversion, the five seventh chords, authentic/half/plagal/deceptive cadences, melodic minor/whole tone/pentatonic, simple/compound duple/triple/quadruple, error detection (8 notes), scale degree a melody ends on; reading seventh chords, inversions, Roman numerals in major, all intervals.
+- **Theory 4 (AP Music Theory):** intervals weighted to 2nds/6ths/7ths/tritone, seventh chords, PAC/IAC/half/plagal/deceptive/Phrygian half cadences, naming a chord in a progression, the six modes, meter, error detection, scale degrees; reading Roman numerals with inversion figures (major and minor), secondary dominants, parallel 5ths/octaves.
+- **Error detection:** the staff shows the melody as written; the board plays it with one note changed; students say which numbered note was different.
+- Progressions are real four-part harmony written with AP voice-leading rules: no parallel or antiparallel 5ths/octaves, no direct 5ths/8ves in the outer voices, no crossing or overlap, leading tone up to tonic, chordal 7th down, no augmented leaps, complete chords, and textbook doubling. Cadences come with varied lead-ins, including the cadential 6/4 at Theory 4.
+- `tests/theory_check.js` regenerates thousands of these questions and re-derives every answer and every voice-leading rule from the notes (`node tests/theory_check.js`).
+
 ## Built-in question sets
 The `questions/` folder holds the sets that come with the game and show up in the Questions dropdown on every device:
 - Level 1 Beginner: Rank 3 vocab, note values, staff and clefs, piano landmarks, instruments
 - Level 2 Developing: Ranks 4–5 vocab, eighth notes, dotted notes, ties, repeats, key signatures, partials
 - Level 3 Intermediate: Ranks 6–7 vocab, sixteenths, triplets, 6/8, syncopation, scales, enharmonics
 - Level 4 Advanced: Ranks 8–10 vocab, key signatures, transposition, chords, intervals, compound meter
+
+- Theory 1 Fundamentals, Theory 2 Developing, Theory 3 Intermediate, Theory 4 AP Music Theory: written theory questions for the Theory track (Theory 4 follows the AP Music Theory course).
 
 Each file is one set: a `# Set: Name` line, then `Question | Answer` lines. Run `python3 build.py` after editing.
 
@@ -69,6 +81,7 @@ Each file is one set: a `# Set: Name` line, then `Question | Answer` lines. Run 
 - `src/music.js`: makes the listening and staff questions, draws the staff and plays the sounds.
 - `lib/vexflow-bravura.js`: [VexFlow](https://www.vexflow.com) 4.2.3 (MIT license, see `lib/LICENSE-vexflow`), which draws the notation. It's built into `index.html`, so it works without internet.
 - `tests/music_theory.js`: checks thousands of generated questions against music theory (`node tests/music_theory.js`).
+- `src/theory.js`: the Theory 1–4 ear-training and staff-reading generators and the four-part voicer.
 - `src/remote.js`: the remote control (both the board side and the controller).
 - `lib/peerjs.min.js` (PeerJS 1.5.4, MIT, `lib/LICENSE-peerjs`) connects the devices; `lib/qrcode.js` (qrcode-generator, MIT) draws the QR code. Both are built into `index.html`.
 - `tests/remote_e2e.py` + `tests/peer-test-server.js`: a two-device test of the remote against a local connection server.

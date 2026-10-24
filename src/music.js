@@ -212,15 +212,19 @@ const MUSIC = (function(){
   };
 
   // build n questions of a kind, cycling through types so a game gets variety
-  function make(kind, level, n){
+  // tracks: "band" (built in above) and any registered with registerTrack (e.g. "theory" in theory.js)
+  const TRACKS = { band:{ staff:STAFF_BY_LEVEL, listen:LISTEN_BY_LEVEL, S, L } };
+  function registerTrack(name, t){ TRACKS[name] = t; }
+  function make(kind, level, n, track){
     const lvl = Math.max(1, Math.min(4, level|0 || 2));
-    const types = shuffle((kind==="staff" ? STAFF_BY_LEVEL : LISTEN_BY_LEVEL)[lvl].slice());
-    const lib = kind==="staff" ? S : L;
+    const tr = TRACKS[track] || TRACKS.band;
+    const types = shuffle((kind==="staff" ? tr.staff : tr.listen)[lvl].slice());
+    const lib = kind==="staff" ? tr.S : tr.L;
     const out = [], seen = new Set();
     for(let i=0, guard=0; out.length<n && guard<n*20; guard++){
       const t = types[i % types.length]; i++;
       const item = lib[t](lvl); if(!item) continue;
-      const sig = item.q + "|" + item.a + "|" + JSON.stringify(item.media.notes||item.media.events||item.media.clicks);
+      const sig = item.q + "|" + item.a + "|" + JSON.stringify(item.media.notes||item.media.events||item.media.clicks||"") + JSON.stringify(item.media.staff||"");
       if(seen.has(sig)) continue; seen.add(sig);
       item.media.kind = t; out.push(item);
     }
@@ -234,24 +238,30 @@ const MUSIC = (function(){
     if(!staffReady()){ el.innerHTML = '<div class="staffmissing">Music notation could not load. Check the internet connection and reload.</div>'; return; }
     const VF = window.Vex.Flow;
     el.innerHTML = "";
-    const nNotes = (m.notes||[]).length;
-    const W = Math.max(250, (m.keySig?140:110) + nNotes*(nNotes>4?44:58)), H = 150;
+    const nNotes = (m.notes||[]).filter(n=>!n.bar).length, nBars = (m.notes||[]).filter(n=>n.bar).length;
+    const W = Math.max(250, (m.keySig?140:110) + (m.timeSig?30:0) + nNotes*(nNotes>4?44:58) + nBars*16), H = 150;
     const renderer = new VF.Renderer(el, VF.Renderer.Backends.SVG);
     renderer.resize(W, H);
     const ctx = renderer.getContext();
     const stave = new VF.Stave(6, 18, W-12);
     stave.addClef(m.clef||"treble");
     if(m.keySig) stave.addKeySignature(m.keySig);
+    if(m.timeSig) stave.addTimeSignature(m.timeSig);
     stave.setContext(ctx).draw();
     if(nNotes){
       const notes = m.notes.map(n=>{
+        if(n.bar) return new VF.BarNote();
         const dotted = n.dur.includes("d");
         const sn = new VF.StaveNote({clef:m.clef||"treble", keys:n.keys, duration:n.dur, align_center: nNotes===1});
-        (n.acc||[]).forEach((a,i)=>{ if(a) sn.addModifier(new VF.Accidental(a<0?"b":"#"), i); });
+        // accidentals: -1/1 (flat/sharp) or a VexFlow code string ("#", "b", "n" for natural)
+        (n.acc||[]).forEach((a,i)=>{ if(a) sn.addModifier(new VF.Accidental(typeof a==="string" ? a : (a<0?"b":"#")), i); });
         if(dotted) VF.Dot.buildAndAttach([sn], {all:true});
+        if(n.label!=null){ const an = new VF.Annotation(String(n.label)); an.setFont("Arial", 13, "bold");
+          an.setVerticalJustification(VF.Annotation.VerticalJustify ? VF.Annotation.VerticalJustify.BOTTOM : 3); sn.addModifier(an, 0); }
         return sn;
       });
-      const beams = m.beam ? VF.Beam.generateBeams(notes) : [];
+      const realNotes = notes.filter(x=>!(x instanceof VF.BarNote));
+      const beams = m.beam ? VF.Beam.generateBeams(realNotes, m.beamGroups ? {groups:m.beamGroups.map(g=>new VF.Fraction(g[0], g[1]))} : undefined) : [];
       const voice = new VF.Voice({num_beats:4, beat_value:4}).setMode(VF.Voice.Mode.SOFT).addTickables(notes);
       new VF.Formatter().joinVoices([voice]).format([voice], W - (m.keySig?150:90));
       voice.draw(ctx, stave);
@@ -259,8 +269,9 @@ const MUSIC = (function(){
     }
     const svg = el.querySelector("svg");
     // crop to the staff plus room for ledger lines, clefs and stems
-    if(svg){ svg.setAttribute("viewBox", `0 26 ${W} 100`); svg.removeAttribute("width"); svg.removeAttribute("height"); svg.style.height="100%"; svg.style.width="100%"; }
-    el.style.setProperty("--staffw", W);   // CSS sizes the box from this aspect ratio (W x 100)
+    const labeled = (m.notes||[]).some(n=>n.label!=null);
+    if(svg){ svg.setAttribute("viewBox", labeled ? `0 26 ${W} 118` : `0 26 ${W} 100`); svg.removeAttribute("width"); svg.removeAttribute("height"); svg.style.height="100%"; svg.style.width="100%"; }
+    el.style.setProperty("--staffw", labeled ? Math.round(W*100/118) : W);   // CSS sizes the box from this aspect ratio (W x 100)
   }
 
   /* ---------------- PLAY A LISTENING QUESTION ---------------- */
@@ -294,8 +305,9 @@ const MUSIC = (function(){
     });
   }
   function click(ac, t0, accent){
-    const o = ac.createOscillator(), g = ac.createGain(); o.type="square"; o.frequency.value = accent?1500:950;
-    g.gain.setValueAtTime(accent?0.3:0.14, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0+0.05);
+    const lv = accent===true ? 2 : accent===false || accent==null ? 1 : accent;   // 2 downbeat, 1 beat, 0 subdivision
+    const o = ac.createOscillator(), g = ac.createGain(); o.type="square"; o.frequency.value = [700,950,1500][lv];
+    g.gain.setValueAtTime([0.06,0.14,0.3][lv], t0); g.gain.exponentialRampToValueAtTime(0.0001, t0+0.05);
     o.connect(g).connect(bus(ac)); o.start(t0); o.stop(t0+0.06); live.push(o);
   }
   function play(m, onEnd){
@@ -307,7 +319,9 @@ const MUSIC = (function(){
     return end;
   }
 
-  return { make, renderStaff, staffReady, play, stop,
+  // building blocks for other tracks (theory.js)
+  const kit = { rnd, ri, shuffle, LET, PC, nameOf, midiOf, vfKey, dLetter, dOct, spellAbove, INTERVALS, KEYS, RANGE, seq, block, lis, band:{S, L} };
+  return { make, registerTrack, kit, renderStaff, staffReady, play, stop,
            _test:{tone, click, bus, BOOST, S, L, spellAbove, midiOf, dLetter, dOct, KEYS, INTERVALS, STAFF_BY_LEVEL, LISTEN_BY_LEVEL} };
 })();
 if(typeof module!=="undefined") module.exports = MUSIC;

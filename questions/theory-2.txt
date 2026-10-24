@@ -1,0 +1,57 @@
+# Set: Theory 2 Developing
+# 7th grade theory: order of sharps/flats, major key signatures, relative minor, natural minor, scale degrees, basic intervals, major triads, enharmonics, 6/8 and cut time, triplets, partials, concert pitch, tempo and articulation terms, road maps
+# One question per line:   Question | Answer
+What is the order of sharps? | F C G D A E B
+What is the order of flats? | B E A D G C F
+In a sharp key signature, how do you find the name of the major key? | Go up a half step from the last sharp
+In a flat key signature, how do you find the name of the major key? | The next-to-last flat is the key name (F major, 1 flat, is memorized)
+How many sharps are in G major, and which one? | 1 (F♯)
+Which sharps are in D major? | F♯ and C♯
+Which sharps are in A major? | F♯, C♯ and G♯
+Which major key has one flat? | F major
+Which flats are in B♭ major? | B♭ and E♭
+Which flats are in E♭ major? | B♭, E♭ and A♭
+Which flats are in A♭ major? | B♭, E♭, A♭ and D♭
+What is the relative minor of F major? | D minor
+What is the relative minor of G major? | E minor
+How do you find the relative minor of a major key? | Down a minor 3rd (3 half steps), or the 6th note of the major scale
+Relative major and minor keys share the same what? | Key signature
+What is the whole/half step pattern of the natural minor scale? | W H W W H W W
+Which scale degree is called the dominant? | The 5th
+Which scale degree is called the subdominant? | The 4th
+What do we call the 7th note of a major scale, a half step below the tonic? | The leading tone
+What is the leading tone in G major? | F♯
+What is the dominant note in D major? | A
+What interval is C up to F? | A perfect 4th
+What interval is C up to D? | A major 2nd
+What interval is C up to A? | A major 6th
+What interval is C up to B? | A major 7th
+How many half steps are in a major 3rd? | 4
+How many half steps are in a minor 3rd? | 3
+How many half steps are in a perfect 5th? | 7
+How many half steps are in an octave? | 12
+What is a scale made of all 12 half steps called? | The chromatic scale
+What is a triad? | A three-note chord built in 3rds
+What is the bottom note of a root-position triad called? | The root
+What are the three notes of an F major triad? | F, A and C
+What are the three notes of a G major triad? | G, B and D
+What is the enharmonic name for C♯? | D♭
+What is the enharmonic name for E♯? | F
+On the piano, F♯ is which black key of the Fork? | The first (lowest) one
+On the piano, E♭ is which black key of Chopsticks? | The second (higher) one
+In 6/8 time, how many eighth notes fill a measure? | 6
+How do we count a measure of eighth notes in 6/8? | 1 2 3 4 5 6 (accents on 1 and 4)
+How do you count an eighth-note triplet on beat 1? | 1 la le
+In cut time (2/2), what note gets the beat? | The half note
+In 4/4 time, how many beats does a dotted quarter note get? | 1½
+What is syncopation? | Accenting the off-beats or weak beats
+On a brass instrument, what are the different notes you can play on one fingering or slide position called? | Partials
+How does a brass player move up to a higher partial without changing fingering? | Faster air and a firmer embouchure
+A B♭ clarinet plays its written C. What concert pitch do you hear? | Concert B♭
+What does ritardando (rit.) mean? | Gradually slow down
+What does accelerando (accel.) mean? | Gradually speed up
+What does a tempo mean? | Return to the original tempo
+What does staccato mean? | Short and separated
+What does an accent (>) tell you to do? | Play the note with more emphasis (a stronger attack)
+What does D.S. al Coda mean? | Go back to the sign, play to the coda sign, then jump to the coda
+How do 1st and 2nd endings work? | Play the 1st ending, repeat, then skip it and play the 2nd ending

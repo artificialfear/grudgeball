@@ -391,7 +391,7 @@ const RemoteCtl = (function(){
   function questionBlock(b){
     const md = b.media;
     const tag = !md ? "" : md.type==="listen" ? `<span class="tag">🎧 LISTENING</span>` : `<span class="tag">🎼 READ THE STAFF</span>`;
-    return `<div class="rc-q">${tag}${esc(b.q||"")}${md && md.type==="staff" ? `<div class="rc-staff"><div class="staffbox" id="rcStaffBox"></div></div>` : ""}</div>
+    return `<div class="rc-q">${tag}${esc(b.q||"")}${md && (md.type==="staff" || md.staff) ? `<div class="rc-staff"><div class="staffbox" id="rcStaffBox"></div></div>` : ""}</div>
       <div class="rc-ans"><small>ANSWER — ONLY YOU CAN SEE THIS</small>${esc(b.a || "(no answer entered)")}</div>`;
   }
   function renderCard(){
@@ -500,7 +500,7 @@ const RemoteCtl = (function(){
       <kbd>A</kbd><span>Show answer on the board</span><kbd>U</kbd><span>Undo (Ctrl+Z works too)</span><kbd>F</kbd><span>Final round</span><kbd>Esc</kbd><span>Close this panel</span></div>
       <div class="rc-btns">${btn("ui:close","Close","ghost")}</div></div>`;
     el.innerHTML = h;
-    const sb = $("#rcStaffBox"); if(sb && typeof MUSIC!=="undefined") MUSIC.renderStaff(sb, curBox().media);
+    const sb = $("#rcStaffBox"); if(sb && typeof MUSIC!=="undefined"){ const cm = curBox().media; MUSIC.renderStaff(sb, cm.type==="staff" ? cm : cm.staff); }
   }
   function renderTeams(){
     const el = $("#rcTeams"); if(!el) return;

@@ -241,6 +241,7 @@ header.top .hbtns.left{justify-content:flex-start}
 .qcard.media .qside{flex:1 1 0;min-width:calc(var(--u)*22);max-width:calc(var(--u)*46);display:flex;flex-direction:column;gap:calc(var(--u)*1);text-align:left}
 .qcard.media .qtext{font-size:calc(var(--u)*3.2)}
 .qcard.media .qtext.long,.qcard.media .qtext.xlong{font-size:calc(var(--u)*2.6)}
+.qcard .mcol{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2)}
 .qcard.media .staffbox{--sh:calc(var(--u)*17)}
 .qrow.nowrap{flex-wrap:nowrap}
 .qcard.media.stack{flex-direction:column;gap:calc(var(--u)*1.4);padding-top:calc(var(--u)*4.4)}
@@ -408,6 +409,9 @@ header.top .hbtns.left{justify-content:flex-start}
         <div class="stepper"><button data-step="listenCount:-1">−</button><span id="v_listenCount"></span><button data-step="listenCount:1">+</button></div></div>
       <div class="row"><label>🎼 Staff (notation) questions per game</label>
         <div class="stepper"><button data-step="staffCount:-1">−</button><span id="v_staffCount"></span><button data-step="staffCount:1">+</button></div></div>
+      <div class="row"><label>Question style</label>
+        <div class="seg" data-seg="musicTrack"><button data-v="0">Auto</button><button data-v="1">Band</button><button data-v="2">Theory</button></div>
+        <div class="hint">Theory = AP-style ear training (intervals, chords, cadences, modes, meter, error detection) and theory reading. Auto picks Theory for "Theory" sets.</div></div>
       <div class="row"><label>Music question level</label>
         <div class="seg" data-seg="musicLevel"><button data-v="0">Auto</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button></div>
         <div class="hint"><span id="levelHint"></span> New questions are made every game. <button class="minibtn" id="sampleBtn" type="button">🔊 Test speakers</button></div></div>
@@ -464,6 +468,7 @@ header.top .hbtns.left{justify-content:flex-start}
 
 <!--INLINE:lib/vexflow-bravura.js-->
 <!--INLINE:src/music.js-->
+<!--INLINE:src/theory.js-->
 <!--INLINE:lib/peerjs.min.js-->
 <!--INLINE:lib/qrcode.js-->
 <script>
@@ -552,6 +557,7 @@ const DEFAULT_CFG = {
   wrongCost:1, stealCost:1, cfgVer:3,
   handLimit:2, players:6, underdog:1, leaderTax:1, boxCount:30,
   listenCount:3, staffCount:3, musicLevel:0, anims:1,
+  musicTrack:0, thListen:10, thStaff:5,   // theory sets: about half the questions are ear training
   items:{ shield:{count:1,after:"again"}, ring:{count:1,after:"again"}, sword:{count:1,after:"again"},
           reed:{count:1,after:"again"}, metronome:{count:1,after:"again"}, repeat:{count:1,after:"again"},
           fermata:{count:1,after:"again"}, modulation:{count:1,after:"again"},
@@ -713,22 +719,27 @@ function boardPlan(nq){
   const total = Math.max(CFG.boxCount||30, nItems);
   const room = total - nItems;
   const musicOK = typeof MUSIC!=="undefined";
-  const nListen = musicOK ? Math.min(CFG.listenCount||0, room) : 0;
-  const nStaff = musicOK ? Math.min(CFG.staffCount||0, room - nListen) : 0;
+  const nListen = musicOK ? Math.min(trackCount("listen")||0, room) : 0;
+  const nStaff = musicOK ? Math.min(trackCount("staff")||0, room - nListen) : 0;
   const qSlots = nq ? room - nListen - nStaff : 0;
   return { total: nItems + nListen + nStaff + qSlots, nItems, nListen, nStaff, qSlots,
     used: Math.min(nq, qSlots), repeats: Math.max(0, qSlots - nq), unused: Math.max(0, nq - qSlots) };
 }
 // Music question level: chosen in setup, or read from the set name ("Level 3 ..."), otherwise 2
+// Question style: Band or Theory (Auto = Theory when the set's name says "Theory")
+function musicTrack(){ return CFG.musicTrack===2 ? "theory" : CFG.musicTrack===1 ? "band" : /theory/i.test(CFG.set||"") ? "theory" : "band"; }
+const trackCount = k => musicTrack()==="theory" ? CFG[k==="listen" ? "thListen" : "thStaff"] : CFG[k==="listen" ? "listenCount" : "staffCount"];
 function musicLevel(){
   if(CFG.musicLevel>=1 && CFG.musicLevel<=4) return CFG.musicLevel;
+  const th = /theory\s*([1-4])/i.exec(CFG.set||""); if(th) return +th[1];
   const m = /level\s*([1-4])/i.exec(CFG.set||""); return m ? +m[1] : 2;
 }
 function newGame(){
   const qs = parseSet(SETS[CFG.set]);
   const plan = boardPlan(qs.length);
   const lvl = musicLevel();
-  const gen = typeof MUSIC==="undefined" ? [] : MUSIC.make("listen", lvl, plan.nListen).concat(MUSIC.make("staff", lvl, plan.nStaff));
+  const track = musicTrack();
+  const gen = typeof MUSIC==="undefined" ? [] : MUSIC.make("listen", lvl, plan.nListen, track).concat(MUSIC.make("staff", lvl, plan.nStaff, track));
   const items = [];
   ITEM_ORDER.forEach(k=>{ for(let i=0;i<(CFG.items[k]?.count||0);i++) items.push({kind:"item", item:k, opened:false}); });
   // questions: a random batch if the set is big, or every question plus repeats if it's small
@@ -753,7 +764,7 @@ function newGame(){
     cfg: JSON.parse(JSON.stringify(CFG)),
     teams, boxes, order, ptr:0, bonus:[], turnTeam:order[0], isBonus:false, turnNo:1,
     phase:"pick", cur:{}, turnAttacks:{}, prevAttacks:{}, lastAnswer:null, over:false,
-    itemUsedTurn:0, repeatTeam:null, modulationUsed:false, final:null, musicLevel:lvl
+    itemUsedTurn:0, repeatTeam:null, modulationUsed:false, final:null, musicLevel:lvl, musicTrack:track
   };
   UNDO = [];
   startOfTurn();
@@ -1383,13 +1394,16 @@ function renderStage(){
     const ans = (p==="reveal" || S.cur.answerShown) && b.a ? `<div class="answer ${b.a.length>45?"long":""}"><small>ANSWER</small>${esc(b.a)}</div>` : "";
     const md = b.media;
     let mediaHTML = "";
+    const mdStaff = md && (md.type==="staff" ? md : md.staff);
     if(md && md.type==="staff") mediaHTML = `<div class="mtag">🎼 READ THE STAFF</div>`;
-    if(md && md.type==="listen") mediaHTML = `<div class="mtag">🎧 LISTENING</div>`;
+    if(md && md.type==="listen") mediaHTML = `<div class="mtag">🎧 LISTENING${md.staff?" + 🎼 STAFF":""}</div>`;
+    const playBtnHTML = md && md.type==="listen" ? `<button class="btn big playbtn ${listening?"playing":""}" data-act="play">${listening ? "♪ PLAYING…" : (S.cur.heard || p!=="question") ? "▶ PLAY AGAIN" : "▶ PLAY"}</button>` : "";
     const mediaBody = !md ? "" : md.type==="staff" ? `<div class="staffbox" id="staffbox"></div>`
+      : md.staff ? `<div class="staffbox" id="staffbox"></div>`
       : `<button class="btn big playbtn ${listening?"playing":""}" data-act="play">${listening ? "♪ PLAYING…" : (S.cur.heard || p!=="question") ? "▶ PLAY AGAIN" : "▶ PLAY"}</button>`;
     html = `<div class="view synth">
       <div class="qrow ${md?"nowrap":""}" style="width:100%;gap:calc(var(--u)*3)">
-        <div class="qcard ${md?"media":""} ${md && md.type==="staff" && (md.notes||[]).length>4 ? "stack" : ""}"><div class="coin">?</div>${md ? `<div class="qside">${mediaHTML}<div class="qtext ${cls}">${esc(b.q)}</div></div>${mediaBody}` : `<div class="qtext ${cls}">${esc(b.q)}</div>`}</div>${side}
+        <div class="qcard ${md?"media":""} ${md && md.type==="staff" && (mdStaff.notes||[]).length>4 ? "stack" : ""}"><div class="coin">?</div>${md ? `<div class="qside">${mediaHTML}<div class="qtext ${cls}">${esc(b.q)}</div>${md.staff ? `<div>${playBtnHTML}</div>` : ""}</div>${mediaBody}` : `<div class="qtext ${cls}">${esc(b.q)}</div>`}</div>${side}
       </div>${p==="reveal"?`<div class="qrow">${ans}${controls}</div>`:ans+controls}</div>`;
   }
   else if(p==="item"){
@@ -1459,7 +1473,7 @@ function renderStage(){
       <div class="made-count">BASKETS MADE: ${c.made}</div></div><div class="shootctl">${body}</div></div></div>`;
   }
   st.innerHTML = html; st.scrollTop = 0; st.scrollLeft = 0;
-  const sb = $("#staffbox"); if(sb && typeof MUSIC!=="undefined") MUSIC.renderStaff(sb, curBox().media);
+  const sb = $("#staffbox"); if(sb && typeof MUSIC!=="undefined"){ const cm = curBox().media; MUSIC.renderStaff(sb, cm.type==="staff" ? cm : cm.staff); }
   fitStage();
   $("#instr").innerHTML = (S.isBonus && p!=="pick" ? '<span class="bonuspill">BONUS TURN</span>' : '') + instr;
   $("#instr").parentElement.classList.toggle("centered", p==="pick");
@@ -1709,7 +1723,7 @@ function showRules(){
     ${c.underdog?`<li><b>Underdog bonus:</b> the team in last place gets +1 heart whenever they open an item box.</li>`:""}
     ${c.leaderTax?`<li><b>Leader tax:</b> a team at ${c.maxHearts} hearts can't collect items (the Traumatic Scale still hits). They just pick again.</li>`:""}
     ${c.players?`<li><b>Shooters rotate:</b> number off 1–${c.players} in each team. The game calls the next shooter so everyone gets a turn.</li>`:""}
-    ${(c.listenCount||c.staffCount)?`<li><b>Music questions:</b> ${c.listenCount?`${c.listenCount} 🎧 listening`:""}${c.listenCount&&c.staffCount?" and ":""}${c.staffCount?`${c.staffCount} 🎼 staff`:""} question boxes are made fresh every game${S&&S.musicLevel?` (Level ${S.musicLevel})`:""}. Listening: tap ▶ Play — the clock starts when the sound ends, and replaying restarts it. Stealing teams can hear it again too.</li>`:""}
+    ${(c.listenCount||c.staffCount)?`<li><b>Music questions:</b> ${c.listenCount?`${c.listenCount} 🎧 listening`:""}${c.listenCount&&c.staffCount?" and ":""}${c.staffCount?`${c.staffCount} 🎼 staff`:""} question boxes are made fresh every game${S&&S.musicLevel?` (${S.musicTrack==="theory"?"Theory":"Level"} ${S.musicLevel})`:""}. Listening: tap ▶ Play — the clock starts when the sound ends, and replaying restarts it. Stealing teams can hear it again too.</li>`:""}
     <li><b>🏁 Final round:</b> when class is almost over, tap Final round. Every team still in finishes with the same number of turns (bonus turns still play), then the winner shows.</li>
     <li>Most hearts at the end wins. The last team standing also wins.</li></ul>
     <button class="btn" data-m="close">Close</button></div>`);
@@ -1720,12 +1734,13 @@ function showKey(){
   const qs = (S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}))).filter(o=>!seen.has(sig(o)) && seen.add(sig(o)));
   const tag = o => !o.media ? "" : o.media.type==="listen" ? `🎧 ` : `🎼 `;
   const extra = (o,k) => !o.media ? "" : o.media.type==="staff" ? `<div class="staffbox mini" data-key="${k}"></div>`
+    : o.media.staff ? `<div class="staffbox mini" data-key="${k}"></div><button class="minibtn" data-m="keep" data-play="${k}">▶ Play</button>`
     : `<br><button class="minibtn" data-m="keep" data-play="${k}">▶ Play</button>`;
-  const m = modal(`<div class="card"><h2>ANSWER KEY</h2>${S && S.musicLevel && qs.some(o=>o.media)?`<p style="margin-top:0">🎧 listening and 🎼 staff questions this game are Level ${S.musicLevel}.</p>`:""}
+  const m = modal(`<div class="card"><h2>ANSWER KEY</h2>${S && S.musicLevel && qs.some(o=>o.media)?`<p style="margin-top:0">🎧 listening and 🎼 staff questions this game are ${S.musicTrack==="theory"?"Theory":"Level"} ${S.musicLevel}.</p>`:""}
     <ol class="keylist">${qs.map((o,k)=>`<li><b>${tag(o)}${esc(o.q)}</b>${extra(o,k)}<br><span style="color:var(--good)">${esc(o.a||"(no answer entered)")}</span></li>`).join("")}</ol>
     <button class="btn" data-m="close">Close</button></div>`);
   if(typeof MUSIC!=="undefined"){
-    m.querySelectorAll(".staffbox.mini").forEach(el=>MUSIC.renderStaff(el, qs[+el.dataset.key].media));
+    m.querySelectorAll(".staffbox.mini").forEach(el=>{ const md = qs[+el.dataset.key].media; MUSIC.renderStaff(el, md.type==="staff" ? md : md.staff); });
     m.addEventListener("click", e=>{ const pb = e.target.closest("[data-play]"); if(pb){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(err){} MUSIC.play(qs[+pb.dataset.play].media); } });
   }
 }
@@ -1774,11 +1789,12 @@ function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`;
 /* ============================================================
    SETUP SCREEN
 ============================================================ */
-const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15], boxCount:[10,60], listenCount:[0,10], staffCount:[0,10] };
+const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15], boxCount:[10,60], listenCount:[0,20], staffCount:[0,20], thListen:[0,20], thStaff:[0,20] };
 function renderSetup(){
-  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players","boxCount","listenCount","staffCount"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
-  const lv = musicLevel();
-  $("#levelHint").textContent = CFG.musicLevel ? `Level ${lv}.` : `Auto: Level ${lv}${/level\s*[1-4]/i.test(CFG.set||"") ? " (from the set name)" : " (set name has no level)"}.`;
+  ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players","boxCount"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
+  $("#v_listenCount").textContent = trackCount("listen"); $("#v_staffCount").textContent = trackCount("staff");
+  const lv = musicLevel(), tr = musicTrack()==="theory" ? "Theory" : "Level";
+  $("#levelHint").textContent = CFG.musicLevel ? `${tr} ${lv}.` : `Auto: ${tr} ${lv}${/(level|theory)\s*[1-4]/i.test(CFG.set||"") ? " (from the set name)" : " (set name has no level)"}.`;
   $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
     `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
   document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
@@ -1811,7 +1827,9 @@ function renderSetup(){
 $("#setup").addEventListener("click", e=>{
   if(e.target.closest("[data-step],[data-seg] button,[data-istep],[data-iafter] button,#editSetBtn,#rulesBtn")) uiSel();
   const st = e.target.closest("[data-step]");
-  if(st){ const [k,d] = st.dataset.step.split(":"); CFG[k] = Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], CFG[k]+(+d)));
+  if(st){ let [k,d] = st.dataset.step.split(":");
+    if(musicTrack()==="theory" && (k==="listenCount" || k==="staffCount")) k = k==="listenCount" ? "thListen" : "thStaff";   // theory sets keep their own counts
+    CFG[k] = Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], CFG[k]+(+d)));
     if(k==="startHearts" && CFG.maxHearts<CFG.startHearts) CFG.maxHearts = CFG.startHearts;
     if(k==="maxHearts" && CFG.startHearts>CFG.maxHearts) CFG.startHearts = CFG.maxHearts;
     saveCfg(); renderSetup(); return; }

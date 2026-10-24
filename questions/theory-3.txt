@@ -1,0 +1,58 @@
+# Set: Theory 3 Intermediate
+# Strong 8th grade theory: circle of fifths, all major and minor keys, parallel/relative keys, harmonic and melodic minor, scale degree names, interval quality and inversion, triad qualities, diatonic triads, dominant 7th, inversions, basic cadences, simple vs compound meter, transposition, form and texture
+# One question per line:   Question | Answer
+Moving clockwise around the circle of fifths, what happens to the key signature? | It adds one sharp (or removes one flat)
+Which sharps are in E major? | F♯, C♯, G♯ and D♯
+How many sharps are in B major? | 5
+How many flats are in D♭ major? | 5
+Which major key has 6 sharps? | F♯ major
+Which flats are in C minor? | B♭, E♭ and A♭
+Which minor key has 2 sharps? | B minor
+What is the relative major of E minor? | G major
+What is the relative minor of E♭ major? | C minor
+What is the parallel minor of D major? | D minor
+What do parallel major and minor keys share? | The same tonic (starting note)
+Which note is raised in the harmonic minor scale? | The 7th scale degree
+Spell the A harmonic minor scale. | A B C D E F G♯ A
+How is the melodic minor scale different going up and coming down? | Raised 6th and 7th going up; natural minor coming down
+Which scale degree is the mediant? | The 3rd
+Which scale degree is the submediant? | The 6th
+In natural minor, what is the 7th degree called, a whole step below the tonic? | The subtonic
+Which scale degrees make up the major pentatonic scale? | 1, 2, 3, 5 and 6
+What interval is C up to E♭? | A minor 3rd
+What interval is C up to F♯? | An augmented 4th (tritone)
+What interval is B up to F? | A diminished 5th (tritone)
+What interval is E up to C? | A minor 6th
+What interval is A up to G? | A minor 7th
+How many half steps are in a tritone? | 6
+When you invert an interval, what does a major interval become? | Minor (perfect stays perfect; augmented ↔ diminished)
+When an interval is inverted, the two interval numbers always add up to what? | 9
+A 9th is the same as an octave plus what interval? | A 2nd
+A major triad has what kind of 3rd on the bottom and what kind on top? | Major 3rd on bottom, minor 3rd on top
+What two 3rds stack to make a diminished triad? | Two minor 3rds
+What two 3rds stack to make an augmented triad? | Two major 3rds
+In a major key, which Roman numerals are major triads? | I, IV and V
+In a major key, which Roman numerals are minor triads? | ii, iii and vi
+In a major key, what is the quality of the triad on the 7th degree? | Diminished (vii°)
+In C major, what chord is ii? | D minor (D–F–A)
+In G major, what chord is V? | D major (D–F♯–A)
+C–E♭–G is what kind of triad? | C minor
+D–F–A♭ is what kind of triad? | D diminished
+C–E–G♯ is what kind of triad? | C augmented
+In a first-inversion triad, which chord member is in the bass? | The 3rd
+In a second-inversion triad, which chord member is in the bass? | The 5th
+Spell the dominant 7th chord in C major. | G–B–D–F
+What chord progression makes an authentic cadence? | V (or V7) to I
+What chord progression makes a plagal ("Amen") cadence? | IV to I
+A cadence that ends on V is called what? | A half cadence
+What do we call the cadence V to vi? | A deceptive cadence
+6/8 is what kind of meter? | Compound duple
+In 9/8 time, how many dotted-quarter beats are in each measure? | 3
+Concert F is written as what note for a B♭ trumpet? | G (a major 2nd higher)
+Concert B♭ is written as what note for a horn in F? | F (a perfect 5th higher)
+Concert E♭ is written as what note for an E♭ alto sax? | C (a major 6th higher)
+What is a texture with only one unaccompanied melody line called? | Monophonic
+What is a texture with one melody plus chordal accompaniment called? | Homophonic
+What letters describe ternary form? | ABA
+What letters describe rondo form? | ABACA (A keeps returning)
+What is a short pattern repeated over and over called? | An ostinato

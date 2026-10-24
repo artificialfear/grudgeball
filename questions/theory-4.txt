@@ -1,0 +1,71 @@
+# Set: Theory 4 AP Music Theory
+# AP Music Theory (College Board CED): pitch notation, modes, minor-key harmony, seventh chords, figured bass and Roman numerals, harmonic function, cadences, SATB voice leading, 6/4 chords, non-chord tones, secondary dominants and leading-tone chords, modulation and pivot chords, phrase structure, texture, melodic and rhythmic devices, expression terms
+# One question per line:   Question | Answer
+In AP Music Theory's octave numbering, what is middle C called? | C4
+Which mode is a major scale with a raised 4th? | Lydian
+Which mode is a natural minor scale with a raised 6th? | Dorian
+Which mode is a natural minor scale with a lowered 2nd? | Phrygian
+In a minor key, what is the quality of V when the leading tone is raised? | Major (V)
+In a minor key, why is the III chord usually major (not III+)? | It uses the lowered 7th (natural minor), not the leading tone
+Spell V7 in A minor. | E–G♯–B–D
+Spell vii°7 in C minor. | B–D–F–A♭
+C–E♭–G♭–B♭ is what kind of seventh chord? | Half-diminished seventh (Cø7)
+G–B–D–F is what kind of seventh chord? | Dominant (major-minor) seventh (G7)
+What figured bass means a triad in second inversion? | 6/4
+What figured bass means a seventh chord in first inversion? | 6/5
+What figured bass means a seventh chord in third inversion, with the 7th in the bass? | 4/2 (or just 2)
+In figured bass, what does an accidental standing alone (like ♯) mean? | Raise/alter the 3rd above the bass
+In C major, a bass note B with figures 6/5 is what Roman numeral? | V6/5
+Which chords have dominant function? | V (V7) and vii° (vii°7, viiø7)
+Which chords most often have predominant function? | ii and IV (and their inversions)
+What makes a cadence a perfect authentic cadence (PAC)? | V(7)–I, both root position, soprano ends on tonic (1)
+What makes an authentic cadence imperfect (IAC)? | Soprano not on tonic, or a chord inverted (or vii°–I)
+What progression is a Phrygian half cadence? | iv6 to V in a minor key
+What error occurs when two voices move from a perfect 5th to another perfect 5th? | Parallel 5ths
+What are direct (hidden) 5ths or octaves? | Outer voices move in similar motion into a P5/P8 with a soprano leap
+What is the widest allowed spacing between soprano–alto or alto–tenor? | An octave (tenor–bass may be wider)
+What is the typical soprano range in AP SATB writing? | About C4 to G5
+Which note should never be doubled in a V chord? | The leading tone
+In an outer voice, where does the leading tone resolve in V–I? | Up by step to the tonic
+How does the chordal 7th of a seventh chord usually resolve? | Down by step
+In V–vi (deceptive cadence) in a major key, what is doubled in vi? | The 3rd
+What does the cadential 6/4 (I6/4 to V) actually function as? | Dominant: V6/4–5/3 (also labeled cad. 6/4 or I6/4–V)
+Name the 6/4 type in I–V6/4–I6, where the bass moves by step. | Passing 6/4
+Name the 6/4 type in I–IV6/4–I over a held bass note. | Pedal (neighbor) 6/4
+What are the three stages of a suspension? | Preparation, suspension, resolution
+Name the three common upper-voice suspensions by their figures. | 4–3, 7–6, 9–8 (bass suspension: 2–3)
+What is a retardation? | A suspension that resolves UP by step
+What is an appoggiatura? | A non-chord tone approached by leap, resolved by step
+What is an escape tone? | A non-chord tone approached by step, left by leap (opposite direction)
+What is an anticipation? | A note of the next chord sounded early
+What is a pedal point? | A held (or repeated) note, usually in the bass, while harmonies change
+In G major, spell V7/V. | A–C♯–E–G
+In D major, spell V/vi. | F♯–A♯–C♯
+In C major, spell viiø7/V. | F♯–A–C–E
+What is a pivot chord? | A chord diatonic in both the old key and the new key
+Modulating from C major to G major, a C major chord is I in C and what in G? | IV
+Closely related keys have key signatures that differ by how many accidentals? | One or fewer
+What key does a minor-key piece most often modulate to? | The relative major (III)
+What is a period? | Two phrases (antecedent, consequent); the 2nd has the stronger cadence
+What is a parallel period? | A period whose two phrases begin with the same melodic material
+What is a melodic sequence? | A pattern repeated immediately at a different pitch level
+What is a polyphonic texture? | Two or more independent melodic lines at once
+What is a heterophonic texture? | Simultaneous slightly different versions of the same melody
+What is augmentation? | Restating a melody with longer note values
+What is melodic inversion? | Flipping a melody's intervals (up becomes down)
+What is retrograde? | Playing a melody backward
+What is hemiola? | Regrouping beats so two groups of 3 feel like three groups of 2
+What does meno mosso mean? | Less motion (slower)
+Name the non-chord tone that moves by step between two different chord tones. | Passing tone
+Name the non-chord tone that steps away from a chord tone and steps back to it. | Neighbor tone
+What is the difference between tonicization and modulation? | Tonicization is brief (secondary chords); modulation sets up a new key
+Name the motion: one voice holds its note while the other moves. | Oblique motion
+Name the motion: two voices move in opposite directions. | Contrary motion
+In four-part writing, which chord member is usually doubled in a root-position major or minor triad? | The root
+In vii°6, which chord member is usually doubled? | The 3rd (the bass note)
+What is a Picardy third? | Ending a minor-key piece on a major tonic chord
+Which mode is a major scale with a lowered 7th? | Mixolydian
+What figured bass number means a root-position seventh chord? | 7
+What does rubato mean? | Flexible tempo (stretching and pushing the time)
+What does subito mean? | Suddenly
+What does poco a poco mean? | Little by little

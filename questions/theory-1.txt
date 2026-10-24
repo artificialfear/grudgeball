@@ -1,0 +1,57 @@
+# Set: Theory 1 Fundamentals
+# Beginning 6th grade theory: staff and clefs, musical alphabet, piano landmarks, note and rest values, counting, basic symbols, dynamics, half and whole steps, the major scale
+# One question per line:   Question | Answer
+How many lines are on a music staff? | 5
+How many spaces are on a music staff? | 4
+What are the seven letters of the musical alphabet? | A B C D E F G
+In the musical alphabet, what letter comes after G? | A (it starts over)
+Name the treble clef line notes from bottom to top. | E G B D F
+Name the treble clef space notes from bottom to top. | F A C E
+Name the bass clef line notes from bottom to top. | G B D F A
+Name the bass clef space notes from bottom to top. | A C E G
+What do we call the short lines added above or below the staff? | Ledger lines
+Where is middle C on the grand staff? | On one ledger line between the treble and bass staffs
+What are the treble and bass staffs called when joined together? | The grand staff
+On the piano, what white key is just to the left of Chopsticks (the 2 black keys)? | C
+On the piano, what white key is just to the left of the Fork (the 3 black keys)? | F
+On the piano, what white key sits in the middle of Chopsticks? | D
+On the piano, which two white keys sit inside the Fork? | G and A
+Which two pairs of white keys have no black key between them? | E–F and B–C
+What is the distance from one piano key to the very next key, black or white? | A half step
+How many half steps make one whole step? | 2
+What note is a half step above E? | F
+What note is a whole step above C? | D
+What is another name for the black key between F and G? | F♯ (or G♭)
+What is the term for two names for the same pitch, like F♯ and G♭? | Enharmonic (enharmonic equivalents)
+In 4/4 time, how many beats does a quarter note get? | 1
+In 4/4 time, how many beats does a half note get? | 2
+In 4/4 time, how many beats does a whole note get? | 4
+In 4/4 time, how many beats does a dotted half note get? | 3
+How many eighth notes equal one quarter note? | 2
+How many sixteenth notes equal one quarter note? | 4
+What does a dot after a note do? | Adds half of the note's value
+In 4/4 time, what does the top number tell you? | There are 4 beats in each measure
+In 4/4 time, what does the bottom number tell you? | The quarter note gets one beat
+How many beats are in each measure of 3/4 time? | 3
+What is another name for 4/4 time? | Common time
+How do you count two eighth notes on beat 1? | 1 &
+How do you count four sixteenth notes on beat 1? | 1 e & a
+What curved line connects two notes of the SAME pitch so they are held as one? | A tie
+What curved line over DIFFERENT pitches means play them smoothly? | A slur
+What is the distance between two pitches called? | An interval
+What is the group of sharps or flats at the start of every line of music called? | The key signature
+What is a sharp, flat, or natural that is not in the key signature called? | An accidental
+How long does an accidental last? | Until the end of the measure
+What does mezzo forte (mf) mean? | Medium loud
+What does mezzo piano (mp) mean? | Medium soft
+What does fortissimo (ff) mean? | Very loud
+What does pianissimo (pp) mean? | Very soft
+What does crescendo mean? | Gradually get louder
+What does decrescendo (diminuendo) mean? | Gradually get softer
+What does a fermata tell you to do? | Hold the note longer (until the conductor cuts you off)
+What do two dots right before a double bar line tell you to do? | Repeat (go back and play the section again)
+What does a final double bar (one thin line, one thick line) mean? | The end of the piece
+What does andante mean? | Walking speed
+What is the first note of a scale, the "home" note, called? | The tonic
+What is the pattern of whole (W) and half (H) steps in a major scale? | W W H W W W H
+Which major scale has no sharps or flats? | C major
