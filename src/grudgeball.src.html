@@ -644,7 +644,7 @@ const SFX = {
 const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
   shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
   basket:"basketball", scale:"traumatic-scale",
-  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round", victory:"victory", gainHeart:"gain-heart" };
+  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round", victory:"victory", gainHeart:"gain-heart", missBasket:"miss-basket" };
 // attack.mp3's impact is ~0.34s into the file (+ ~30ms for audio to start): start it that long before the orb lands
 const ATTACK_SND_HIT = 370;
 const uiSel = () => playSnd("select");
@@ -1005,7 +1005,8 @@ function endTurn(){
   startOfTurn();
   // final round: announce the very last turn (a bonus turn earned on it gets its own announcement)
   if(S.final && nextUp()==null){
-    setTimeout(()=>playSnd("finalRound"), 250);   // after the button click that ended the turn
+    // after whatever ended the turn: a button click (short) or a missed shot (~1 s)
+    setTimeout(()=>playSnd("finalRound"), performance.now() - lastMissAt < 300 ? 1050 : 250);
     toast(`🏁 LAST TURN!<br>${esc(T(S.turnTeam).name)}`, "cyan");
   }
 }
@@ -1141,7 +1142,9 @@ const doAttackTarget = act(target=>{
   startShoot(a, "streak");
 });
 const shotMade = act(()=>{ playSnd("makeBasket", SFX.swish); S.cur.pending = true; });
+let lastMissAt = 0;
 const shotMiss = act(()=>{
+  playSnd("missBasket"); lastMissAt = performance.now();
   S.cur.results.push("miss");
   if(S.cur.mode==="streak"){ toast("MISSED! Turn over."); endTurn(); return; }
   S.cur.shotsLeft--; if(S.cur.shotsLeft<=0) endTurn();
