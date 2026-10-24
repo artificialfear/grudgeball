@@ -967,13 +967,13 @@ const SFX = {
 const SOUND_FILES = { start:"start-game", music:"main-menu-music", correct:"correct", wrong:"incorrect",
   shield:"shield", sword:"cursed-sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat",
   basket:"basketball", scale:"traumatic-scale",
-  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round", victory:"victory" };
+  attack:"attack", makeBasket:"make-basket", openBox:"open-box", select:"select", finalRound:"final-round", victory:"victory", gainHeart:"gain-heart" };
 // attack.mp3's impact is ~0.34s into the file (+ ~30ms for audio to start): start it that long before the orb lands
 const ATTACK_SND_HIT = 370;
 const uiSel = () => playSnd("select");
 const ITEM_SND = { shots:"basket", shield:"shield", sword:"sword", ring:"ring", reed:"reed", metronome:"metronome", repeat:"repeat", scale:"scale" };
 const SND = {}, SND_BAD = {};
-const SOUND_VER = {"attack": "427d63b3", "basketball": "1656cf6e", "correct": "f86dc21e", "cursed-sword": "2d9a5015", "final-round": "84c8e866", "incorrect": "3ba2e6ea", "main-menu-music": "8d20fda8", "make-basket": "f86dc21e", "metronome": "8bb844e8", "open-box": "d639f8d7", "reed": "89b7ff89", "repeat": "a897ae50", "ring": "e0ce43f7", "select": "b8741f7a", "shield": "5b333b22", "start-game": "c5f93d15", "traumatic-scale": "93fd144f", "victory": "c5c6e871"};   // filled in by build.py
+const SOUND_VER = {"attack": "427d63b3", "basketball": "1656cf6e", "correct": "f86dc21e", "cursed-sword": "2d9a5015", "final-round": "84c8e866", "gain-heart": "3f764c88", "incorrect": "3ba2e6ea", "main-menu-music": "8d20fda8", "make-basket": "6b243c41", "metronome": "8bb844e8", "open-box": "38e3ae5e", "reed": "89b7ff89", "repeat": "a897ae50", "ring": "e0ce43f7", "select": "b8741f7a", "shield": "5b333b22", "start-game": "c5f93d15", "traumatic-scale": "93fd144f", "victory": "c5c6e871"};   // filled in by build.py
 function getSnd(k){
   if(!SND[k]){
     const v = SOUND_VER[SOUND_FILES[k]];
@@ -1187,7 +1187,7 @@ const ANIMS = {
     }, ms=>setTimeout(()=>playSnd("attack", SFX.hit), Math.max(0, ms - ATTACK_SND_HIT))); },
   drain(a){ const U = fxU();
     for(let k=0;k<Math.max(1,a.n||1)+1;k++) setTimeout(()=>fly(a.from, a.to, `<img src="${A.heart}" alt="">`, "fxheart", U*3.2, 620, 0, k===0 ? p=>{
-      burst(p.x, p.y, "#3dff7a", 8, U*6, "♥"); fxTag(a.to, `♥ LIFESTEAL +${a.n||1}`, "#16a34a"); } : null), k*130); },
+      burst(p.x, p.y, "#3dff7a", 8, U*6, "♥"); fxTag(a.to, `♥ LIFESTEAL +${a.n||1}`, "#16a34a"); playSnd("gainHeart", SFX.heal); } : null), k*130); },
   heal(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
     fxIcon(A.heart, U*6, [{transform:P(c.x,c.y,"scale(0)"), opacity:1},{transform:P(c.x,c.y-U*2,"scale(1.4)"), opacity:1, offset:.35},{transform:P(c.x,c.y-U*7,"scale(1)"), opacity:0}], 1000);
     burst(c.x, c.y, "#ff6b8a", 6, U*5, "♥"); },
@@ -1230,13 +1230,14 @@ const ANIMS = {
     bigTextAt(x, bar.top - U*2, "ORDER REVERSED!", "#3ad7ff", 2.4, 200); }
 };
 
-function heal(i, n){
+// sndDelay: ms to wait before the gain-heart sound (so it doesn't land on another sound); -1 = silent
+function heal(i, n, sndDelay=0){
   const t = T(i), before = t.hearts;
   t.hearts = Math.min(S.cfg.maxHearts, t.hearts + n);
   const got = t.hearts - before;
   if(t.status==="sd" && t.hearts>0) t.status = "alive";
   pendingFx.push([i, got>0 ? "+"+got : "MAX", "plus"]);
-  if(got>0) SFX.heal();
+  if(got>0 && sndDelay>=0) setTimeout(()=>playSnd("gainHeart", SFX.heal), sndDelay);
   return got;
 }
 // direct loss (penalty / traumatic scale): not an attack, ignores shield & curse
@@ -1278,7 +1279,8 @@ function attack(attacker, target, countsForGangUp=true){
     if(!S.turnAttacks[target].includes(attacker)) S.turnAttacks[target].push(attacker);
   }
   anim("hit", {from:attacker, to:target, dmg:lost, sword:dmg>1});
-  if(a.ring>0 && lost>0){ heal(attacker, lost); anim("drain", {from:target, to:attacker, n:lost, delay:560}); }
+  // lifesteal: the heart sound plays when the stolen hearts land (or shortly after the hit with animations off)
+  if(a.ring>0 && lost>0){ heal(attacker, lost, (CFG.anims===0 || REDUCED_MOTION) ? 700 : -1); anim("drain", {from:target, to:attacker, n:lost, delay:560}); }
   if(t.hearts===0){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); anim("sd", {i:target, delay:dmg>1?1700:900}); }
 }
 
@@ -1350,7 +1352,7 @@ const pickBox = act(i=>{
     S.phase = "item"; S.cur.item = b.item; itemSoundSoon(b.item);
     const ti = S.turnTeam, t = T(ti), k = b.item;
     // underdog bonus: last place gets +1 heart for any item box
-    if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1); anim("heal", {i:ti}); S.cur.underdog = true; }
+    if(C("underdog",0) && lastPlace(ti)){ heal(ti, 1, 900); anim("heal", {i:ti, delay:900}); S.cur.underdog = true; }
     // leader tax: a team at max hearts can't collect good items
     if(C("leaderTax",0) && k!=="scale" && t.hearts >= S.cfg.maxHearts){ S.cur.taxed = true; return; }
     if(ITEMS[k].held){
@@ -1383,7 +1385,7 @@ function resolveCorrect(i, stolen=false){
   const t = T(i);
   S.lastAnswer = curBox().a || null;
   if(t.status==="sd"){
-    heal(i, 1); anim("heal", {i});
+    heal(i, 1, 700); anim("heal", {i, delay:700});   // after the correct-answer sound
     toast(`${esc(t.name)} earns a heart back from SUDDEN DEATH!`, "green");
     S.phase = "reveal"; S.cur.revealMsg = `${tname(i)} is back in the game. <b>No shots</b> when coming back from sudden death.`;
     return;
