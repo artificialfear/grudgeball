@@ -31,6 +31,16 @@ A team review game for band class, made to run on a classroom viewboard with a m
 
 All of these can be adjusted on the setup screen.
 
+## Remote control (iPad or computer)
+Run the game from an iPad or a computer while it shows on the viewboard. The board still works by touch.
+1. On the board, tap **📱** (top right in a game, or **📱 Remote** on the setup screen). A QR code, a link and a 4-letter room code appear.
+2. iPad: point the camera at the QR code and tap the link. Computer: open the link.
+3. The controller shows **the answer privately**, every host button (Correct/Wrong, Steal/Pass, MADE IT/MISSED, +1 heart, attack targets, items, Undo, ± Hearts, Final round, End game), the timer, the teams and the mystery boxes. Sounds play on the board.
+- Computer keyboard: C correct, W wrong, S steal, P pass, Enter next, M made, X missed, H +1 heart, 1–8 attack a team, L play sound, T restart timer, A show answer on board, U or Ctrl+Z undo, F final round.
+- Both devices need to be online; they connect directly over the Wi-Fi (through a relay if the network won't allow a direct link). Connection setup uses the free PeerJS service; no game data is stored anywhere.
+- The remote stays on after a refresh until you tap **Turn off remote**. Tap **New code** if a student sees the code.
+- If the board was refreshed, tap it once (TAP TO START) so it can play sounds; the controller shows a reminder.
+
 ## Editing questions
 Use **Edit questions** in the game itself. Write one question per line as `Question | Answer`, or keep your questions in a Google Sheet (column A = question, column B = answer) and paste the columns in. The header row, blank rows and any extra columns are skipped.
 Question sets save in that browser. Use **Export .txt** to back them up or move them to another device.
@@ -57,6 +67,9 @@ Each file is one set: a `# Set: Name` line, then `Question | Answer` lines. Run 
 - `assets/`: the art taken from the original myViewBoard file.
 - `sounds/`: the game's sound effects and menu music, as MP3s. To change a sound, upload a new MP3 with the **same file name** (for example `sounds/correct.mp3`). basketball.mp3 plays when the Free Shots box opens, open-box.mp3 when any mystery box opens, make-basket.mp3 on MADE IT, miss-basket.mp3 on MISSED, final-round.mp3 when a final round is started and again when its last turn begins, victory.mp3 on the winner screen, gain-heart.mp3 whenever a team gains a heart, select.mp3 on ordinary button taps, and attack.mp3 when a team is hit (timed so its impact lands when the attack animation strikes the card). Sounds without a file (Fermata, Modulation) use built-in beeps.
 - `src/music.js`: makes the listening and staff questions, draws the staff and plays the sounds.
-- `lib/vexflow-bravura.js`: [VexFlow](https://www.vexflow.com) 4.2.3 (MIT license, see `lib/LICENSE`), which draws the notation. It's built into `index.html`, so it works without internet.
+- `lib/vexflow-bravura.js`: [VexFlow](https://www.vexflow.com) 4.2.3 (MIT license, see `lib/LICENSE-vexflow`), which draws the notation. It's built into `index.html`, so it works without internet.
 - `tests/music_theory.js`: checks thousands of generated questions against music theory (`node tests/music_theory.js`).
+- `src/remote.js`: the remote control (both the board side and the controller).
+- `lib/peerjs.min.js` (PeerJS 1.5.4, MIT, `lib/LICENSE-peerjs`) connects the devices; `lib/qrcode.js` (qrcode-generator, MIT) draws the QR code. Both are built into `index.html`.
+- `tests/remote_e2e.py` + `tests/peer-test-server.js`: a two-device test of the remote against a local connection server.
 - `build.py`: rebuilds `index.html` from the source and the art (`python3 build.py`).

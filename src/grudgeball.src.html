@@ -367,6 +367,7 @@ header.top .hbtns.left{justify-content:flex-start}
 <!-- ================= SETUP ================= -->
 <section id="setup">
   <button class="topbtn" id="musicBtn" style="position:fixed;top:14px;right:16px;z-index:5">🎵 Music: On</button>
+  <button class="topbtn" id="setupRemoteBtn" style="position:fixed;top:14px;left:16px;z-index:5" title="Run the game from an iPad or computer">📱 Remote</button>
   <h1>GRUDGE BALL</h1>
   <div class="tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
   <div id="resumeBox"></div>
@@ -446,6 +447,7 @@ header.top .hbtns.left{justify-content:flex-start}
     </div>
     <div class="logo">GRUDGE BALL</div>
     <div class="hside hbtns">
+      <button class="topbtn" id="remoteBtn" title="Remote control from an iPad or computer">📱</button>
       <button class="topbtn" id="soundBtn">🔊</button>
       <button class="topbtn" id="menuBtn">☰</button>
     </div>
@@ -462,6 +464,8 @@ header.top .hbtns.left{justify-content:flex-start}
 
 <!--INLINE:lib/vexflow-bravura.js-->
 <!--INLINE:src/music.js-->
+<!--INLINE:lib/peerjs.min.js-->
+<!--INLINE:lib/qrcode.js-->
 <script>
 "use strict";
 /* ============================================================
@@ -609,6 +613,7 @@ function toast(msg, cls=""){
   const box = $("#toasts"); box.appendChild(d);
   while(box.children.length>2) box.firstChild.remove();
   setTimeout(()=>d.remove(), 3300);
+  if(typeof RemoteHost!=="undefined") RemoteHost.toast(msg, cls);
 }
 
 /* ============================================================
@@ -1277,6 +1282,7 @@ function timerLoop(){
     if(S && !S.over && S.phase==="steal" && !S.cur.stealing) setTimeout(()=>{ if(S && S.phase==="steal" && !S.cur.stealing && !timerState.running) stealTimeout(); }, 700);
   } }
   drawTimer();
+  if(typeof RemoteHost!=="undefined") RemoteHost.tick();
 }
 function timerHTML(){
   return `<div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#000a" stroke="#ffffff22" stroke-width="10"/>
@@ -1458,6 +1464,7 @@ function renderStage(){
   $("#instr").innerHTML = (S.isBonus && p!=="pick" ? '<span class="bonuspill">BONUS TURN</span>' : '') + instr;
   $("#instr").parentElement.classList.toggle("centered", p==="pick");
   if(p==="question"||p==="steal") drawTimer();
+  if(typeof RemoteHost!=="undefined") RemoteHost.sync();
 }
 
 // Shrink the stage content (never grow it) so nothing is hidden behind the team cards.
@@ -1575,6 +1582,7 @@ function showScreen(n){
   $("#game").classList.toggle("hidden", n!=="game");
   $("#endscreen").classList.toggle("hidden", n!=="end");
   if(n==="setup") musicPlay(); else musicStop();
+  if(typeof RemoteHost!=="undefined") RemoteHost.sync();
 }
 
 /* ============================================================
@@ -1643,12 +1651,14 @@ $("#menuBtn").onclick = ()=>{ uiSel();
     <div class="row"><button class="btn" data-m="skip">Skip ${esc(T(S.turnTeam).name)}'s turn</button></div>
     <div class="row"><button class="btn" data-m="rules">📜 Rules</button></div>
     <div class="row"><button class="btn" data-m="key">🔑 Answer key</button></div>
+    <div class="row"><button class="btn" data-m="remote">📱 Remote control (iPad / computer)</button></div>
     <div class="row"><button class="btn gold" data-m="end">🏆 End game & show winner</button></div>
     <div class="row"><button class="btn bad" data-m="quit">Quit to setup</button></div>
     <div class="row"><button class="btn ghost" data-m="close">Close</button></div></div>`, m=>{
       if(m==="skip") skipTurn();
       if(m==="rules") showRules();
       if(m==="key") showKey();
+      if(m==="remote") RemoteHost.openPanel();
       if(m==="end") finishGame();
       if(m==="quit"){ if(confirmInline()) { stopTimer(); store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); } }
     });
@@ -1789,6 +1799,7 @@ function renderSetup(){
     `${bp.total} mystery boxes: ${bp.used} questions${bp.repeats?` + ${bp.repeats} repeated`:""}${bp.unused?` (random ${bp.used} of your ${qn})`:""}${gen} + ${bp.nItems} items` +
     (bp.repeats ? ` — add ${bp.repeats} more question${bp.repeats>1?"s":""} to avoid repeats` : "");
   $("#startBtn").disabled = qn===0 && !(bp.nListen+bp.nStaff);
+  if(typeof RemoteHost!=="undefined") RemoteHost.sync();
   const saved = store.get("gb_game", null);
   $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
     <span><button class="btn gold" id="resumeBtn">Resume game</button> <button class="btn ghost" id="discardBtn">Discard</button></span></div>` : "";
@@ -1832,11 +1843,14 @@ updateMusicBtn();
 
 // long-press on a touch board shouldn't pop up the browser menu (text fields still allow it)
 document.addEventListener("contextmenu", e=>{ if(!e.target.closest("input,textarea")) e.preventDefault(); });
+// ?remote=CODE turns this page into the remote controller (see remote.js)
+const REMOTE_MODE = new URLSearchParams(location.search).has("remote");
 renderSetup();
-showScreen("setup");
+if(REMOTE_MODE){ $("#setup").classList.add("hidden"); $("#splash").remove(); }
+else showScreen("setup");
 // TAP TO START: the one tap browsers require before sound, made part of the game
 (function(){
-  const sp = $("#splash"); let done = false;
+  const sp = $("#splash"); if(!sp) return; let done = false;
   function go(e){
     if(done) return; done = true; if(e) e.preventDefault();
     try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.resume) actx.resume(); }catch(err){}
@@ -1848,5 +1862,6 @@ showScreen("setup");
   document.addEventListener("keydown", e=>{ if(!done && (e.key===" "||e.key==="Enter")) go(e); });
 })();
 </script>
+<!--INLINE:src/remote.js-->
 </body>
 </html>
