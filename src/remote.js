@@ -166,10 +166,11 @@ const RemoteHost = (function(){
   function timerInfo(){ return {left:timerState.left||0, total:timerState.total||0, running:!!timerState.running}; }
   function snapshot(){
     const scr = onScreen("#game") ? "game" : onScreen("#endscreen") ? "end" : "setup";
-    const saved = store.get("gb_game", null);
+    const saved = store.get(gameKey(), null);
     const audioOK = !document.getElementById("splash") && !!(actx ? actx.state!=="suspended" : true);
     return { type:"state", screen:scr, S:S||null, undo:UNDO.length, listening, sound:soundOn, audioOK,
       resume: scr==="setup" && !!(saved && saved.S && !saved.S.over), set:CFG.set, teamsCfg:CFG.teams,
+      profiles:Object.keys(PROFILES.list), profile:PROFILES.active,
       endTitle: scr==="end" ? (($("#endscreen h1")||{}).innerHTML||"") : "", timer:timerInfo() };
   }
   function send(c, msg){ try{ if(c.open) c.send(msg); }catch(e){} }
@@ -226,6 +227,7 @@ const RemoteHost = (function(){
       case "skip":      if(inGame){ stopListening(); skipTurn(); } break;
       case "final":     if(inGame && [-1,0,1].includes(x) && (x===-1) === !!S.final) setFinal(x); break;
       case "endgame":   if(inGame) finishGame(); break;
+      case "profile":   if(onScreen("#setup") && typeof x==="string") switchProfile(x); break;
       case "sound":     soundOn = !!x; store.set("gb_sound", soundOn); if(onScreen("#game") && S) render(); break;
     }
     sync();
@@ -399,14 +401,16 @@ const RemoteCtl = (function(){
     let h = "";
     if(!st){ h = `<div class="rc-wait">${connected ? "Waiting for the board…" : esc(lastErr || "Connecting to the board…")}<div class="rc-help">Room code <b>${esc(code)}</b></div></div>`; }
     else if(st.screen==="setup"){
-      h = `<div class="rc-h">THE BOARD IS ON THE SETUP SCREEN</div><div class="rc-msg">Question set: <b>${esc(st.set||"")}</b> · ${st.teamsCfg} teams</div>
+      h = `<div class="rc-h">THE BOARD IS ON THE SETUP SCREEN</div>
+        ${(st.profiles||[]).length>1 ? `<div class="rc-msg">Class:</div><div class="rc-btns">${st.profiles.map(p=>btn("profile", esc(p), p===st.profile?"gold":"", "", p)).join("")}</div>` : ""}
+        <div class="rc-msg">Question set: <b>${esc(st.set||"")}</b> · ${st.teamsCfg} teams</div>
         <div class="rc-btns">${btn("start","▶ Start new game","good")}${st.resume?btn("resume","⏯ Resume game","gold"):""}</div>
         <div class="rc-help">Team names, timers and items are set on the board.</div>`;
     }
     else if(st.screen==="end" && S){
       const ranked = S.teams.map((t,i)=>({t,i})).sort((a,b)=>(b.t.status==="out"?-1:b.t.hearts)-(a.t.status==="out"?-1:a.t.hearts));
       h = `<div class="rc-h">🏆 ${st.endTitle||"GAME OVER"}</div>${ranked.map((r,k)=>`<div class="rc-msg">#${k+1} ${chip(r.i)} ${r.t.status==="out"?"OUT":r.t.hearts+" ♥"}</div>`).join("")}
-        <div class="rc-btns">${btn("endBack","↶ Back to game")}${btn("endAgain","Play again","good")}${btn("endSetup","Setup")}</div>`;
+        <div class="rc-btns">${btn("endBack","↶ Back to game")}${btn("endAgain","Play again","good")}${btn("endSetup","Setup")}${btn("ui:report","📋 Report","gold")}</div>`;
     }
     else if(inGame()){
       const p = S.phase, ti = S.turnTeam, c = S.cur;
@@ -535,6 +539,7 @@ const RemoteCtl = (function(){
       <button class="rc-mini ${S&&S.final?"on":""}" data-ra="ui:final" ${g?"":"disabled"}>🏁 Final round</button>
       <button class="rc-mini" data-ra="ui:skip" ${g?"":"disabled"}>⏭ Skip turn</button>
       <button class="rc-mini" data-ra="ui:key" ${S?"":"disabled"}>🔑 Answer key</button>
+      <button class="rc-mini" data-ra="ui:report" ${S?"":"disabled"}>📋 Report</button>
       <button class="rc-mini" data-ra="ui:end" ${g?"":"disabled"}>🏆 End game</button>
       <button class="rc-mini" data-ra="sound" data-rx="${st && st.sound ? "false" : "true"}">${st && !st.sound ? "🔇 Board sound off" : "🔊 Board sound on"}</button>
       <button class="rc-mini" data-ra="ui:keys">⌨ Keys</button>`;
@@ -552,6 +557,7 @@ const RemoteCtl = (function(){
       if(w==="close"){ ui.panel = null; }
       else if(w==="adjust"){ ui.adjust = !ui.adjust; renderTeams(); return; }
       else if(w==="key"){ showKey(); return; }
+      else if(w==="report"){ showReport(); return; }
       else ui.panel = ui.panel===w ? null : w;
       renderCard(); return;
     }

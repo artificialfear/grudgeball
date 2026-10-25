@@ -253,6 +253,14 @@ header.top .hbtns.left{justify-content:flex-start}
 .finalpill{display:inline-block;margin-right:14px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:#fff;color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1.2s infinite}
 #finalBtn.on{background:#fff;color:#000;border-color:#fff}
 .keylist li .minibtn{margin-top:4px}
+.classbar{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;margin:0 auto calc(var(--u)*1.2);max-width:1100px}
+.classbar label{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:var(--gold)}
+.classbar select{min-width:min(320px,60vw);font-size:calc(var(--u)*1.9)}
+.report table{width:100%;border-collapse:collapse;margin:6px 0 12px} .report td,.report th{padding:5px 8px;border-bottom:1px solid #ffffff1f;text-align:left;font-size:16px}
+.report th{color:var(--gold);font-weight:700} .report .bar{display:inline-block;height:10px;border-radius:5px;background:var(--good);vertical-align:middle}
+.report .qitem{margin:6px 0;padding:8px 10px;border-radius:8px;background:#0006;font-size:16px} .report .qitem b{font-family:"Atkinson Hyperlegible",Verdana,sans-serif}
+.report .tag{display:inline-block;font-size:12px;padding:2px 6px;border-radius:5px;background:#ffffff22;margin-left:6px}
+.report h3{font-family:"Press Start 2P";font-size:13px;color:var(--gold);margin:14px 0 6px}
 /* action animations */
 #fxLayer{position:fixed;inset:0;pointer-events:none;z-index:44;overflow:hidden}
 .fx1{position:absolute;left:0;top:0;will-change:transform,opacity}
@@ -371,6 +379,8 @@ header.top .hbtns.left{justify-content:flex-start}
   <button class="topbtn" id="setupRemoteBtn" style="position:fixed;top:14px;left:16px;z-index:5" title="Run the game from an iPad or computer">📱 Remote</button>
   <h1>GRUDGE BALL</h1>
   <div class="tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
+  <div class="classbar"><label>CLASS</label><select id="profileSelect" class="setup-select"></select>
+    <button class="btn" id="profNew">+ New class</button><button class="btn" id="profRename">Rename</button><button class="btn bad" id="profDel">Delete</button></div>
   <div id="resumeBox"></div>
   <div class="setup-grid">
     <div class="card">
@@ -401,6 +411,7 @@ header.top .hbtns.left{justify-content:flex-start}
       <div class="row"><select id="setSelect" class="setup-select" style="flex:1"></select>
         <button class="btn" id="editSetBtn">Edit questions</button></div>
       <div class="qcount" id="setCount"></div>
+      <div class="row"><button class="btn" id="sheetBtn">📄 Google Sheet</button><button class="btn" id="sheetSyncBtn" title="Reload sets from the sheet">↻ Sync</button><span class="qcount" id="sheetStatus" style="flex:1"></span></div>
       <div class="row"><label>Mystery boxes on the board</label>
         <div class="stepper"><button data-step="boxCount:-10">−</button><span id="v_boxCount"></span><button data-step="boxCount:10">+</button></div>
         <div class="hint">10 per row. Big question sets get a random batch each game; small ones repeat a few questions to fill the board.</div></div>
@@ -415,6 +426,11 @@ header.top .hbtns.left{justify-content:flex-start}
       <div class="row"><label>Music question level</label>
         <div class="seg" data-seg="musicLevel"><button data-v="0">Auto</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button></div>
         <div class="hint"><span id="levelHint"></span> New questions are made every game. <button class="minibtn" id="sampleBtn" type="button">🔊 Test speakers</button></div></div>
+      <h2 style="margin-top:22px">RULES</h2>
+      <div class="row"><label>Preset</label><button class="btn" id="presetSimple">🐣 Simple rules</button><button class="btn" id="presetFull">🔥 Full rules</button>
+        <div class="hint">Simple (beginners): 5 items (Shield, Reed, Metronome, Free Shots, Traumatic Scale), no gang-up rule, hold 1 item, 20 s to answer, 7 s to steal, no leader tax. Full: everything on.</div></div>
+      <div class="row"><label>Gang-up rule (bonus turn when hit two turns in a row)</label>
+        <div class="seg" data-seg="gangUp"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
       <h2 style="margin-top:22px">FAIRNESS</h2>
       <div class="row"><label>Items a team can hold</label>
         <div class="stepper"><button data-step="handLimit:-1">−</button><span id="v_handLimit"></span><button data-step="handLimit:1">+</button></div></div>
@@ -556,7 +572,7 @@ const DEFAULT_CFG = {
   teams:4, names:DEFAULT_NAMES.slice(), startHearts:8, maxHearts:12, qTime:15, stealTime:5, stealAnswerTime:5,
   wrongCost:1, stealCost:1, cfgVer:3,
   handLimit:2, players:6, underdog:1, leaderTax:1, boxCount:30,
-  listenCount:3, staffCount:3, musicLevel:0, anims:1,
+  listenCount:3, staffCount:3, musicLevel:0, anims:1, gangUp:1,
   musicTrack:0, thListen:10, thStaff:5,   // theory sets: about half the questions are ear training
   items:{ shield:{count:1,after:"again"}, ring:{count:1,after:"again"}, sword:{count:1,after:"again"},
           reed:{count:1,after:"again"}, metronome:{count:1,after:"again"}, repeat:{count:1,after:"again"},
@@ -564,13 +580,29 @@ const DEFAULT_CFG = {
           shots:{count:1,after:"end"}, scale:{count:1,after:"again"} },
   set:DEFAULT_SET_NAME
 };
-let CFG = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), store.get("gb_cfg", {}));
-if(CFG.stealAnswerTime==null) CFG.stealAnswerTime = 5;
-if(CFG.boxCount==null) CFG.boxCount = 30;
-if((store.get("gb_cfg", {}).cfgVer||1)<2){ CFG.wrongCost = 1; CFG.stealCost = 1; CFG.cfgVer = 2; }
-CFG.items = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG.items)), CFG.items||{});
-if((store.get("gb_cfg", {}).cfgVer||1)<3){ CFG.items = JSON.parse(JSON.stringify(DEFAULT_CFG.items)); CFG.cfgVer = 3; }
-if(CFG.items.modulation.count>1) CFG.items.modulation.count = 1;
+// fill in defaults and apply old-version fixes to a saved settings object
+function normCfg(raw){
+  raw = raw || {};
+  const c = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), raw);
+  if(c.stealAnswerTime==null) c.stealAnswerTime = 5;
+  if(c.boxCount==null) c.boxCount = 30;
+  if((raw.cfgVer||1)<2){ c.wrongCost = 1; c.stealCost = 1; c.cfgVer = 2; }
+  c.items = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG.items)), c.items||{});
+  if((raw.cfgVer||1)<3){ c.items = JSON.parse(JSON.stringify(DEFAULT_CFG.items)); c.cfgVer = 3; }
+  if(c.items.modulation.count>1) c.items.modulation.count = 1;
+  c.names = (c.names||[]).slice(); while(c.names.length<8) c.names.push(DEFAULT_NAMES[c.names.length]);
+  return c;
+}
+/* ---------- CLASS PROFILES: each class keeps its own settings, team names, question set and game in progress ---------- */
+let PROFILES = store.get("gb_profiles", null);
+if(!PROFILES || !PROFILES.list || !Object.keys(PROFILES.list).length){
+  PROFILES = { active:"My Class", list:{ "My Class": store.get("gb_cfg", {}) } };
+}
+if(!PROFILES.list[PROFILES.active]) PROFILES.active = Object.keys(PROFILES.list)[0];
+let CFG = normCfg(PROFILES.list[PROFILES.active]);
+const gameKey = () => "gb_game::" + PROFILES.active;
+// one-time move of a game saved before profiles existed
+(function(){ const old = store.get("gb_game", null); if(old && !store.get(gameKey(), null)){ store.set(gameKey(), old); } store.del("gb_game"); })();
 // Built-in question sets (from the questions/ folder in the repo). They appear on every device;
 // if you delete one in Edit questions it stays deleted on that device.
 const BUILTIN_SETS = __BUILTIN_SETS__;
@@ -582,9 +614,101 @@ if(!SETS || typeof SETS !== "object" || !Object.keys(SETS).length){ SETS = {}; S
   Object.keys(BUILTIN_SETS).forEach(n=>{ if(!(n in SETS) && !gone.includes(n)){ SETS[n] = BUILTIN_SETS[n]; added = true; } });
   if(added) store.set("gb_sets", SETS);
 })();
-if(!SETS[CFG.set]) CFG.set = Object.keys(SETS)[0];
-function saveCfg(){ store.set("gb_cfg", CFG); }
+function saveCfg(){ PROFILES.list[PROFILES.active] = CFG; store.set("gb_profiles", PROFILES); store.set("gb_cfg", CFG); }
+function switchProfile(name){
+  if(!PROFILES.list[name] || name===PROFILES.active) return;
+  saveCfg(); PROFILES.active = name; CFG = normCfg(PROFILES.list[name]);
+  if(!setText(CFG.set)) CFG.set = allSetNames()[0];
+  saveCfg(); renderSetup(); toast(`Class: ${esc(name)}`);
+}
 function saveSets(){ store.set("gb_sets", SETS); }
+/* ---------- QUESTION SETS FROM A GOOGLE SHEET ----------
+   The sheet must be shared "Anyone with the link: Viewer". Its "Game Sets" tab lists (in column A, under the
+   header "Game Sets") the tabs to load; each of those tabs has questions in column A and answers in column B.
+   Sets are cached on this device, so the game still works offline; ↻ Sync picks up edits. */
+let SHEET = store.get("gb_sheet", null) || { url:"", id:"", title:"", sets:{}, order:[], synced:0, error:"" };
+const setText = name => (SHEET.sets && SHEET.sets[name]!=null) ? SHEET.sets[name] : SETS[name];
+const isSheetSet = name => !!(SHEET.sets && SHEET.sets[name]!=null);
+function allSetNames(){ const sh = (SHEET.order||[]).filter(n=>SHEET.sets[n]!=null); return sh.concat(Object.keys(SETS).filter(n=>!sh.includes(n))); }
+function parseCSV(text){
+  const rows = []; let row = [], cell = "", q = false;
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){ cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if(ch==='"') q = true;
+    else if(ch===','){ row.push(cell); cell = ""; }
+    else if(ch==='\n' || ch==='\r'){ if(ch==='\r' && text[i+1]==='\n') i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += ch;
+  }
+  if(cell!=="" || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+const sheetIdOf = url => { const m = /\/d\/([a-zA-Z0-9_-]{20,})/.exec(url||""); return m ? m[1] : (/^[a-zA-Z0-9_-]{30,}$/.test((url||"").trim()) ? url.trim() : ""); };
+async function fetchTab(id, name){
+  const u = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(name)}&cachebust=${Date.now()}`;
+  let r;
+  try{ r = await fetch(u, {cache:"no-store"}); }catch(e){ throw new Error("Couldn't reach the sheet. Make sure sharing is set to “Anyone with the link: Viewer” and the board is online."); }
+  const t = await r.text();
+  if(!r.ok || /^\s*<(!doctype|html)/i.test(t)) throw new Error("The sheet isn't public. In Google Sheets: Share → General access → “Anyone with the link: Viewer”.");
+  return parseCSV(t);
+}
+async function syncSheet(quiet){
+  if(!SHEET.id) return false;
+  try{
+    const idx = await fetchTab(SHEET.id, "Game Sets");
+    if(!idx.length || (idx[0][0]||"").trim().toLowerCase()!=="game sets") throw new Error("Add a tab named “Game Sets” with the header “Game Sets” in A1, then list the tabs to load under it.");
+    const names = idx.slice(1).map(r=>(r[0]||"").trim()).filter(Boolean);
+    if(!names.length) throw new Error("The “Game Sets” tab doesn't list any tabs yet.");
+    const first = JSON.stringify(await fetchTab(SHEET.id, "\u0000no-such-tab\u0000"));   // Google returns the FIRST tab for unknown names
+    const sets = {}, missing = [];
+    for(const n of names){
+      const rows = await fetchTab(SHEET.id, n);
+      if(JSON.stringify(rows)===first && names.indexOf(n)>0 && !rows.some(r=>(r[0]||"").trim().toLowerCase()===n.toLowerCase())) { missing.push(n); continue; }
+      const cell = v => (v||"").replace(/[\t\r\n]+/g, " ").trim();   // line breaks inside a cell become spaces
+      sets[n] = rows.filter(r=>cell(r[0])).map(r=>`${cell(r[0])}\t${cell(r[1])}`).join("\n");
+    }
+    SHEET.sets = sets; SHEET.order = names.filter(n=>sets[n]!=null); SHEET.synced = Date.now(); SHEET.error = missing.length ? `Tab${missing.length>1?"s":""} not found: ${missing.join(", ")}` : "";
+    store.set("gb_sheet", SHEET);
+    if(!setText(CFG.set)) CFG.set = allSetNames()[0];
+    if(!quiet) toast(`📄 Synced ${SHEET.order.length} set${SHEET.order.length===1?"":"s"} from your Google Sheet`, "green");
+    return true;
+  }catch(e){
+    SHEET.error = e.message; store.set("gb_sheet", SHEET);
+    if(!quiet) toast("📄 " + esc(e.message), "red");
+    return false;
+  }finally{ if($("#setup") && !$("#setup").classList.contains("hidden")) renderSetup(); }
+}
+function sheetStatus(){
+  if(!SHEET.id) return "Not connected";
+  const when = SHEET.synced ? new Date(SHEET.synced).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "never";
+  return `${SHEET.order.length} set${SHEET.order.length===1?"":"s"} · synced ${when}${SHEET.error?` · ⚠ ${SHEET.error}`:""}`;
+}
+// the class's question set must still exist (on this device or in the sheet)
+if(!setText(CFG.set)) CFG.set = allSetNames()[0];
+function openSheetPanel(){
+  const m = modal(`<div class="card"><h2>📄 QUESTIONS FROM A GOOGLE SHEET</h2>
+    <p style="margin-top:0">Keep your question sets in a Google Sheet and every board (and anyone you share the link with) gets the latest version.</p>
+    <ol style="margin-top:0">
+      <li>In the sheet: <b>Share → General access → “Anyone with the link” → Viewer</b>. (Viewers can't change your questions.)</li>
+      <li>Make a tab named <b>Game Sets</b>: type <b>Game Sets</b> in A1 and list the tab names to load under it (one per row).</li>
+      <li>Each of those tabs: questions in column A, answers in column B (a header row is fine).</li>
+      <li>Paste the sheet's link here and tap <b>Connect</b>. After editing the sheet, tap <b>↻ Sync</b>.</li></ol>
+    <div class="row"><input type="text" id="sheetUrl" style="flex:1" placeholder="https://docs.google.com/spreadsheets/d/…" value="${esc(SHEET.url||"")}"></div>
+    <div class="qcount" id="sheetPanelStatus">${esc(sheetStatus())}</div>
+    <div class="row"><button class="btn good" data-m="keep" id="sheetConnect">${SHEET.id?"↻ Sync now":"Connect"}</button>
+      ${SHEET.id?`<button class="btn" data-m="keep" id="sheetOpen">Open the sheet</button><button class="btn bad" data-m="keep" id="sheetOff">Disconnect</button>`:""}
+      <button class="btn ghost" data-m="close">Close</button></div></div>`);
+  m.querySelector("#sheetConnect").onclick = async ()=>{
+    const url = m.querySelector("#sheetUrl").value.trim(), id = sheetIdOf(url);
+    if(!id){ toast("That doesn't look like a Google Sheets link", "red"); return; }
+    if(id!==SHEET.id){ SHEET = { url, id, title:"", sets:{}, order:[], synced:0, error:"" }; }
+    m.querySelector("#sheetPanelStatus").textContent = "Loading…";
+    await syncSheet(false); m.querySelector("#sheetPanelStatus").textContent = sheetStatus();
+  };
+  const op = m.querySelector("#sheetOpen"); if(op) op.onclick = ()=>window.open(`https://docs.google.com/spreadsheets/d/${SHEET.id}/edit`, "_blank");
+  const off = m.querySelector("#sheetOff"); if(off) off.onclick = ()=>{ SHEET = { url:"", id:"", title:"", sets:{}, order:[], synced:0, error:"" }; store.set("gb_sheet", SHEET);
+    if(!setText(CFG.set)) CFG.set = allSetNames()[0]; saveCfg(); $("#modalRoot").innerHTML = ""; renderSetup(); toast("Google Sheet disconnected"); };
+}
 
 function parseSet(text){
   const out = [];
@@ -711,7 +835,7 @@ let UNDO = [];          // snapshots
 let adjusting = false;
 
 function snapshot(){ UNDO.push(JSON.stringify(S)); if(UNDO.length>80) UNDO.shift(); }
-function persist(){ if(S) store.set("gb_game", {S, UNDO:UNDO.slice(-30)}); }
+function persist(){ if(S) store.set(gameKey(), {S, UNDO:UNDO.slice(-30)}); }
 
 // How the board is filled: boxCount boxes total = all items + questions (sampled or repeated to fit)
 function boardPlan(nq){
@@ -735,7 +859,7 @@ function musicLevel(){
   const m = /level\s*([1-4])/i.exec(CFG.set||""); return m ? +m[1] : 2;
 }
 function newGame(){
-  const qs = parseSet(SETS[CFG.set]);
+  const qs = parseSet(setText(CFG.set));
   const plan = boardPlan(qs.length);
   const lvl = musicLevel();
   const track = musicTrack();
@@ -764,7 +888,7 @@ function newGame(){
     cfg: JSON.parse(JSON.stringify(CFG)),
     teams, boxes, order, ptr:0, bonus:[], turnTeam:order[0], isBonus:false, turnNo:1,
     phase:"pick", cur:{}, turnAttacks:{}, prevAttacks:{}, lastAnswer:null, over:false,
-    itemUsedTurn:0, repeatTeam:null, modulationUsed:false, final:null, musicLevel:lvl, musicTrack:track
+    itemUsedTurn:0, repeatTeam:null, modulationUsed:false, final:null, musicLevel:lvl, musicTrack:track, log:[], profile:PROFILES.active
   };
   UNDO = [];
   startOfTurn();
@@ -812,7 +936,7 @@ function startShoot(i, mode){
   S.cur = {mode, shooter:i, made:0, results:[], heartsOnly: mode==="free" ? T(i).status!=="alive" : false,
            shotsLeft: mode==="free" ? FREE_SHOTS : 0, shooterNo: takeShooter(i)};
 }
-const T = i => S.teams[i];
+const T = i => (S && S.teams[i]) || {name:"", color:"#888", inv:[], status:"out", hearts:0};   // safe if a late animation fires after the game closes
 const activeTeams = () => S.teams.map((t,i)=>i).filter(i=>T(i).status!=="out");
 function teamTag(i){ const t=T(i); return `<span class="who" style="background:${t.color}">${esc(t.name)}</span>`; }
 function tname(i){ return `<b style="color:${T(i).color};filter:brightness(1.4)">${esc(T(i).name)}</b>`; }
@@ -990,7 +1114,7 @@ function endTurn(){
   if(t.sword>0) t.sword--;
   // gang-up rule: a team attacked this turn AND by a different team on the previous turn gets a bonus turn next
   const ganged = [];
-  Object.keys(S.turnAttacks).forEach(k=>{
+  if(C("gangUp", 1)) Object.keys(S.turnAttacks).forEach(k=>{
     const target = +k, now = S.turnAttacks[k], prev = S.prevAttacks[k]||[];
     if(prev.length && now.some(a=> prev.some(p=>p!==a))){
       if(T(target).status!=="out" && !S.bonus.includes(target)) ganged.push(target);
@@ -1035,6 +1159,9 @@ const pickBox = act(i=>{
   const b = S.boxes[i]; if(!b || b.opened) return;
   b.opened = true; S.cur = {box:i}; playSnd("openBox");
   if(b.kind==="q"){
+    S.log = S.log || [];
+    S.log.push({q:b.q, a:b.a, kind:b.media ? b.media.kind : "written", staff:!!(b.media && b.media.type==="staff"), team:S.turnTeam, first:null, steals:[], result:null});
+    S.cur.logIdx = S.log.length - 1;
     S.phase = "question"; S.cur.answerShown = false;
     const t = T(S.turnTeam);
     S.cur.qBonus = 0;
@@ -1074,8 +1201,10 @@ const itemContinue = act(()=>{
   else endTurn();
 });
 
+const logCur = () => (S.log && S.cur.logIdx!=null) ? S.log[S.cur.logIdx] : null;
 function resolveCorrect(i, stolen=false){
   stopTimer(); playSnd("correct", SFX.correct);
+  const lg = logCur(); if(lg){ if(stolen){ lg.steals.push({team:i, ok:true}); lg.result = "stolen"; } else { lg.first = "correct"; lg.result = "correct"; } }
   const t = T(i);
   S.lastAnswer = curBox().a || null;
   if(t.status==="sd"){
@@ -1097,6 +1226,7 @@ const answerCorrect = act(()=>{ resolveCorrect(S.turnTeam); });
 const answerWrong = act(()=>{
   stopTimer(); playSnd("wrong", SFX.wrong);
   const i = S.turnTeam, t = T(i);
+  const lg = logCur(); if(lg) lg.first = "wrong";
   if(t.status==="sd"){ eliminate(i); }
   else if(S.cfg.wrongCost>0) loseHearts(i, S.cfg.wrongCost);
   beginSteal();
@@ -1111,13 +1241,14 @@ function beginSteal(){
     list.push(idx); }
   if(held.length) toast(`FERMATA! ${held.map(i=>esc(T(i).name)).join(" & ")} ${held.length>1?"are":"is"} held — no steal this time.`, "cyan");
   S.cur.stealList = list; S.cur.si = 0;
-  if(!list.length){ S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="Nobody left to steal."; return; }
+  if(!list.length){ S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="Nobody left to steal."; const lg = logCur(); if(lg) lg.result = "missed"; return; }
   S.phase = "steal"; S.cur.stealing = false; startTimer(S.cfg.stealTime);
 }
 function nextStealer(){
   S.cur.si++;
   if(S.cur.si >= S.cur.stealList.length){
     stopTimer(); S.lastAnswer = curBox().a||null; S.phase="reveal"; S.cur.revealMsg="No one stole it.";
+    const lg = logCur(); if(lg) lg.result = "missed";
   } else { S.cur.stealing = false; startTimer(S.cfg.stealTime); }
 }
 // how long the timer runs in the current phase
@@ -1143,6 +1274,7 @@ const stealCorrect = act(()=>{
 });
 const stealWrong = act(()=>{
   const i = S.cur.stealList[S.cur.si]; playSnd("wrong", SFX.wrong);
+  const lg = logCur(); if(lg) lg.steals.push({team:i, ok:false});
   if(T(i).status==="sd") eliminate(i);
   else if(S.cfg.stealCost>0) loseHearts(i, S.cfg.stealCost);
   nextStealer();
@@ -1505,7 +1637,7 @@ function fitStage(){
 
 // Would attacking this team right now trigger the gang-up rule? (hit last turn by a different team; steals don't count)
 function wouldGangUp(target){
-  if(!S || S.cur.noShots) return false;
+  if(!S || S.cur.noShots || !C("gangUp", 1)) return false;
   const atk = S.phase==="attack" ? S.cur.attacker : S.cur.shooter;
   const prev = (S.prevAttacks && S.prevAttacks[target]) || [];
   return prev.some(p=>p!==atk) && !S.bonus.includes(target);
@@ -1582,13 +1714,14 @@ function finishGame(){
       <span class="h">${r.t.status==="out"?"OUT":`<img src="${A.heart}" alt="">${r.t.hearts}`}</span></div>`;
   }).join("");
   $("#endscreen").innerHTML = `<h1 class="${winners.length>2?"long":""}">${title}</h1><div class="rank ${S.teams.length>5?"two":""}">${rows}</div>
-    <div class="qrow"><button class="btn big" id="endBack">↶ Back to game</button><button class="btn big good" id="endAgain">Play again</button><button class="btn big" id="endSetup">Setup</button></div>`;
+    <div class="qrow"><button class="btn big" id="endBack">↶ Back to game</button><button class="btn big good" id="endAgain">Play again</button><button class="btn big" id="endSetup">Setup</button><button class="btn big gold" id="endReport">📋 Report</button></div>`;
   showScreen("end");
   // the end screen can be drawn twice by one action; only start the fanfare once
   if(finishGame.state !== S || finishGame.turn !== S.turnNo){ finishGame.state = S; finishGame.turn = S.turnNo; playSnd("victory", SFX.item); }
   $("#endBack").onclick = ()=>{ stopSnd("victory"); S.over=false; if((activeTeams().length<=1 || S.finalEnded) && UNDO.length){ S = JSON.parse(UNDO.pop()); } showScreen("game"); render(); persist(); };
+  $("#endReport").onclick = ()=>{ uiSel(); showReport(); };
   $("#endAgain").onclick = ()=>{ stopSnd("victory"); playSnd("start"); newGame(); };
-  $("#endSetup").onclick = ()=>{ stopSnd("victory"); store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); };
+  $("#endSetup").onclick = ()=>{ stopSnd("victory"); store.del(gameKey()); S=null; showScreen("setup"); renderSetup(); };
 }
 
 function showScreen(n){
@@ -1665,6 +1798,7 @@ $("#menuBtn").onclick = ()=>{ uiSel();
     <div class="row"><button class="btn" data-m="skip">Skip ${esc(T(S.turnTeam).name)}'s turn</button></div>
     <div class="row"><button class="btn" data-m="rules">📜 Rules</button></div>
     <div class="row"><button class="btn" data-m="key">🔑 Answer key</button></div>
+    <div class="row"><button class="btn" data-m="report">📋 Question report</button></div>
     <div class="row"><button class="btn" data-m="remote">📱 Remote control (iPad / computer)</button></div>
     <div class="row"><button class="btn gold" data-m="end">🏆 End game & show winner</button></div>
     <div class="row"><button class="btn bad" data-m="quit">Quit to setup</button></div>
@@ -1672,9 +1806,10 @@ $("#menuBtn").onclick = ()=>{ uiSel();
       if(m==="skip") skipTurn();
       if(m==="rules") showRules();
       if(m==="key") showKey();
+      if(m==="report") showReport();
       if(m==="remote") RemoteHost.openPanel();
       if(m==="end") finishGame();
-      if(m==="quit"){ if(confirmInline()) { stopTimer(); store.del("gb_game"); S=null; showScreen("setup"); renderSetup(); } }
+      if(m==="quit"){ if(confirmInline()) { stopTimer(); store.del(gameKey()); S=null; showScreen("setup"); renderSetup(); } }
     });
 };
 function confirmInline(){ return true; }
@@ -1710,7 +1845,7 @@ function showRules(){
     <li>On your turn, pick a mystery box. Questions: your team has <b>${c.qTime} seconds</b>.</li>
     <li><b>Correct:</b> take a heart from any team, then one player shoots until they miss. Each basket = +1 heart for you <i>or</i> take another heart.</li>
     <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time in turn order. Each team has ${c.stealTime}s to choose steal or pass (running out of time = pass). A team that steals gets a fresh ${c.stealAnswerTime||5}s to answer. Steal attacks don't count toward the gang-up rule. A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes a heart from another team but gets <b>no shots</b>, and turn order doesn't change.</li>
-    <li><b>Gang-up rule:</b> if a team is attacked by one team and then by a different team on the very next turn, they get a <b>bonus turn</b> right away (and keep their normal turn).</li>
+    ${c.gangUp===0 ? "" : `<li><b>Gang-up rule:</b> if a team is attacked by one team and then by a different team on the very next turn, they get a <b>bonus turn</b> right away (and keep their normal turn).</li>`}
     <li><b>Sudden death (0 hearts):</b> you can't attack. A correct answer earns 1 heart back (no shots). A wrong answer, or a wrong steal, means you're <b>OUT</b>.</li>
     <li><b>Items you keep</b> go on your team card. You can hold <b>${c.handLimit??2}</b> at a time (find another and you choose one to throw away) and play only <b>one item per turn</b>.</li>
     <li><b>Shield:</b> no one can attack you until your next turn.</li>
@@ -1728,10 +1863,63 @@ function showRules(){
     <li>Most hearts at the end wins. The last team standing also wins.</li></ul>
     <button class="btn" data-m="close">Close</button></div>`);
 }
+/* ---------- QUESTION REPORT: what was right first time, stolen, or missed by everyone ---------- */
+const TOPIC = {
+  written:"Written questions",
+  highLow:"High / low", sameDiff:"Same / different", upDown:"Up / down", fastSlow:"Tempo", stepsSkips:"Steps / skips",
+  crescDecresc:"Dynamics", meter:"Meter (by ear)", meterSimpleCompound:"Meter (by ear)", meterFull:"Meter (by ear)", articulation:"Articulation",
+  accelRit:"Tempo changes", majorMinorChord:"Chords (by ear)", chordQuality:"Chords (by ear)", triadQualityEar:"Chords (by ear)", triadQualityEar2:"Chords (by ear)",
+  seventhEar:"7th chords (by ear)", triadInversionEar:"Inversions (by ear)",
+  genericIntervalEar:"Intervals (by ear)", qualityIntervalEar:"Intervals (by ear)", intervalBasic:"Intervals (by ear)", intervalAll:"Intervals (by ear)", intervalAP:"Intervals (by ear)",
+  scaleMajorMinor:"Scales (by ear)", scaleType2:"Scales (by ear)", scaleType3:"Scales (by ear)", modeEar:"Modes (by ear)",
+  cadenceBasic:"Cadences", cadence3:"Cadences", cadenceAP:"Cadences", progressionChord:"Progressions", scaleDegreeEnd:"Scale degrees (by ear)",
+  errorDetect2:"Error detection", errorDetect3:"Error detection", errorDetect4:"Error detection",
+  noteName:"Note names", noteName1:"Note names", noteName3:"Note names", noteValue:"Note values", beats:"Rhythm math", beats2:"Rhythm math", beats3:"Rhythm math",
+  countKeySig:"Key signatures", keyName:"Key signatures", keyMajorMinor:"Key signatures", genericInterval:"Intervals (staff)", qualityInterval:"Intervals (staff)", intervalAll_staff:"Intervals (staff)",
+  triad:"Chords (staff)", triadQuality:"Chords (staff)", triadQuality2:"Chords (staff)", seventhChord:"7th chords (staff)", triadInversion:"Inversions (staff)",
+  timeSigType:"Meter (staff)", timeSigType2:"Meter (staff)", scaleDegreeName:"Scale degrees (staff)",
+  romanMajor:"Roman numerals", romanMinor:"Roman numerals", romanInversion:"Roman numerals", secondaryDominant:"Secondary dominants", parallels:"Voice leading"
+};
+const topicOf = lg => { let t = TOPIC[lg.kind] || (lg.kind==="written" ? "Written questions" : "Music questions"); if(lg.staff) t = t.replace("(by ear)", "(staff)"); return t; };
+function reportData(){
+  const done = (S && S.log ? S.log : []).filter(l=>l.result);
+  const firstRight = done.filter(l=>l.result==="correct"), stolen = done.filter(l=>l.result==="stolen"), missed = done.filter(l=>l.result==="missed");
+  const topics = {};
+  done.forEach(l=>{ const t = topicOf(l); topics[t] = topics[t] || {right:0, total:0}; topics[t].total++; if(l.result==="correct") topics[t].right++; });
+  return {done, firstRight, stolen, missed, topics};
+}
+function reportText(){
+  const d = reportData(), name = i => S.teams[i] ? S.teams[i].name : "?";
+  const lines = [`Grudge Ball report — ${S.profile||PROFILES.active} — ${new Date().toLocaleDateString()} — ${S.cfg.set || ""}`,
+    `${d.done.length} questions: ${d.firstRight.length} right the first time, ${d.stolen.length} stolen, ${d.missed.length} missed by everyone`, "",
+    "BY TOPIC (right the first time / asked)"];
+  Object.entries(d.topics).sort((a,b)=>(a[1].right/a[1].total)-(b[1].right/b[1].total)).forEach(([t,v])=>lines.push(`- ${t}: ${v.right}/${v.total}`));
+  if(d.missed.length){ lines.push("", "MISSED BY EVERYONE"); d.missed.forEach(l=>lines.push(`- ${l.q} → ${l.a}  [${topicOf(l)}]`)); }
+  if(d.stolen.length){ lines.push("", "STOLEN (first team missed it)"); d.stolen.forEach(l=>lines.push(`- ${l.q} → ${l.a}  [${name(l.team)} missed; ${name(l.steals.find(x=>x.ok).team)} stole]`)); }
+  return lines.join("\n");
+}
+function showReport(){
+  if(!S){ toast("No game yet"); return; }
+  const d = reportData(), name = i => esc(S.teams[i] ? S.teams[i].name : "?");
+  const rows = Object.entries(d.topics).sort((a,b)=>(a[1].right/a[1].total)-(b[1].right/b[1].total))
+    .map(([t,v])=>`<tr><td>${esc(t)}</td><td>${v.right} / ${v.total}</td><td><span class="bar" style="width:${Math.round(120*v.right/v.total)}px;background:${v.right/v.total<0.5?"var(--red)":v.right/v.total<0.75?"var(--gold)":"var(--good)"}"></span></td></tr>`).join("");
+  const item = (l, extra) => `<div class="qitem"><b>${esc(l.q)}</b> <span class="tag">${esc(topicOf(l))}</span><br><span style="color:var(--good)">${esc(l.a||"")}</span>${extra?`<br><small>${extra}</small>`:""}</div>`;
+  const m = modal(`<div class="card report"><h2>📋 QUESTION REPORT — ${esc(S.profile||PROFILES.active)}</h2>
+    <p style="margin-top:0"><b>${d.done.length}</b> questions answered: <b style="color:var(--good)">${d.firstRight.length}</b> right the first time · <b style="color:var(--gold)">${d.stolen.length}</b> stolen · <b style="color:var(--red)">${d.missed.length}</b> missed by everyone</p>
+    ${d.done.length ? `<h3>BY TOPIC (weakest first)</h3><table><tr><th>Topic</th><th>Right first time</th><th></th></tr>${rows}</table>` : `<p>No questions answered yet.</p>`}
+    ${d.missed.length ? `<h3>MISSED BY EVERYONE — RETEACH</h3>${d.missed.map(l=>item(l)).join("")}` : ""}
+    ${d.stolen.length ? `<h3>STOLEN</h3>${d.stolen.map(l=>item(l, `${name(l.team)} missed it; ${name(l.steals.find(x=>x.ok).team)} stole it`)).join("")}` : ""}
+    <div class="row"><button class="btn good" data-m="keep" id="repCopy">📋 Copy report</button><button class="btn ghost" data-m="close">Close</button></div></div>`);
+  m.querySelector("#repCopy").onclick = async ()=>{
+    const txt = reportText();
+    try{ await navigator.clipboard.writeText(txt); toast("Report copied — paste it anywhere", "green"); }
+    catch(e){ const ta = document.createElement("textarea"); ta.value = txt; m.querySelector(".card").appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Report copied", "green"); }catch(e2){ toast("Select the text below and copy it"); } }
+  };
+}
 function showKey(){
   const seen = new Set();
   const sig = o => o.q + "|" + o.a + "|" + (o.media ? JSON.stringify(o.media) : "");
-  const qs = (S ? S.boxes.filter(b=>b.kind==="q") : parseSet(SETS[CFG.set]).map(o=>({q:o.q,a:o.a}))).filter(o=>!seen.has(sig(o)) && seen.add(sig(o)));
+  const qs = (S ? S.boxes.filter(b=>b.kind==="q") : parseSet(setText(CFG.set)).map(o=>({q:o.q,a:o.a}))).filter(o=>!seen.has(sig(o)) && seen.add(sig(o)));
   const tag = o => !o.media ? "" : o.media.type==="listen" ? `🎧 ` : `🎼 `;
   const extra = (o,k) => !o.media ? "" : o.media.type==="staff" ? `<div class="staffbox mini" data-key="${k}"></div>`
     : o.media.staff ? `<div class="staffbox mini" data-key="${k}"></div><button class="minibtn" data-m="keep" data-play="${k}">▶ Play</button>`
@@ -1746,6 +1934,17 @@ function showKey(){
 }
 function editSets(){
   let name = CFG.set;
+  if(isSheetSet(name)){
+    const m = modal(`<div class="card"><h2>📄 ${esc(name)}</h2>
+      <p style="margin-top:0">This set comes from your Google Sheet. Edit it in the sheet, then tap <b>↻ Sync</b> here.</p>
+      <div class="qcount">${parseSet(setText(name)).length} questions</div>
+      <div class="row"><button class="btn good" data-m="keep" id="shOpen">Open the sheet</button><button class="btn" data-m="keep" id="shSync">↻ Sync</button>
+        <button class="btn" data-m="keep" id="shCopy">Copy to this device</button><button class="btn ghost" data-m="close">Close</button></div></div>`);
+    m.querySelector("#shOpen").onclick = ()=>window.open(`https://docs.google.com/spreadsheets/d/${SHEET.id}/edit`, "_blank");
+    m.querySelector("#shSync").onclick = async ()=>{ await syncSheet(false); };
+    m.querySelector("#shCopy").onclick = ()=>{ const n = uniqueName(name + " (my copy)"); SETS[n] = setText(name); saveSets(); CFG.set = n; saveCfg(); $("#modalRoot").innerHTML = ""; renderSetup(); toast("Copied — now editable on this device", "green"); };
+    return;
+  }
   const m = modal(`<div class="card"><h2>EDIT QUESTIONS</h2>
     <p style="margin-top:0">Write one question per line: <b>Question | Answer</b>. Or copy columns A and B from your Grudgeball Questions sheet and paste them here (the header row and extra columns are skipped). Make a separate set for each grade or unit.</p>
     <div class="row"><input type="text" id="setName" style="flex:1"> <span class="qcount" id="liveCount"></span></div>
@@ -1784,7 +1983,7 @@ function editSets(){
     SETS[newName] = tx.value; name = newName; CFG.set = newName; saveSets(); saveCfg();
     $("#modalRoot").innerHTML=""; renderSetup(); toast("Saved "+esc(newName), "green"); };
 }
-function uniqueName(base){ let n=base, k=2; while(SETS[n]) n = `${base} ${k++}`; return n; }
+function uniqueName(base){ let n=base, k=2; while(SETS[n] || isSheetSet(n)) n = `${base} ${k++}`; return n; }
 
 /* ============================================================
    SETUP SCREEN
@@ -1798,9 +1997,13 @@ function renderSetup(){
   $("#teamInputs").innerHTML = Array.from({length:CFG.teams},(_,i)=>
     `<div class="ti"><span class="sw" style="background:${TEAM_COLORS[i]}"></span><input data-name="${i}" value="${esc(CFG.names[i]??DEFAULT_NAMES[i])}" maxlength="18"></div>`).join("");
   document.querySelectorAll("[data-seg]").forEach(sg=>{ sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.v===CFG[sg.dataset.seg])); });
-  $("#setSelect").innerHTML = Object.keys(SETS).map(n=>`<option ${n===CFG.set?"selected":""}>${esc(n)}</option>`).join("");
-  const qn = parseSet(SETS[CFG.set]).length;
-  const withA = parseSet(SETS[CFG.set]).filter(o=>o.a).length;
+  const sheetNames = (SHEET.order||[]).filter(n=>SHEET.sets[n]!=null), devNames = Object.keys(SETS).filter(n=>!sheetNames.includes(n));
+  const opt = n => `<option value="${esc(n)}" ${n===CFG.set?"selected":""}>${esc(n)}</option>`;
+  $("#setSelect").innerHTML = (sheetNames.length ? `<optgroup label="📄 From your Google Sheet">${sheetNames.map(opt).join("")}</optgroup><optgroup label="On this device">${devNames.map(opt).join("")}</optgroup>` : devNames.map(opt).join(""));
+  $("#sheetStatus").textContent = SHEET.id ? "📄 " + sheetStatus() : "";
+  $("#profileSelect").innerHTML = Object.keys(PROFILES.list).map(n=>`<option value="${esc(n)}" ${n===PROFILES.active?"selected":""}>${esc(n)}</option>`).join("");
+  const qn = parseSet(setText(CFG.set)).length;
+  const withA = parseSet(setText(CFG.set)).filter(o=>o.a).length;
   $("#setCount").textContent = `${qn} questions${qn&&withA<qn?` (${qn-withA} without answers)`:""}`;
   $("#itemTable").innerHTML = ITEM_ORDER.map(k=>{ const it=ITEMS[k], c=CFG.items[k];
       return `<div class="itile"><img src="${it.icon}" alt=""><div class="nm">${esc(it.name)}${it.max?` <span class="cap">(max ${it.max})</span>`:""}</div>
@@ -1816,12 +2019,12 @@ function renderSetup(){
     (bp.repeats ? ` — add ${bp.repeats} more question${bp.repeats>1?"s":""} to avoid repeats` : "");
   $("#startBtn").disabled = qn===0 && !(bp.nListen+bp.nStaff);
   if(typeof RemoteHost!=="undefined") RemoteHost.sync();
-  const saved = store.get("gb_game", null);
-  $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ A game is in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
+  const saved = store.get(gameKey(), null);
+  $("#resumeBox").innerHTML = saved && saved.S && !saved.S.over ? `<div class="resume"><span>⏸ ${esc(PROFILES.active)} has a game in progress (${saved.S.teams.map(t=>esc(t.name)).join(", ")}).</span>
     <span><button class="btn gold" id="resumeBtn">Resume game</button> <button class="btn ghost" id="discardBtn">Discard</button></span></div>` : "";
   if($("#resumeBtn")){
     $("#resumeBtn").onclick = ()=>{ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} preloadSounds(); playSnd("start"); S = saved.S; UNDO = saved.UNDO||[]; if(S.phase==="question"||S.phase==="steal"){ const tt = phaseTime(); timerState={left:tt,total:tt,running:false}; } showScreen("game"); render(); };
-    $("#discardBtn").onclick = ()=>{ store.del("gb_game"); renderSetup(); };
+    $("#discardBtn").onclick = ()=>{ store.del(gameKey()); renderSetup(); };
   }
 }
 $("#setup").addEventListener("click", e=>{
@@ -1848,6 +2051,41 @@ try{ $("#itemsCard").open = !!store.get("gb_items_open", false); }catch(e){}
 $("#itemsCard").addEventListener("toggle", ()=>{ store.set("gb_items_open", $("#itemsCard").open); renderSetup(); });
 $("#setSelect").onchange = e=>{ CFG.set = e.target.value; saveCfg(); renderSetup(); };
 $("#editSetBtn").onclick = editSets;
+$("#sheetBtn").onclick = ()=>{ uiSel(); openSheetPanel(); };
+$("#sheetSyncBtn").onclick = ()=>{ uiSel(); if(!SHEET.id){ openSheetPanel(); return; } toast("📄 Syncing…"); syncSheet(false); };
+$("#profileSelect").onchange = e=>switchProfile(e.target.value);
+function askName(title, value, onOK){
+  const m = modal(`<div class="card"><h2>${esc(title)}</h2><div class="row"><input type="text" id="askIn" style="flex:1" maxlength="30" value="${esc(value||"")}"></div>
+    <div class="row"><button class="btn good" data-m="keep" id="askOK">OK</button><button class="btn ghost" data-m="close">Cancel</button></div></div>`);
+  const inp = m.querySelector("#askIn"); setTimeout(()=>{ inp.focus(); inp.select(); }, 50);
+  const go = ()=>{ const v = inp.value.trim(); if(!v) return; $("#modalRoot").innerHTML = ""; onOK(v); };
+  m.querySelector("#askOK").onclick = go; inp.addEventListener("keydown", e=>{ if(e.key==="Enter") go(); });
+}
+$("#profNew").onclick = ()=>{ uiSel(); askName("NEW CLASS (starts with the current settings)", "", n=>{
+  if(PROFILES.list[n]){ toast("That class already exists"); return; }
+  saveCfg(); PROFILES.list[n] = JSON.parse(JSON.stringify(CFG)); switchProfile(n); }); };
+$("#profRename").onclick = ()=>{ uiSel(); askName("RENAME THIS CLASS", PROFILES.active, n=>{
+  if(n===PROFILES.active) return; if(PROFILES.list[n]){ toast("That name is taken"); return; }
+  const old = PROFILES.active, g = store.get(gameKey(), null);
+  PROFILES.list[n] = PROFILES.list[old]; delete PROFILES.list[old]; PROFILES.active = n;
+  if(g){ store.set(gameKey(), g); store.del("gb_game::" + old); }
+  saveCfg(); renderSetup(); }); };
+$("#profDel").onclick = ()=>{ uiSel();
+  if(Object.keys(PROFILES.list).length<=1){ toast("You need at least one class"); return; }
+  modal(`<div class="card"><h2>DELETE “${esc(PROFILES.active)}”?</h2><p style="margin-top:0">Its settings and any game in progress are removed. Question sets are not affected.</p>
+    <div class="row"><button class="btn bad" data-m="del">Delete class</button><button class="btn ghost" data-m="close">Cancel</button></div></div>`, v=>{
+    if(v!=="del") return; store.del(gameKey()); delete PROFILES.list[PROFILES.active];
+    PROFILES.active = Object.keys(PROFILES.list)[0]; CFG = normCfg(PROFILES.list[PROFILES.active]); if(!setText(CFG.set)) CFG.set = allSetNames()[0]; saveCfg(); renderSetup(); }); };
+// rule presets
+$("#presetSimple").onclick = ()=>{ uiSel();
+  const on = ["shield","reed","metronome","shots","scale"];
+  ITEM_ORDER.forEach(k=>{ CFG.items[k].count = on.includes(k) ? 1 : 0; });
+  Object.assign(CFG, { gangUp:0, handLimit:1, qTime:Math.max(CFG.qTime,20), stealTime:7, stealAnswerTime:7, leaderTax:0, underdog:1 });
+  saveCfg(); renderSetup(); toast("🐣 Simple rules on", "green"); };
+$("#presetFull").onclick = ()=>{ uiSel();
+  CFG.items = JSON.parse(JSON.stringify(DEFAULT_CFG.items));
+  Object.assign(CFG, { gangUp:1, handLimit:2, stealTime:5, stealAnswerTime:5, leaderTax:1, underdog:1 });
+  saveCfg(); renderSetup(); toast("🔥 Full rules on", "green"); };
 $("#rulesBtn").onclick = showRules;
 $("#sampleBtn").onclick = e=>{ e.stopPropagation(); if(typeof MUSIC==="undefined") return;
   try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); }catch(err){}
@@ -1865,7 +2103,7 @@ document.addEventListener("contextmenu", e=>{ if(!e.target.closest("input,textar
 const REMOTE_MODE = new URLSearchParams(location.search).has("remote");
 renderSetup();
 if(REMOTE_MODE){ $("#setup").classList.add("hidden"); $("#splash").remove(); }
-else showScreen("setup");
+else { showScreen("setup"); if(SHEET.id) syncSheet(true); }
 // TAP TO START: the one tap browsers require before sound, made part of the game
 (function(){
   const sp = $("#splash"); if(!sp) return; let done = false;

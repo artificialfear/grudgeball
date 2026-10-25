@@ -31,6 +31,23 @@ A team review game for band class, made to run on a classroom viewboard with a m
 
 All of these can be adjusted on the setup screen.
 
+## Classes (profiles)
+The **CLASS** bar at the top of setup keeps a separate profile for each class: team names, timers, question set, music level, items and rules. Each class also keeps **its own game in progress**, so 1st Block's paused game doesn't block 3rd Block. **+ New class** copies the current settings. Profiles are saved on that device. The remote can switch classes from the setup screen.
+
+## Question report
+At the end of a game (📋 Report), or anytime from ☰ → Question report: how many questions each class got right the first time, which were stolen, which nobody got (your reteach list), and a breakdown by topic, weakest first (written questions, intervals, cadences, Roman numerals, and so on). **Copy report** puts a plain-text version on the clipboard to paste into notes or an email.
+
+## Rules presets
+**🐣 Simple rules** (for beginners): five items (Shield, Reed, Metronome, Free Shots, Traumatic Scale), no gang-up rule, hold 1 item, 20 seconds to answer, 7 seconds to steal, no leader tax. **🔥 Full rules** turns everything back on. The gang-up rule also has its own on/off switch.
+
+## Question sets from a Google Sheet
+Keep sets in a Google Sheet and every board picks up the latest version:
+1. Share the sheet: **Share → General access → Anyone with the link → Viewer**.
+2. Add a tab named **Game Sets** with "Game Sets" in A1 and the names of the tabs to load listed under it.
+3. Each listed tab: questions in column A, answers in column B (a header row and extra columns are fine).
+4. On setup, tap **📄 Google Sheet**, paste the link and tap **Connect**. After editing the sheet, tap **↻ Sync**.
+Sheet sets are cached on the device, so the game still works offline. To share sets with another director, send them the sheet link; they connect it the same way (or make a copy to edit their own).
+
 ## Remote control (iPad or computer)
 Run the game from an iPad or a computer while it shows on the viewboard. The board still works by touch.
 1. On the board, tap **📱** (top right in a game, or **📱 Remote** on the setup screen). A QR code, a link and a 4-letter room code appear.
