@@ -53,8 +53,7 @@ input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:t
 #setup{position:fixed;inset:0;overflow:auto;background:linear-gradient(rgba(10,0,4,.92),rgba(10,0,4,.7) 40%,rgba(10,0,4,.9)),var(--lair) center bottom/cover fixed;padding:calc(var(--u)*2) calc(var(--u)*3) calc(var(--u)*6)}
 #setup h1{font-family:"Press Start 2P";font-size:calc(var(--u)*5.2);margin:calc(var(--u)*1) 0 calc(var(--u)*.4);text-align:center;color:#fff;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
 #setup .tag{text-align:center;color:var(--dim);font-size:calc(var(--u)*1.8);margin-bottom:calc(var(--u)*2)}
-.setup-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(var(--u)*2);max-width:1500px;margin:0 auto}
-@media (max-width:900px){.setup-grid{grid-template-columns:1fr}}
+
 .card{background:rgba(27,11,20,.92);border:3px solid var(--line);border-radius:14px;padding:calc(var(--u)*1.6)}
 .card h2{font-family:"Press Start 2P";font-size:calc(var(--u)*1.5);margin:0 0 calc(var(--u)*1.2);color:var(--gold)}
 .row{display:flex;align-items:center;gap:calc(var(--u)*1);margin:calc(var(--u)*.7) 0;flex-wrap:wrap}
@@ -253,9 +252,22 @@ header.top .hbtns.left{justify-content:flex-start}
 .finalpill{display:inline-block;margin-right:14px;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);background:#fff;color:#000;padding:5px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1.2s infinite}
 #finalBtn.on{background:#fff;color:#000;border-color:#fff}
 .keylist li .minibtn{margin-top:4px}
-.classbar{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;margin:0 auto calc(var(--u)*1.2);max-width:1100px}
-.classbar label{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:var(--gold)}
-.classbar select{min-width:min(320px,60vw);font-size:calc(var(--u)*1.9)}
+/* setup: one column — the everyday card on top, settings in collapsible sections below */
+.setup-main{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:calc(var(--u)*1.2)}
+.quickcard{display:flex;flex-direction:column;gap:calc(var(--u)*.8)}
+.qrow2{display:flex;align-items:center;gap:calc(var(--u)*1);flex-wrap:wrap}
+.qrow2 .qlbl{font-family:"Press Start 2P";font-size:calc(var(--u)*1.25);color:var(--gold);width:calc(var(--u)*15);flex:none}
+.qrow2 select{flex:1;min-width:min(260px,50vw);font-size:calc(var(--u)*1.9)}
+.btn.icon{min-width:calc(var(--u)*5);padding-left:calc(var(--u)*.9);padding-right:calc(var(--u)*.9)}
+.qinfo{padding-left:calc(var(--u)*16);min-height:1em}
+@media (max-width:700px){ .qinfo{padding-left:0} .qrow2 .qlbl{width:auto} }
+.quickcard .start-wrap{margin-top:calc(var(--u)*.6)}
+.quickcard .resume{margin:0}
+.presetrow{margin:calc(var(--u)*.7) 0} .presetrow .hint{font-size:calc(var(--u)*1.3);color:var(--dim);margin-top:6px}
+.presets{display:flex;gap:calc(var(--u)*1);flex-wrap:wrap}
+.presets .btn.sel{background:#7a5a00;border-color:var(--gold);box-shadow:0 0 12px #ffd40066}
+.setup-main details.collapsible:not([open]){padding-top:calc(var(--u)*.7);padding-bottom:calc(var(--u)*.7)}
+.setup-main details.collapsible>summary{min-height:calc(var(--u)*3.6)}
 .report table{width:100%;border-collapse:collapse;margin:6px 0 12px} .report td,.report th{padding:5px 8px;border-bottom:1px solid #ffffff1f;text-align:left;font-size:16px}
 .report th{color:var(--gold);font-weight:700} .report .bar{display:inline-block;height:10px;border-radius:5px;background:var(--good);vertical-align:middle}
 .report .qitem{margin:6px 0;padding:8px 10px;border-radius:8px;background:#0006;font-size:16px} .report .qitem b{font-family:"Atkinson Hyperlegible",Verdana,sans-serif}
@@ -379,16 +391,31 @@ header.top .hbtns.left{justify-content:flex-start}
   <button class="topbtn" id="setupRemoteBtn" style="position:fixed;top:14px;left:16px;z-index:5" title="Run the game from an iPad or computer">📱 Remote</button>
   <h1>GRUDGE BALL</h1>
   <div class="tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
-  <div class="classbar"><label>CLASS</label><select id="profileSelect" class="setup-select"></select>
-    <button class="btn" id="profNew">+ New class</button><button class="btn" id="profRename">Rename</button><button class="btn bad" id="profDel">Delete</button></div>
-  <div id="resumeBox"></div>
-  <div class="setup-grid">
-    <div class="card">
-      <h2>TEAMS</h2>
+  <div class="setup-main">
+    <!-- the everyday part: always visible -->
+    <div class="card quickcard">
+      <div class="qrow2"><label class="qlbl">CLASS</label><select id="profileSelect" class="setup-select"></select>
+        <button class="btn icon" id="profNew" title="New class (copies these settings)">＋</button><button class="btn icon" id="profRename" title="Rename this class">✎</button><button class="btn icon bad" id="profDel" title="Delete this class">🗑</button></div>
+      <div class="qrow2"><label class="qlbl">QUESTIONS</label><select id="setSelect" class="setup-select"></select>
+        <button class="btn" id="editSetBtn">Edit</button><button class="btn icon" id="sheetBtn" title="Question sets from a Google Sheet">📄</button><button class="btn icon" id="sheetSyncBtn" title="Sync sets from the Google Sheet">↻</button></div>
+      <div class="qcount qinfo"><span id="setCount"></span> <span id="sheetStatus"></span></div>
+      <div id="resumeBox"></div>
+      <div class="start-wrap"><button class="btn big good px" id="startBtn">START GAME</button>
+        <div class="qcount" id="boxSummary" style="margin-top:10px"></div></div>
+    </div>
+
+    <details class="card collapsible" data-sec="teams">
+      <summary><h2>TEAMS</h2><span class="sumline" id="sumTeams"></span><span class="chev">▼</span></summary>
       <div class="row"><label>Number of teams</label>
         <div class="stepper"><button data-step="teams:-1">−</button><span id="v_teams"></span><button data-step="teams:1">+</button></div></div>
       <div class="team-inputs" id="teamInputs"></div>
-      <h2 style="margin-top:22px">HEARTS & TIMERS</h2>
+      <div class="row"><label>Players per team (shooter rotation)</label>
+        <div class="stepper"><button data-step="players:-1">−</button><span id="v_players"></span><button data-step="players:1">+</button></div>
+        <div class="hint">Students number off 1, 2, 3… and the game calls who shoots next. 0 = off.</div></div>
+    </details>
+
+    <details class="card collapsible" data-sec="timers">
+      <summary><h2>HEARTS & TIMERS</h2><span class="sumline" id="sumTimers"></span><span class="chev">▼</span></summary>
       <div class="row"><label>Starting hearts</label>
         <div class="stepper"><button data-step="startHearts:-1">−</button><span id="v_startHearts"></span><button data-step="startHearts:1">+</button></div></div>
       <div class="row"><label>Max hearts</label>
@@ -397,46 +424,44 @@ header.top .hbtns.left{justify-content:flex-start}
         <div class="stepper"><button data-step="qTime:-5">−</button><span id="v_qTime"></span><button data-step="qTime:5">+</button></div></div>
       <div class="row"><label>Seconds to decide: steal or pass</label>
         <div class="stepper"><button data-step="stealTime:-1">−</button><span id="v_stealTime"></span><button data-step="stealTime:1">+</button></div>
-        <div class="hint">If time runs out, that team automatically passes.</div></div>
+        <div class="hint">Running out of time = pass.</div></div>
       <div class="row"><label>Seconds to answer a steal</label>
         <div class="stepper"><button data-step="stealAnswerTime:-1">−</button><span id="v_stealAnswerTime"></span><button data-step="stealAnswerTime:1">+</button></div></div>
-      <div class="row"><label>Wrong answer on your own turn costs</label>
-        <div class="seg" data-seg="wrongCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div>
-        <div class="hint">Sudden-death teams are out on a wrong answer either way.</div></div>
-      <div class="row"><label>Wrong steal costs</label>
-        <div class="seg" data-seg="stealCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div></div>
-    </div>
-    <div class="card">
-      <h2>QUESTIONS</h2>
-      <div class="row"><select id="setSelect" class="setup-select" style="flex:1"></select>
-        <button class="btn" id="editSetBtn">Edit questions</button></div>
-      <div class="qcount" id="setCount"></div>
-      <div class="row"><button class="btn" id="sheetBtn">📄 Google Sheet</button><button class="btn" id="sheetSyncBtn" title="Reload sets from the sheet">↻ Sync</button><span class="qcount" id="sheetStatus" style="flex:1"></span></div>
+    </details>
+
+    <details class="card collapsible" data-sec="music">
+      <summary><h2>BOARD & MUSIC QUESTIONS</h2><span class="sumline" id="sumMusic"></span><span class="chev">▼</span></summary>
       <div class="row"><label>Mystery boxes on the board</label>
         <div class="stepper"><button data-step="boxCount:-10">−</button><span id="v_boxCount"></span><button data-step="boxCount:10">+</button></div>
-        <div class="hint">10 per row. Big question sets get a random batch each game; small ones repeat a few questions to fill the board.</div></div>
-      <h2 style="margin-top:22px">MUSIC QUESTIONS</h2>
+        <div class="hint">10 per row. Big sets get a random batch each game; small ones repeat a few questions.</div></div>
       <div class="row"><label>🎧 Listening questions per game</label>
         <div class="stepper"><button data-step="listenCount:-1">−</button><span id="v_listenCount"></span><button data-step="listenCount:1">+</button></div></div>
       <div class="row"><label>🎼 Staff (notation) questions per game</label>
         <div class="stepper"><button data-step="staffCount:-1">−</button><span id="v_staffCount"></span><button data-step="staffCount:1">+</button></div></div>
       <div class="row"><label>Question style</label>
         <div class="seg" data-seg="musicTrack"><button data-v="0">Auto</button><button data-v="1">Band</button><button data-v="2">Theory</button></div>
-        <div class="hint">Theory = AP-style ear training (intervals, chords, cadences, modes, meter, error detection) and theory reading. Auto picks Theory for "Theory" sets.</div></div>
+        <div class="hint">Theory = AP-style ear training and theory reading. Auto picks Theory for "Theory" sets.</div></div>
       <div class="row"><label>Music question level</label>
         <div class="seg" data-seg="musicLevel"><button data-v="0">Auto</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button></div>
-        <div class="hint"><span id="levelHint"></span> New questions are made every game. <button class="minibtn" id="sampleBtn" type="button">🔊 Test speakers</button></div></div>
-      <h2 style="margin-top:22px">RULES</h2>
-      <div class="row"><label>Preset</label><button class="btn" id="presetSimple">🐣 Simple rules</button><button class="btn" id="presetFull">🔥 Full rules</button>
-        <div class="hint">Simple (beginners): 5 items (Shield, Reed, Metronome, Free Shots, Traumatic Scale), no gang-up rule, hold 1 item, 20 s to answer, 7 s to steal, no leader tax. Full: everything on.</div></div>
+        <div class="hint"><span id="levelHint"></span> New questions every game.</div></div>
+      <div class="row"><button class="btn ghost" id="sampleBtn" type="button">🔊 Test speakers</button></div>
+    </details>
+
+    <details class="card collapsible" data-sec="rules">
+      <summary><h2>RULES</h2><span class="sumline" id="sumRules"></span><span class="chev">▼</span></summary>
+      <div class="presetrow">
+        <div class="presets"><button class="btn" id="presetSimple">🐣 Simple rules</button><button class="btn" id="presetFull">🔥 Full rules</button></div>
+        <div class="hint">Simple (beginners): 5 items, no gang-up rule, hold 1 item, 20 s to answer, 7 s to steal, no leader tax. Full: everything on.</div>
+      </div>
       <div class="row"><label>Gang-up rule (bonus turn when hit two turns in a row)</label>
         <div class="seg" data-seg="gangUp"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
-      <h2 style="margin-top:22px">FAIRNESS</h2>
+      <div class="row"><label>Wrong answer on your own turn costs</label>
+        <div class="seg" data-seg="wrongCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div>
+        <div class="hint">Sudden-death teams are out on a wrong answer either way.</div></div>
+      <div class="row"><label>Wrong steal costs</label>
+        <div class="seg" data-seg="stealCost"><button data-v="0">0 hearts</button><button data-v="1">1 heart</button></div></div>
       <div class="row"><label>Items a team can hold</label>
         <div class="stepper"><button data-step="handLimit:-1">−</button><span id="v_handLimit"></span><button data-step="handLimit:1">+</button></div></div>
-      <div class="row"><label>Players per team (shooter rotation)</label>
-        <div class="stepper"><button data-step="players:-1">−</button><span id="v_players"></span><button data-step="players:1">+</button></div>
-        <div class="hint">Students number off 1, 2, 3… and the game calls who shoots next. Set to 0 to turn off.</div></div>
       <div class="row"><label>Underdog bonus</label>
         <div class="seg" data-seg="underdog"><button data-v="0">Off</button><button data-v="1">On</button></div>
         <div class="hint">Last place gets +1 heart when they open an item box.</div></div>
@@ -445,16 +470,15 @@ header.top .hbtns.left{justify-content:flex-start}
         <div class="hint">A team at max hearts can't collect items — they pick again.</div></div>
       <div class="row"><label>Action animations</label>
         <div class="seg" data-seg="anims"><button data-v="0">Off</button><button data-v="1">On</button></div>
-        <div class="hint">Hits, shields, revives and other item effects play over the team cards. Turn off if the board lags.</div></div>
-      <div class="row" style="margin-top:14px"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
-    </div>
-    <details class="card wide collapsible" id="itemsCard">
+        <div class="hint">Turn off if the board lags.</div></div>
+      <div class="row"><button class="btn ghost" id="rulesBtn">📜 Rules as the app runs them</button></div>
+    </details>
+
+    <details class="card collapsible" id="itemsCard" data-sec="items">
       <summary><h2>MYSTERY ITEMS</h2><span class="sumline" id="itemsSummary"></span><span class="chev">▼</span></summary>
       <div class="items-grid" id="itemTable"></div>
     </details>
   </div>
-  <div class="start-wrap"><button class="btn big good px" id="startBtn">START GAME</button>
-    <div class="qcount" id="boxSummary" style="margin-top:10px"></div></div>
 </section>
 
 <!-- ================= GAME ================= -->
@@ -5082,6 +5106,10 @@ function uniqueName(base){ let n=base, k=2; while(SETS[n] || isSheetSet(n)) n = 
    SETUP SCREEN
 ============================================================ */
 const LIMITS = { teams:[2,8], startHearts:[1,12], maxHearts:[1,20], qTime:[5,120], stealTime:[2,30], stealAnswerTime:[2,60], handLimit:[1,5], players:[0,15], boxCount:[10,60], listenCount:[0,20], staffCount:[0,20], thListen:[0,20], thStaff:[0,20] };
+function updateTeamSummary(){
+  const names = Array.from({length:CFG.teams},(_,i)=>((CFG.names[i]||"").trim())||DEFAULT_NAMES[i]);
+  $("#sumTeams").textContent = `${CFG.teams} teams: ${names.join(", ")}${CFG.players?` · shooters 1–${CFG.players}`:""}`;
+}
 function renderSetup(){
   ["teams","startHearts","maxHearts","qTime","stealTime","stealAnswerTime","handLimit","players","boxCount"].forEach(k=>{ $("#v_"+k).textContent = CFG[k]; });
   $("#v_listenCount").textContent = trackCount("listen"); $("#v_staffCount").textContent = trackCount("staff");
@@ -5104,7 +5132,16 @@ function renderSetup(){
       <div class="seg" data-iafter="${k}" title="After it's found"><button data-v="again" class="${c.after==="again"?"on":""}">Pick again</button><button data-v="end" class="${c.after==="end"?"on":""}">Ends turn</button></div></div></div>`; }).join("");
   const items = ITEM_ORDER.reduce((s,k)=>s+CFG.items[k].count,0);
   const kinds = ITEM_ORDER.filter(k=>CFG.items[k].count>0).length;
-  $("#itemsSummary").textContent = `${items} item box${items===1?"":"es"} · ${kinds} of ${ITEM_ORDER.length} item types on — tap to ${$("#itemsCard").open?"hide":"change"}`;
+  $("#itemsSummary").textContent = `${items} item box${items===1?"":"es"} · ${kinds} of ${ITEM_ORDER.length} item types on`;
+  // one-line summaries so collapsed sections still show what's set
+  updateTeamSummary();
+  $("#sumTimers").textContent = `${CFG.startHearts} hearts (max ${CFG.maxHearts}) · ${CFG.qTime} s to answer · ${CFG.stealTime} s to steal`;
+  const lvTxt = (musicTrack()==="theory" ? "Theory " : "Level ") + musicLevel();
+  $("#sumMusic").textContent = `${CFG.boxCount} boxes · ${trackCount("listen")} listening + ${trackCount("staff")} staff · ${lvTxt}`;
+  const simple = CFG.gangUp===0 && CFG.handLimit===1;
+  const full = CFG.gangUp===1 && ITEM_ORDER.every(k=>CFG.items[k].count>0) && CFG.leaderTax===1;
+  $("#presetSimple").classList.toggle("sel", simple); $("#presetFull").classList.toggle("sel", full);
+  $("#sumRules").textContent = `${simple ? "🐣 Simple" : full ? "🔥 Full" : "Custom"} · gang-up ${CFG.gangUp?"on":"off"} · hold ${CFG.handLimit} item${CFG.handLimit===1?"":"s"} · wrong = −${CFG.wrongCost}`;
   const bp = boardPlan(qn);
   const gen = (bp.nListen?` + ${bp.nListen} listening`:"") + (bp.nStaff?` + ${bp.nStaff} staff`:"");
   $("#boxSummary").textContent = !qn && !(bp.nListen+bp.nStaff) ? "Add some questions to start." :
@@ -5137,11 +5174,17 @@ $("#setup").addEventListener("click", e=>{
   if(ia){ CFG.items[ia.parentElement.dataset.iafter].after = ia.dataset.v; saveCfg(); renderSetup(); return; }
 });
 $("#setup").addEventListener("input", e=>{
-  if(e.target.dataset.name!=null){ CFG.names[+e.target.dataset.name] = e.target.value; saveCfg(); }
+  if(e.target.dataset.name!=null){ CFG.names[+e.target.dataset.name] = e.target.value; saveCfg(); updateTeamSummary(); }
 });
 // Mystery Items section: collapsed by default, remembers if you leave it open
-try{ $("#itemsCard").open = !!store.get("gb_items_open", false); }catch(e){}
-$("#itemsCard").addEventListener("toggle", ()=>{ store.set("gb_items_open", $("#itemsCard").open); renderSetup(); });
+// collapsible setup sections: all closed at first, and each remembers if you leave it open
+(function(){
+  const open = store.get("gb_open_secs", {}) || {};
+  document.querySelectorAll("#setup details[data-sec]").forEach(d=>{
+    d.open = !!open[d.dataset.sec];
+    d.addEventListener("toggle", ()=>{ const o = store.get("gb_open_secs", {}) || {}; o[d.dataset.sec] = d.open; store.set("gb_open_secs", o); });
+  });
+})();
 $("#setSelect").onchange = e=>{ CFG.set = e.target.value; saveCfg(); renderSetup(); };
 $("#editSetBtn").onclick = editSets;
 $("#sheetBtn").onclick = ()=>{ uiSel(); openSheetPanel(); };

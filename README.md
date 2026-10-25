@@ -31,8 +31,11 @@ A team review game for band class, made to run on a classroom viewboard with a m
 
 All of these can be adjusted on the setup screen.
 
+## Setup screen
+The top card has what you use every class: the **class**, the **question set** (Edit, 📄 Google Sheet, ↻ Sync) and **START GAME**. Everything else is in collapsible sections (Teams, Hearts & Timers, Board & Music Questions, Rules, Mystery Items). Each shows a one-line summary when closed and remembers whether you left it open.
+
 ## Classes (profiles)
-The **CLASS** bar at the top of setup keeps a separate profile for each class: team names, timers, question set, music level, items and rules. Each class also keeps **its own game in progress**, so 1st Block's paused game doesn't block 3rd Block. **+ New class** copies the current settings. Profiles are saved on that device. The remote can switch classes from the setup screen.
+The **CLASS** row at the top of setup (＋ new, ✎ rename, 🗑 delete) keeps a separate profile for each class: team names, timers, question set, music level, items and rules. Each class also keeps **its own game in progress**, so 1st Block's paused game doesn't block 3rd Block. **+ New class** copies the current settings. Profiles are saved on that device. The remote can switch classes from the setup screen.
 
 ## Question report
 At the end of a game (📋 Report), or anytime from ☰ → Question report: how many questions each class got right the first time, which were stolen, which nobody got (your reteach list), and a breakdown by topic, weakest first (written questions, intervals, cadences, Roman numerals, and so on). **Copy report** puts a plain-text version on the clipboard to paste into notes or an email.

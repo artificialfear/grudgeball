@@ -58,7 +58,7 @@ with sync_playwright() as pw:
     txt=E("reportText()"); check('copy text has class, counts, missed list', '1st Block (8th)' in txt and 'MISSED BY EVERYONE' in txt and 'STOLEN' in txt, txt[:200])
     E("$('#modalRoot').innerHTML=''"); p.click('#endSetup',force=True); p.wait_for_timeout(200)
     # SIMPLE RULES + gang-up off
-    p.click('#presetSimple',force=True); p.wait_for_timeout(100)
+    p.evaluate("document.querySelectorAll('#setup details[data-sec]').forEach(d=>d.open=true)"); p.click('#presetSimple',force=True); p.wait_for_timeout(100)
     check('simple preset: 5 items, no gang-up, hold 1, 20s', E("ITEM_ORDER.filter(k=>CFG.items[k].count>0).sort().join()")=='metronome,reed,scale,shield,shots' and E("CFG.gangUp")==0 and E("CFG.handLimit")==1 and E("CFG.qTime")>=20)
     E("CFG.teams=4; saveCfg(); renderSetup()"); p.click('#startBtn',force=True); p.wait_for_timeout(200)
     # Red hits Gold, then Blue hits Gold -> no bonus with gang-up off
