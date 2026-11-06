@@ -12,7 +12,7 @@ Paste this into a new chat (or point the session at this file) to pick up where 
 - Everything below is built, tested and pushed. Nothing is half-finished.
 - Core game:
   - hearts, attacks, steals, gang-up rule, sudden death
-  - a correct steal takes 1 heart from the team that missed (no attack choice, no shots; Shield doesn't block it; if that team has 0 hearts the stealer still earns 1)
+  - a miss costs exactly 1 heart, decided after the steal round: a correct steal moves that heart to the stealer (no attack, no shots, Shield doesn't block); if nobody steals, the team that missed loses it
   - 10 items, final round 🏁, undo, ± hearts
   - fairness rules (rotating shooters, underdog bonus, leader tax)
   - action animations
