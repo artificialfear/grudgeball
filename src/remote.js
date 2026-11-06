@@ -35,7 +35,7 @@ function remoteExtraParams(){
   #remoteBtn.on{background:#0b5d2a;border-color:#3dff7a}
   .rboard-note{font-size:14px;color:var(--dim);margin-top:6px}
   /* ---- controller ---- */
-  #remote{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(ellipse at 50% 0%,#3a0d16,var(--bg) 60%);color:#fff;
+  #remote{position:fixed;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(ellipse at 50% 0%,#3a0d16,var(--bg) 60%);color:#fff;
     display:flex;flex-direction:column;font-family:"Pixelify Sans",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none}
   #remote.hidden{display:none}
   .rc-top{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#000a;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
@@ -96,7 +96,7 @@ function remoteExtraParams(){
   .rc-adj{display:flex;gap:6px} .rc-adj button{width:44px;height:40px;border-radius:9px;border:2px solid #fff4;background:#2a1b33;color:#fff;font-size:22px;font-weight:700;cursor:pointer}
   .rc-bottom{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 16px;border-top:2px solid var(--line);background:#000a;position:sticky;bottom:0;z-index:5}
   .rc-bottom .rc-mini{flex:1 1 auto;min-height:48px}
-  .rc-panel{position:absolute;inset:0;background:#0d0612f2;border-radius:12px;padding:16px;z-index:3;overflow-y:auto}
+  .rc-panel{position:absolute;top:0;right:0;bottom:0;left:0;background:#0d0612f2;border-radius:12px;padding:16px;z-index:3;overflow-y:auto}
   .rc-keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px} .rc-keys kbd{font-family:"Press Start 2P";font-size:11px;background:#fff;color:#000;border-radius:5px;padding:4px 6px;text-align:center}
   .rc-toasts{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:20;pointer-events:none;width:min(92vw,560px)}
   .rc-toast{background:#000e;border:2px solid var(--gold);border-radius:10px;padding:8px 14px;font-weight:700;font-size:16px;text-align:center;animation:rcToast 3s forwards}

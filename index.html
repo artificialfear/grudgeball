@@ -27,7 +27,7 @@ input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:t
 .hidden{display:none!important}
 
 /* ---------- TAP TO START ---------- */
-#splash{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center;
+#splash{position:fixed;top:0;right:0;bottom:0;left:0;z-index:45;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center;
   background:radial-gradient(ellipse at 50% 45%,rgba(10,0,4,.15),rgba(10,0,4,.75) 75%),var(--lair) center/cover;transition:opacity .5s}
 #splash.gone{opacity:0;pointer-events:none}
 #splash .sp-inner{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*3);padding:16px}
@@ -50,7 +50,7 @@ input,textarea,select{font-family:inherit;user-select:text;-webkit-user-select:t
 .btn:disabled{opacity:.35;pointer-events:none}
 
 /* ---------- SETUP ---------- */
-#setup{position:fixed;inset:0;overflow:auto;background:linear-gradient(rgba(10,0,4,.92),rgba(10,0,4,.7) 40%,rgba(10,0,4,.9)),var(--lair) center bottom/cover fixed;padding:calc(var(--u)*2) calc(var(--u)*3) calc(var(--u)*6)}
+#setup{position:fixed;top:0;right:0;bottom:0;left:0;overflow:auto;background:linear-gradient(rgba(10,0,4,.92),rgba(10,0,4,.7) 40%,rgba(10,0,4,.9)),var(--lair) center bottom/cover fixed;padding:calc(var(--u)*2) calc(var(--u)*3) calc(var(--u)*6)}
 #setup h1{font-family:"Press Start 2P";font-size:calc(var(--u)*5.2);margin:calc(var(--u)*1) 0 calc(var(--u)*.4);text-align:center;color:#fff;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
 #setup .tag{text-align:center;color:var(--dim);font-size:calc(var(--u)*1.8);margin-bottom:calc(var(--u)*2)}
 
@@ -103,7 +103,7 @@ table.items .ds{font-size:calc(var(--u)*1.25);color:var(--dim)}
 .qcount{font-size:calc(var(--u)*1.5);color:var(--dim)}
 
 /* ---------- GAME ---------- */
-#game{position:fixed;inset:0;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:minmax(0,1fr);background:radial-gradient(ellipse at 50% 30%,#3a0812 0%,#16040a 60%,#0a0205 100%)}
+#game{position:fixed;top:0;right:0;bottom:0;left:0;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:minmax(0,1fr);background:radial-gradient(ellipse at 50% 30%,#3a0812 0%,#16040a 60%,#0a0205 100%)}
 header.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-width:0;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.5);background:linear-gradient(#000a,#0000)}
 header.top .logo{font-family:"Press Start 2P";font-size:calc(var(--u)*2.6);color:#fff;text-shadow:3px 3px 0 #b00000,6px 6px 0 #000;text-align:center;white-space:nowrap}
 header.top .hbtns{display:flex;justify-content:flex-end;gap:calc(var(--u)*1)}
@@ -187,7 +187,7 @@ header.top .hbtns.left{justify-content:flex-start}
 .team .dmg.minus{color:var(--red)}.team .dmg.plus{color:var(--good)}.team .dmg.block{color:var(--cyan);font-size:calc(var(--u)*2)}
 
 /* stage views */
-.view{position:absolute;inset:0;overflow-y:auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.5)}
+.view{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.5)}
 .synth{background:
   linear-gradient(180deg,#1a0a2e 0%,#2a0d3a 45%,#120626 46%,#0b0520 100%)}
 .synth::before{content:"";position:absolute;left:-50%;right:-50%;bottom:0;height:54%;background:
@@ -201,17 +201,24 @@ header.top .hbtns.left{justify-content:flex-start}
 /* auto-fit wrapper: content is scaled down when it would not fit above the team cards */
 .fit{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:inherit;transform-origin:center center}
 .fit.measuring, .fit.measuring *{animation:none!important;transition:none!important}
-.gridwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--u)*1)}
+.gridwrap{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--u)*1)}
 .gridtitle{font-family:"Press Start 2P";font-size:calc(var(--u)*2.4);color:#fff;text-shadow:3px 3px 0 #b00000;margin-bottom:calc(var(--u)*1.2)}
 .boxes{display:grid;gap:calc(var(--u)*.9);justify-content:center}
 .box{position:relative;padding:0;background:transparent url(data:image/png;base64,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) 0 0/400% 100% no-repeat;image-rendering:pixelated;aspect-ratio:1;transition:transform .1s;animation:qbox .82s infinite step-end}
 /* frame timings copied from the original GIF: 140 / 140 / 400 / 140 ms */
 @keyframes qbox{0%{background-position:0% 0}17.07%{background-position:33.333% 0}34.15%{background-position:66.667% 0}82.93%{background-position:100% 0}100%{background-position:100% 0}}
 .box:active{transform:scale(.92)}
+/* Older browsers (Chrome before 88, e.g. some ViewBoard browsers) don't support the aspect-ratio property. Without this the boxes
+   would have no height, the art disappears and the rows of numbers pile on top of each other. */
+@supports not (aspect-ratio: 1 / 1){
+  .box{height:0;padding-top:100%}
+  .mcard{width:calc(var(--u)*30);max-width:44%}
+  .mcard.wide{width:calc(var(--u)*42);max-width:48%}
+}
 .box .n{position:absolute;right:4%;bottom:2%;font-family:"Press Start 2P";font-size:calc(var(--u)*1.1);color:#fff;text-shadow:2px 2px 0 #000}
 .box.opened{animation:none;background:#ffffff10;border:2px dashed #ffffff30;border-radius:8px;pointer-events:none}
-.box.opened img{position:absolute;inset:18%;width:64%;height:64%;object-fit:contain;opacity:.4;image-rendering:pixelated}
-.box.opened .qm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);color:#ffffff44}
+.box.opened img{position:absolute;top:18%;right:18%;bottom:18%;left:18%;width:64%;height:64%;object-fit:contain;opacity:.4;image-rendering:pixelated}
+.box.opened .qm{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*1.6);color:#ffffff44}
 
 /* question */
 .qcard{position:relative;margin-top:calc(var(--u)*3);background:#fff;color:#1a1020;border:calc(var(--u)*1.1) solid var(--gold);box-shadow:0 calc(var(--u)*.9) 0 var(--gold2),0 20px 40px #000a;border-radius:6px;width:min(78%,1300px);min-height:26%;display:flex;align-items:center;justify-content:center;padding:calc(var(--u)*3.4) calc(var(--u)*3) calc(var(--u)*1.6);text-align:center}
@@ -227,7 +234,7 @@ header.top .hbtns.left{justify-content:flex-start}
 .qrow{display:flex;gap:calc(var(--u)*2);align-items:center;justify-content:center;flex-wrap:wrap}
 .timer{position:relative;width:calc(var(--u)*11);height:calc(var(--u)*11);flex:none}
 .timer svg{width:100%;height:100%;transform:rotate(-90deg)}
-.timer .t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*3.4);color:#fff;text-shadow:3px 3px 0 #000}
+.timer .t{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:calc(var(--u)*3.4);color:#fff;text-shadow:3px 3px 0 #000}
 .timer.low .t{color:var(--red);animation:pulse .5s infinite}
 .timer.done .t{color:var(--red);font-size:calc(var(--u)*1.6)}
 .timer.wait .t{font-size:calc(var(--u)*3.6)}
@@ -274,7 +281,7 @@ header.top .hbtns.left{justify-content:flex-start}
 .report .tag{display:inline-block;font-size:12px;padding:2px 6px;border-radius:5px;background:#ffffff22;margin-left:6px}
 .report h3{font-family:"Press Start 2P";font-size:13px;color:var(--gold);margin:14px 0 6px}
 /* action animations */
-#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:44;overflow:hidden}
+#fxLayer{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:44;overflow:hidden}
 .fx1{position:absolute;left:0;top:0;will-change:transform,opacity}
 .fxicon img,.fxheart img,.fxorb img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 10px #fffc) drop-shadow(0 0 22px #ffd40099)}
 .fxorb{border-radius:50%;border:3px solid #fff;background:radial-gradient(circle at 35% 30%,#fff 0 12%,#ff4d4d 30%,#8a0000 100%);display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)*3);color:#fff;text-shadow:2px 2px 0 #000;box-shadow:0 0 18px #ff3b3b,0 0 44px #ff3b3b99}
@@ -339,7 +346,7 @@ header.top .hbtns.left{justify-content:flex-start}
 .choice .or{font-family:"Press Start 2P";font-size:calc(var(--u)*1.3);color:var(--dim)}
 
 /* end */
-#endscreen{position:fixed;inset:0;overflow-y:auto;padding:16px;background:linear-gradient(rgba(10,0,4,.6),rgba(10,0,4,.9)),var(--lair) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2)}
+#endscreen{position:fixed;top:0;right:0;bottom:0;left:0;overflow-y:auto;padding:16px;background:linear-gradient(rgba(10,0,4,.6),rgba(10,0,4,.9)),var(--lair) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2)}
 #endscreen h1{font-family:"Press Start 2P";font-size:calc(var(--u)*4.2);text-align:center;line-height:1.4;margin:0;text-shadow:4px 4px 0 #b00000,8px 8px 0 #000}
 .rank{display:flex;flex-direction:column;gap:10px;min-width:min(90vw,700px)}
 .rank.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:min(94vw,1100px);gap:8px 14px}
@@ -353,7 +360,7 @@ header.top .hbtns.left{justify-content:flex-start}
 .rank .h img{width:calc(var(--u)*3);image-rendering:pixelated}
 
 /* modals / toasts */
-.modal{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{position:fixed;top:0;right:0;bottom:0;left:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal .card{max-width:1100px;width:100%;max-height:92vh;overflow:auto}
 .modal textarea{width:100%;min-height:46vh;background:#0d0408;color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:12px;font-size:calc(var(--u)*1.6);line-height:1.5;font-family:"Pixelify Sans",monospace}
 .modal p,.modal li{font-size:calc(var(--u)*1.6);line-height:1.45}
@@ -4597,7 +4604,7 @@ function renderStage(){
     const r = st.getBoundingClientRect(); const W = Math.max(300,r.width-40), H = Math.max(200,r.height-30);
     const cols = Math.min(10, n), rows = Math.ceil(n/cols);
     const best = {cols, size: Math.min((W-(cols-1)*12)/cols, (H-(rows-1)*12)/rows)};
-    const size = Math.floor(Math.min(best.size, 170));
+    const size = Math.floor(Math.min(best.size*0.95, 170));   // 5% margin: the real gap between boxes grows with screen size
     html = `<div class="gridwrap redsmoke">
       <div class="boxes" style="grid-template-columns:repeat(${best.cols},${size}px)">` +
       S.boxes.map((b,i)=>{
@@ -4916,6 +4923,7 @@ $("#menuBtn").onclick = ()=>{ uiSel();
     <div class="row"><button class="btn" data-m="rules">📜 Rules</button></div>
     <div class="row"><button class="btn" data-m="key">🔑 Answer key</button></div>
     <div class="row"><button class="btn" data-m="report">📋 Question report</button></div>
+    <div class="hint" style="margin-top:10px;opacity:.7">${esc(browserInfo())}</div>
     <div class="row"><button class="btn" data-m="remote">📱 Remote control (iPad / computer)</button></div>
     <div class="row"><button class="btn gold" data-m="end">🏆 End game & show winner</button></div>
     <div class="row"><button class="btn bad" data-m="quit">Quit to setup</button></div>
@@ -5032,6 +5040,13 @@ function showReport(){
     try{ await navigator.clipboard.writeText(txt); toast("Report copied — paste it anywhere", "green"); }
     catch(e){ const ta = document.createElement("textarea"); ta.value = txt; m.querySelector(".card").appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Report copied", "green"); }catch(e2){ toast("Select the text below and copy it"); } }
   };
+}
+// shown in the ☰ menu so a board's browser version is easy to check
+function browserInfo(){
+  const ua = navigator.userAgent, m = /(Chrome|Firefox|Version)\/(\d+)/.exec(ua), name = m ? (m[1]==="Version" ? "Safari" : m[1]) : "Browser";
+  const missing = [];
+  try{ if(!CSS.supports("aspect-ratio", "1 / 1")) missing.push("aspect-ratio"); if(!CSS.supports("inset", "0")) missing.push("inset"); }catch(e){}
+  return `${name} ${m ? m[2] : "?"}${missing.length ? ` · older browser: using fallbacks for ${missing.join(", ")}` : " · all features supported"}`;
 }
 function showKey(){
   const seen = new Set();
@@ -5292,7 +5307,7 @@ function remoteExtraParams(){
   #remoteBtn.on{background:#0b5d2a;border-color:#3dff7a}
   .rboard-note{font-size:14px;color:var(--dim);margin-top:6px}
   /* ---- controller ---- */
-  #remote{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(ellipse at 50% 0%,#3a0d16,var(--bg) 60%);color:#fff;
+  #remote{position:fixed;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(ellipse at 50% 0%,#3a0d16,var(--bg) 60%);color:#fff;
     display:flex;flex-direction:column;font-family:"Pixelify Sans",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none}
   #remote.hidden{display:none}
   .rc-top{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#000a;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
@@ -5353,7 +5368,7 @@ function remoteExtraParams(){
   .rc-adj{display:flex;gap:6px} .rc-adj button{width:44px;height:40px;border-radius:9px;border:2px solid #fff4;background:#2a1b33;color:#fff;font-size:22px;font-weight:700;cursor:pointer}
   .rc-bottom{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 16px;border-top:2px solid var(--line);background:#000a;position:sticky;bottom:0;z-index:5}
   .rc-bottom .rc-mini{flex:1 1 auto;min-height:48px}
-  .rc-panel{position:absolute;inset:0;background:#0d0612f2;border-radius:12px;padding:16px;z-index:3;overflow-y:auto}
+  .rc-panel{position:absolute;top:0;right:0;bottom:0;left:0;background:#0d0612f2;border-radius:12px;padding:16px;z-index:3;overflow-y:auto}
   .rc-keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px} .rc-keys kbd{font-family:"Press Start 2P";font-size:11px;background:#fff;color:#000;border-radius:5px;padding:4px 6px;text-align:center}
   .rc-toasts{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:20;pointer-events:none;width:min(92vw,560px)}
   .rc-toast{background:#000e;border:2px solid var(--gold);border-radius:10px;padding:8px 14px;font-weight:700;font-size:16px;text-align:center;animation:rcToast 3s forwards}
