@@ -12,6 +12,7 @@ Paste this into a new chat (or point the session at this file) to pick up where 
 - Everything below is built, tested and pushed. Nothing is half-finished.
 - Core game:
   - hearts, attacks, steals, gang-up rule, sudden death
+  - a correct steal takes 1 heart from the team that missed (no attack choice, no shots; Shield doesn't block it; if that team has 0 hearts the stealer still earns 1)
   - 10 items, final round 🏁, undo, ± hearts
   - fairness rules (rotating shooters, underdog bonus, leader tax)
   - action animations
@@ -54,11 +55,12 @@ Paste this into a new chat (or point the session at this file) to pick up where 
 - Saved on the device (localStorage):
   - gb_profiles, gb_game::<profile>, gb_sets, gb_sheet
   - gb_sound, gb_music, gb_remote_on, gb_remote_code
-- Tests in tests/: music_theory.js, theory_check.js, remote_e2e.py (+ peer-test-server.js), classes_sheet_report.py, button_colors.py. The Python tests use Playwright.
+- Tests in tests/: steal_rule.py, music_theory.js, theory_check.js, remote_e2e.py (+ peer-test-server.js), classes_sheet_report.py, button_colors.py. The Python tests use Playwright.
 - Commit messages end with Claude's attribution lines.
 - Mat's preferences: bullets, fuller explanations, complete code replacements, challenge his framing, confirm only before large tasks.
 
 ## Known Issues
+- classes_sheet_report.py and remote_e2e.py are stale: they need a fontroute.py helper and a peerserver/ folder that aren't in the repo, and classes_sheet_report.py times out at the #askIn step (fails on the old build too). steal_rule.py is self-contained.
 - The button fix isn't confirmed on the real ViewBoard yet. Mat needs to hard-refresh there.
   - If buttons are still pale, get the browser line from the ☰ menu. That would point to the browser overriding colors itself (e.g. forced dark mode), which needs a different fix.
 - The Google Sheet "Grudgeball Questions" (id 15Mnj23kbVn5D3Eu0l1whsXvQCQAJPsekN_k_fSJdGQA) is still private. Mat has to set Share → Anyone with the link → Viewer before other boards or another director can load it.

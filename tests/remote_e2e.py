@@ -53,11 +53,19 @@ try:
     check('board touch works and controller follows', P("!!document.querySelector('[data-ra=\"correct\"]')"))
     tap('[data-ra="wrong"]'); check('wrong -> steal on board', B("S.phase")=='steal')
     tap('[data-ra="stealgo"]'); check('steal from remote', B("S.cur.stealing"))
-    tap('[data-ra="correct"]'); check('steal correct -> attack', B("S.phase")=='attack')
-    t=B("validTargets(S.cur.attacker)[0]"); tap(f'.rc-team[data-rx="{t}"]'); check('attack by tapping team row', B("S.phase")=='pick')
+    miss_t=B("S.turnTeam"); thief=B("S.cur.stealList[S.cur.si]"); hv=B(f"S.teams[{miss_t}].hearts"); ht=B(f"S.teams[{thief}].hearts")
+    tap('[data-ra="correct"]')
+    check('steal correct -> heart moves from the team that missed to the stealer, no attack',
+          B("S.phase")=='reveal' and B(f"S.teams[{miss_t}].hearts")==hv-1 and B(f"S.teams[{thief}].hearts")==ht+1)
+    tap('[data-ra="next"]'); check('after a steal, turn order is unchanged', B("S.phase")=='pick' and B("S.turnTeam")!=miss_t)
+    # attack from the remote (normal correct answer)
+    i=B("S.boxes.findIndex(b=>b.kind==='q'&&!b.opened&&!b.media)"); B(f"pickBox({i})"); pad.wait_for_timeout(300)
+    tap('[data-ra="correct"]'); check('correct -> attack', B("S.phase")=='attack')
+    t=B("validTargets(S.cur.attacker)[0]"); tap(f'.rc-team[data-rx="{t}"]'); check('attack by tapping team row', B("S.phase")=='shoot')
     # undo
     tap('[data-ra="undo"]'); check('undo from remote', B("S.phase")=='attack')
     t=B("validTargets(S.cur.attacker)[0]"); tap(f'.rc-target[data-rx="{t}"]')
+    tap('[data-ra="miss"]')
     # items: shield + fermata
     ti=B("S.turnTeam"); B(f"S.teams[{ti}].inv=['shield','fermata']; render()"); pad.wait_for_timeout(300)
     tap(f'.rc-item[data-rx=\'[{ti},"shield"]\']'); check('use Shield from remote', B(f"S.teams[{ti}].shield"))

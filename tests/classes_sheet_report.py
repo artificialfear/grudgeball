@@ -41,7 +41,7 @@ with sync_playwright() as pw:
     check('games are saved per class', E("!!localStorage.getItem('gb_game::1st Block (8th)')") and json.loads(E("localStorage.getItem('gb_game::My Class')"))['S']['teams'][0]['name']=='Lions')
     # REPORT: correct / stolen / missed
     E("answerCorrect(); doAttackTarget(validTargets(S.turnTeam)[0]); shotMiss()")
-    i=E("S.boxes.findIndex(b=>b.kind==='q'&&!b.opened&&!b.media)"); E(f"pickBox({i}); answerWrong(); stealGo(); stealCorrect(); doAttackTarget(validTargets(S.cur.attacker)[0])")
+    i=E("S.boxes.findIndex(b=>b.kind==='q'&&!b.opened&&!b.media)"); E(f"pickBox({i}); answerWrong(); stealGo(); stealCorrect(); revealDone()")
     i=E("S.boxes.findIndex(b=>b.kind==='q'&&!b.opened&&b.media&&b.media.type==='staff')"); E(f"pickBox({i}); answerWrong()")
     while E("S.phase")=='steal': E("stealPass()")
     E("revealDone()")

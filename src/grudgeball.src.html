@@ -1036,7 +1036,7 @@ const ANIMS = {
     }, ms=>setTimeout(()=>playSnd("attack", SFX.hit), Math.max(0, ms - ATTACK_SND_HIT))); },
   drain(a){ const U = fxU();
     for(let k=0;k<Math.max(1,a.n||1)+1;k++) setTimeout(()=>fly(a.from, a.to, `<img src="${A.heart}" alt="">`, "fxheart", U*3.2, 620, 0, k===0 ? p=>{
-      burst(p.x, p.y, "#3dff7a", 8, U*6, "♥"); fxTag(a.to, `♥ LIFESTEAL +${a.n||1}`, "#16a34a"); playSnd("gainHeart", SFX.heal); } : null), k*130); },
+      burst(p.x, p.y, "#3dff7a", 8, U*6, "♥"); fxTag(a.to, `♥ ${a.label||"LIFESTEAL"} +${a.n||1}`, "#16a34a"); playSnd("gainHeart", SFX.heal); } : null), k*130); },
   heal(a){ const c = ctr(a.i); if(!c) return; const U = fxU();
     fxIcon(A.heart, U*6, [{transform:P(c.x,c.y,"scale(0)"), opacity:1},{transform:P(c.x,c.y-U*2,"scale(1.4)"), opacity:1, offset:.35},{transform:P(c.x,c.y-U*7,"scale(1)"), opacity:0}], 1000);
     burst(c.x, c.y, "#ff6b8a", 6, U*5, "♥"); },
@@ -1239,6 +1239,7 @@ function resolveCorrect(i, stolen=false){
   const lg = logCur(); if(lg){ if(stolen){ lg.steals.push({team:i, ok:true}); lg.result = "stolen"; } else { lg.first = "correct"; lg.result = "correct"; } }
   const t = T(i);
   S.lastAnswer = curBox().a || null;
+  if(stolen){ stealHeart(i, S.turnTeam); return; }
   if(t.status==="sd"){
     heal(i, 1, 700); anim("heal", {i, delay:700});   // after the correct-answer sound
     toast(`${esc(t.name)} earns a heart back from SUDDEN DEATH!`, "green");
@@ -1246,13 +1247,26 @@ function resolveCorrect(i, stolen=false){
     return;
   }
   const tg = validTargets(i);
-  if(stolen){
-    if(tg.length){ S.phase = "attack"; S.cur.attacker = i; S.cur.noShots = true; }
-    else { S.phase = "reveal"; S.cur.revealMsg = `${tname(i)} stole it, but no team can be attacked right now.`; }
-    return;
-  }
   if(tg.length){ S.phase = "attack"; S.cur.attacker = i; }
   else { toast("No team can be attacked right now — straight to the hoop!"); startShoot(i, "streak"); }
+}
+// Correct steal: the stealer takes 1 heart straight from the team that missed.
+// Not an attack: ignores Shield and Cursed Sword, no shots, doesn't count for the gang-up rule.
+// If the team that missed has no hearts left, the stealer still earns +1 (a sudden-death stealer comes back).
+function stealHeart(thief, victim){
+  const v = T(victim), th = T(thief), fromSd = th.status==="sd";
+  const took = v.status!=="out" && v.hearts>0;
+  const quiet = CFG.anims===0 || REDUCED_MOTION;
+  if(took){
+    v.hearts -= 1;
+    pendingFx.push([victim, "-1", "minus"]); anim("hurt", {i:victim});
+    if(v.hearts===0 && v.status==="alive"){ v.status="sd"; toast(`${esc(v.name)} is in SUDDEN DEATH!`, "red"); anim("sd", {i:victim, delay:900}); }
+    heal(thief, 1, quiet ? 700 : -1);
+    anim("drain", {from:victim, to:thief, n:1, label:"STOLE", delay:300});
+  } else { heal(thief, 1, 700); anim("heal", {i:thief, delay:700}); }
+  S.phase = "reveal";
+  S.cur.revealMsg = (took ? `${tname(thief)} stole a heart from ${tname(victim)}!` : `${tname(victim)} has no hearts to take — ${tname(thief)} earns 1 heart.`)
+    + (fromSd ? " They're back from sudden death." : "") + " <b>No shots on a steal.</b>";
 }
 const answerCorrect = act(()=>{ resolveCorrect(S.turnTeam); });
 const answerWrong = act(()=>{
@@ -1877,7 +1891,7 @@ function showRules(){
     <li>Every team starts with <b>${c.startHearts} hearts</b> (max ${c.maxHearts}).</li>
     <li>On your turn, pick a mystery box. Questions: your team has <b>${c.qTime} seconds</b>.</li>
     <li><b>Correct:</b> take a heart from any team, then one player shoots until they miss. Each basket = +1 heart for you <i>or</i> take another heart.</li>
-    <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time in turn order. Each team has ${c.stealTime}s to choose steal or pass (running out of time = pass). A team that steals gets a fresh ${c.stealAnswerTime||5}s to answer. Steal attacks don't count toward the gang-up rule. A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes a heart from another team but gets <b>no shots</b>, and turn order doesn't change.</li>
+    <li><b>Wrong:</b> ${c.wrongCost?`you lose ${c.wrongCost} heart, and `:""}the other teams get a chance to steal, one at a time in turn order. Each team has ${c.stealTime}s to choose steal or pass (running out of time = pass). A team that steals gets a fresh ${c.stealAnswerTime||5}s to answer. Steals don't count toward the gang-up rule. A wrong steal costs ${c.stealCost} heart${c.stealCost===1?"":"s"}. A correct steal takes <b>1 heart from the team that missed</b> (Shield doesn't block it), with <b>no shots</b>, and turn order doesn't change.</li>
     ${c.gangUp===0 ? "" : `<li><b>Gang-up rule:</b> if a team is attacked by one team and then by a different team on the very next turn, they get a <b>bonus turn</b> right away (and keep their normal turn).</li>`}
     <li><b>Sudden death (0 hearts):</b> you can't attack. A correct answer earns 1 heart back (no shots). A wrong answer, or a wrong steal, means you're <b>OUT</b>.</li>
     <li><b>Items you keep</b> go on your team card. You can hold <b>${c.handLimit??2}</b> at a time (find another and you choose one to throw away) and play only <b>one item per turn</b>.</li>
