@@ -60,6 +60,8 @@ Paste this into a new chat (or point the session at this file) to pick up where 
 - Mat's preferences: bullets, fuller explanations, complete code replacements, challenge his framing, confirm only before large tasks.
 
 ## Known Issues
+- Sounds with no MP3 (always the built-in synth): timer ticks (last 5 s), time's-up buzzer, knockout, Fermata and Modulation item sounds. Add an MP3 + an entry in SOUND_FILES to replace any of them.
+- ☰ menu shows a sound check (how many MP3s loaded, which failed) — use it to diagnose a board that plays beeps.
 - classes_sheet_report.py and remote_e2e.py are stale: they need a fontroute.py helper and a peerserver/ folder that aren't in the repo, and classes_sheet_report.py times out at the #askIn step (fails on the old build too). steal_rule.py is self-contained.
 - The button fix isn't confirmed on the real ViewBoard yet. Mat needs to hard-refresh there.
   - If buttons are still pale, get the browser line from the ☰ menu. That would point to the browser overriding colors itself (e.g. forced dark mode), which needs a different fix.

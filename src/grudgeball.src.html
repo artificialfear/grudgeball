@@ -822,7 +822,7 @@ function getSnd(k){
   if(!SND[k]){
     const v = SOUND_VER[SOUND_FILES[k]];
     const a = new Audio("sounds/" + SOUND_FILES[k] + ".mp3" + (v ? "?v=" + v : "")); a.preload = "auto";
-    a.addEventListener("error", ()=>{ SND_BAD[k] = true; });
+    a.addEventListener("error", ()=>{ SND_BAD[k] = "error " + (a.error ? a.error.code : "?"); });
     SND[k] = a;
   }
   return SND[k];
@@ -834,7 +834,15 @@ function playSnd(k, fallback){
   if(SND_BAD[k]){ if(fallback) fallback(); return; }
   try{
     const a = getSnd(k); a.pause(); a.currentTime = 0; a.volume = 1;
-    const pr = a.play(); if(pr && pr.catch) pr.catch(()=>{ if(fallback) fallback(); });
+    // AbortError just means this sound was restarted before it began (e.g. two quick taps) — not a broken file,
+    // so don't play the built-in beep over it. Only a file the browser can't play falls back.
+    const pr = a.play(); if(pr && pr.catch) pr.catch(err=>{
+      const n = err && err.name;
+      if(n==="AbortError") return;
+      if(n==="NotSupportedError"){ SND_BAD[k] = "unsupported"; if(fallback) fallback(); return; }
+      if(n==="NotAllowedError") return;   // browser hasn't allowed audio yet (no tap) — the synth would be blocked too
+      if(fallback) fallback();
+    });
   }catch(e){ if(fallback) fallback(); }
 }
 function stopSnd(k){ const a = SND[k]; if(a){ try{ a.pause(); }catch(e){} } }
@@ -1096,7 +1104,7 @@ function loseHearts(i, n){
   if(t.hearts<=0){ return; }
   const lost = Math.min(n, t.hearts);
   t.hearts -= lost;
-  pendingFx.push([i, "-"+lost, "minus"]); SFX.hit(); anim("hurt", {i});
+  pendingFx.push([i, "-"+lost, "minus"]); playSnd("attack", SFX.hit); anim("hurt", {i});
   if(t.hearts===0 && t.status==="alive"){ t.status="sd"; toast(`${esc(t.name)} is in SUDDEN DEATH!`, "red"); anim("sd", {i, delay:350}); }
 }
 function eliminate(i){
@@ -1970,12 +1978,24 @@ function showReport(){
     catch(e){ const ta = document.createElement("textarea"); ta.value = txt; m.querySelector(".card").appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Report copied", "green"); }catch(e2){ toast("Select the text below and copy it"); } }
   };
 }
+// sound files: how many loaded, and which ones the board couldn't load (those play the built-in beeps)
+function soundInfo(){
+  const keys = Object.keys(SOUND_FILES).filter(k=>k!=="music");
+  keys.forEach(k=>{ try{ const a = getSnd(k); if(a.readyState===0 && !SND_BAD[k]) a.load(); }catch(e){} });
+  const bad = keys.filter(k=>SND_BAD[k]);
+  const mp3 = (()=>{ try{ return !!new Audio().canPlayType("audio/mpeg"); }catch(e){ return false; } })();
+  if(location.protocol==="file:") return "sounds: opened from a saved file — your MP3s only load from the website";
+  if(!mp3) return "sounds: this browser can't play MP3s — using built-in beeps";
+  if(bad.length) return `sounds: ${keys.length-bad.length}/${keys.length} loaded · couldn't load ${bad.map(k=>SOUND_FILES[k]).join(", ")}`;
+  const ready = keys.filter(k=>SND[k] && SND[k].readyState>=2).length;
+  return ready===keys.length ? `sounds: all ${keys.length} loaded` : `sounds: ${ready}/${keys.length} loaded so far (reopen ☰ to recheck)`;
+}
 // shown in the ☰ menu so a board's browser version is easy to check
 function browserInfo(){
   const ua = navigator.userAgent, m = /(Chrome|Firefox|Version)\/(\d+)/.exec(ua), name = m ? (m[1]==="Version" ? "Safari" : m[1]) : "Browser";
   const missing = [];
   try{ if(!CSS.supports("aspect-ratio", "1 / 1")) missing.push("aspect-ratio"); if(!CSS.supports("inset", "0")) missing.push("inset"); }catch(e){}
-  return `${name} ${m ? m[2] : "?"}${missing.length ? ` · older browser: using fallbacks for ${missing.join(", ")}` : " · all features supported"}`;
+  return `${name} ${m ? m[2] : "?"}${missing.length ? ` · older browser: using fallbacks for ${missing.join(", ")}` : " · all features supported"} · ${soundInfo()}`;
 }
 function showKey(){
   const seen = new Set();
