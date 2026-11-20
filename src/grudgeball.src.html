@@ -116,6 +116,8 @@ header.top .hbtns.left{justify-content:flex-start}
 .turnban .bonus{display:inline-block;margin-left:10px;font-size:calc(var(--u)*1.2);background:var(--gold);color:#000;padding:6px 8px;border-radius:6px;vertical-align:middle;animation:pulse 1s infinite}
 .topbtn{background:#1a0a12;background:rgba(0,0,0,0.53);color:#fff6ea;border:2px solid var(--line);border-radius:10px;padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1.5);font-weight:700}
 .topbtn.on{background:#7a5a00;border-color:var(--gold)}
+.fsico{vertical-align:-0.12em}
+.fsbtn.hidden{display:none}
 .instr{display:flex;align-items:center;gap:calc(var(--u)*1.5);margin:0 calc(var(--u)*1.5);padding:calc(var(--u)*.7) calc(var(--u)*1.4);background:rgba(0,0,0,0.67);border-left:6px solid var(--gold);border-radius:8px;font-size:calc(var(--u)*1.9);min-height:calc(var(--u)*4)}
 .instr b{color:var(--gold)}
 .instr-text{flex:1;min-width:0}
@@ -395,7 +397,10 @@ header.top .hbtns.left{justify-content:flex-start}
 
 <!-- ================= SETUP ================= -->
 <section id="setup">
-  <button class="topbtn" id="musicBtn" style="position:fixed;top:14px;right:16px;z-index:5">🎵 Music: On</button>
+  <div style="position:fixed;top:14px;right:16px;z-index:5;display:flex;gap:8px">
+    <button class="topbtn fsbtn" id="setupFsBtn" title="Full screen (F)"><svg class="fsico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></svg> <span class="fslbl">Full screen</span></button>
+    <button class="topbtn" id="musicBtn">🎵 Music: On</button>
+  </div>
   <button class="topbtn" id="setupRemoteBtn" style="position:fixed;top:14px;left:16px;z-index:5" title="Run the game from an iPad or computer">📱 Remote</button>
   <h1>GRUDGE BALL</h1>
   <div class="tag">Pick boxes · answer fast · take their hearts · shoot 'til you miss</div>
@@ -499,6 +504,7 @@ header.top .hbtns.left{justify-content:flex-start}
     </div>
     <div class="logo">GRUDGE BALL</div>
     <div class="hside hbtns">
+      <button class="topbtn fsbtn" id="fsBtn" title="Full screen (F)"><svg class="fsico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></svg></button>
       <button class="topbtn" id="remoteBtn" title="Remote control from an iPad or computer">📱</button>
       <button class="topbtn" id="soundBtn">🔊</button>
       <button class="topbtn" id="menuBtn">☰</button>
@@ -1878,8 +1884,40 @@ function confirmInline(){ return true; }
 window.addEventListener("resize", ()=>{ if(S && !S.over && !$("#game").classList.contains("hidden")) renderStage(); });
 // pixel fonts load a moment after the page; re-fit once they arrive
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ if(S && !S.over && !$("#game").classList.contains("hidden")) renderStage(); });
+/* ---------- full screen ---------- */
+// standard API, with the webkit/ms prefixes older ViewBoard browsers and iPads use
+const FS_EXIT = '<svg class="fsico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M9 3v6H3M21 9h-6V3M15 21v-6h6M3 15h6v6"/></svg>';
+const FS_ENTER = '<svg class="fsico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></svg>';
+function fsElement(){ return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null; }
+function fsSupported(){ const d = document.documentElement;
+  return !!(d.requestFullscreen || d.webkitRequestFullscreen || d.msRequestFullscreen) && document.fullscreenEnabled !== false && document.webkitFullscreenEnabled !== false; }
+function toggleFullscreen(){
+  try{
+    if(fsElement()){
+      const ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+      if(ex){ const r = ex.call(document); if(r && r.catch) r.catch(()=>{}); }
+    } else {
+      const d = document.documentElement, rq = d.requestFullscreen || d.webkitRequestFullscreen || d.msRequestFullscreen;
+      if(rq){ const r = rq.call(d); if(r && r.catch) r.catch(()=>toast("This browser blocked full screen — try the browser's own full-screen key (F11)")); }
+    }
+  }catch(e){ toast("Full screen isn't available in this browser"); }
+}
+function updateFsBtns(){
+  const on = !!fsElement(), ok = fsSupported();
+  [$("#fsBtn"), $("#setupFsBtn")].forEach(b=>{ if(!b) return;
+    b.classList.toggle("hidden", !ok);
+    b.title = on ? "Exit full screen (F or Esc)" : "Full screen (F)";
+    b.innerHTML = (on ? FS_EXIT : FS_ENTER) + (b.id==="setupFsBtn" ? ` <span class="fslbl">${on ? "Exit full screen" : "Full screen"}</span>` : "");
+  });
+}
+["fullscreenchange","webkitfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev, ()=>{ updateFsBtns(); setTimeout(()=>{ if(S && !S.over && !$("#game").classList.contains("hidden")) renderStage(); }, 150); }));
+$("#fsBtn").onclick = e=>{ e.stopPropagation(); toggleFullscreen(); };
+$("#setupFsBtn").onclick = e=>{ e.stopPropagation(); toggleFullscreen(); };
+updateFsBtns();
+
 document.addEventListener("keydown", e=>{
   if(e.target.matches("input,textarea,select")) return;
+  if(!e.ctrlKey && !e.metaKey && !e.altKey && e.key && e.key.toLowerCase()==="f" && !$("#modalRoot").children.length && !/[?&]remote=/.test(location.search)){ e.preventDefault(); toggleFullscreen(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); if(S && !$("#game").classList.contains("hidden")) undo(); }
 });
 

@@ -191,8 +191,9 @@ const MUSIC = (function(){
     const steps = k==="major" ? [0,2,4,5,7,9,11,12] : k==="minor" ? [0,2,3,5,7,8,10,12] : [0,1,2,3,4,5,6,7,8,9,10,11,12];
     const ans = {major:"Major scale", minor:"Minor scale", chromatic:"Chromatic scale"}[k];
     return lis(lvl>=4 ? "Which scale is this: MAJOR, MINOR or CHROMATIC?" : "Was this a MAJOR or MINOR scale?", ans, seq(steps.map(x=>r+x), k==="chromatic"?0.26:0.36, k==="chromatic"?0.24:0.34)); };
-  L.genericIntervalEar = () => { const opts = [[2,"A 2nd"],[3,"A 3rd"],[5,"A 5th"],[12,"An octave"]]; const [semis, ans] = rnd(opts);
-    const r = ri(57,65); const s = semis===3 ? 4 : semis;   // 3rd played as a major 3rd
+  // [half steps actually played, answer]: major 2nd, major 3rd, perfect 5th, octave
+  L.genericIntervalEar = () => { const opts = [[2,"A 2nd"],[4,"A 3rd"],[7,"A 5th"],[12,"An octave"]]; const [s, ans] = rnd(opts);
+    const r = ri(57,65);
     return lis("Which interval: a 2nd, a 3rd, a 5th or an octave?", ans, seq([r,r+s],0.8,0.75).concat(block([r,r+s],1.8,1.2))); };
   L.accelRit = () => { const acc = Math.random()<0.5; let t=0; const clicks=[];
     for(let i=0;i<12;i++){ clicks.push({t, accent:false}); const gap = acc ? 0.62-0.035*i : 0.24+0.035*i; t+=gap; }

@@ -32,6 +32,7 @@ Paste this into a new chat (or point the session at this file) to pick up where 
 - Rules presets: 🐣 Simple and 🔥 Full, side by side.
 - Google Sheet question sets: read from a "Game Sets" index tab, cached on the device, with an ↻ Sync button.
 - Setup screen: an everyday card on top, everything else in collapsible sections.
+- Full screen: ⛶ button in the game top bar and on the setup screen, F key on the board (prefixed APIs for older browsers; hidden where unsupported).
 - Older-browser (ViewBoard) support:
   - @supports fallbacks for aspect-ratio
   - longhand top/right/bottom/left instead of inset
@@ -55,7 +56,7 @@ Paste this into a new chat (or point the session at this file) to pick up where 
 - Saved on the device (localStorage):
   - gb_profiles, gb_game::<profile>, gb_sets, gb_sheet
   - gb_sound, gb_music, gb_remote_on, gb_remote_code
-- Tests in tests/: steal_rule.py, music_theory.js, theory_check.js, remote_e2e.py (+ peer-test-server.js), classes_sheet_report.py, button_colors.py. The Python tests use Playwright.
+- Tests in tests/: listening_audit.js (recomputes every 🎧 answer from the notes actually played, both tracks, all levels), steal_rule.py, music_theory.js, theory_check.js, remote_e2e.py (+ peer-test-server.js), classes_sheet_report.py, button_colors.py. The Python tests use Playwright.
 - Commit messages end with Claude's attribution lines.
 - Mat's preferences: bullets, fuller explanations, complete code replacements, challenge his framing, confirm only before large tasks.
 

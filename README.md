@@ -51,6 +51,10 @@ Keep sets in a Google Sheet and every board picks up the latest version:
 4. On setup, tap **📄 Google Sheet**, paste the link and tap **Connect**. After editing the sheet, tap **↻ Sync**.
 Sheet sets are cached on the device, so the game still works offline. To share sets with another director, send them the sheet link; they connect it the same way (or make a copy to edit their own).
 
+## Full screen
+
+Tap **⛶** (top right in a game, or **⛶ Full screen** on the setup screen), or press **F** on the board's keyboard. Tap it again, press F, or press Esc to leave full screen. The button hides itself on browsers that can't go full screen (iPhone Safari); use the browser's own full-screen option (F11) there. On the remote controller, F is still the Final round shortcut.
+
 ## Remote control (iPad or computer)
 Run the game from an iPad or a computer while it shows on the viewboard. The board still works by touch.
 1. On the board, tap **📱** (top right in a game, or **📱 Remote** on the setup screen). A QR code, a link and a 4-letter room code appear.
